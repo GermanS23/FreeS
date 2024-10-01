@@ -1,4 +1,8 @@
 import Usuarios from '../models/usuarios.js'
+import Roles from '../models/roles.js'
+import { hashPassword, comparePassword } from '../utils/bcrypt.js'
+import jwt from 'jsonwebtoken'
+
 
 const getUsuarios = async (req, res) => {
   try {
@@ -6,7 +10,7 @@ const getUsuarios = async (req, res) => {
     res.json(usuarios)
   } catch (error) {
     console.error(error)
-    res.status(500).send('Eror al obtener el Usuario')
+    res.status(500).send('Error al obtener el Usuario')
   }
 }
 
@@ -21,13 +25,43 @@ const getUsuariosById = async (req, res) => {
 
 const createUsuario = async (req, res) => {
   try {
-    const newuser = await Usuarios.create(req.body)
-    res.status(404).json(newuser)
+      const { us_user, us_pass, us_nomape, us_email, us_tel, roles_rol_cod } = req.body;
+
+      // Validar que el rol del usuario que está creando sea válido según la jerarquía
+      const usuarioCreando = await Usuarios.findByPk(req.user.us_cod); // Obtener información del usuario que está realizando la solicitud
+      const rolCreando = await Roles.findByPk(usuarioCreando.roles_rol_cod);
+      const rolNuevo = await Roles.findByPk(roles_rol_cod);
+
+      // Lógica para validar la jerarquía de roles
+      if (rolCreando.rol_desc === 'Admin') {
+          // Un administrador puede crear cualquier rol
+      } else if (rolCreando.rol_desc === 'Dueño') {
+          if (rolNuevo.rol_desc !== 'Encargado') {
+              return res.status(403).json({ message: 'Un dueño solo puede crear usuarios con el rol de Encargado' });
+          }
+      } else {
+          return res.status(403).json({ message: 'No tienes permisos para crear usuarios' });
+      }
+
+
+      const hashPassword = await hashPassword(us_pass);
+
+      // Crear el nuevo usuario
+      const newUser = await Usuarios.create({
+          us_user,
+          us_pass: hashPassword,
+          us_nomape,
+          us_email,
+          us_tel,
+          roles_rol_cod
+      });
+
+      res.status(201).json(newUser);
   } catch (error) {
-    console.error(error)
-    res.status(505).send('Error al crear el Usuario')
+      console.error(error);
+      res.status(500).send('Error al crear el usuario');
   }
-}
+};
 
 const updateUsuario = async (req, res) => {
   try {
@@ -41,6 +75,9 @@ const updateUsuario = async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).send('Error al actualizar el Usuario')
+  }
+  if (req.body.us_pass){
+   req.body.us_pass = await hashPassword(req.body.us_pass)
   }
 }
 
@@ -59,10 +96,44 @@ const deleteUsuario = async (req, res) => {
   }
 }
 
+const login = async (req, res) => {
+  try {
+      const { us_user, us_pass } = req.body;
+
+      const user = await Usuarios.findOne({ where: { us_user } });
+
+      if (!user) {
+          return res.status(404).send({ message: "Usuario incorrecto!" });
+      }
+
+      const passwordIsValid = await comparePassword(req.body.us_pass , user.us_pass);
+
+      if (!passwordIsValid) {
+          return res.status(401).send({
+              accessToken: null,
+              message: "Contraseña Incorrecta!"
+          });
+      }
+
+      const token = jwt.sign({ id: user.us_cod}, config.secret, { expiresIn: 
+86400 }); // 24 horas
+
+      res.status(200).send({
+          id: user.us_cod,
+          us_user: user.us_user,
+          us_email: user.us_email,
+          rol: user.roles_rol_cod,
+          accessToken: token
+      });
+  } catch (err) {
+      res.status(500).send({ message: err.message });
+  }
+};
 export default {
   getUsuarios,
   getUsuariosById,
   createUsuario,
   updateUsuario,
-  deleteUsuario
+  deleteUsuario,
+  login
 }

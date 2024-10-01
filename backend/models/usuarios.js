@@ -16,12 +16,17 @@ Usuarios.init({
     allowNull: false
   },
   us_pass: {
+    type: DataTypes.STRING(255),
+    allowNull: false
+  },
+  us_nomape:{
     type: DataTypes.STRING(45),
     allowNull: false
   },
   us_email: {
     type: DataTypes.STRING(45),
-    allowNull: null
+    allowNull: true,
+    unique: true
   },
   us_tel: {
     type: DataTypes.STRING(45),

@@ -19,14 +19,6 @@ SaboresHelados.init({
     type: DataTypes.BOOLEAN,
     allowNull: false
   },
-  cat_sab_cod: {
-    type: DataTypes.TINYINT,
-    allowNull: false,
-    references: {
-      model: 'CategoriaSab',
-      key: 'catsab_cod'
-    }
-  },
     us_cod: {
       type: DataTypes.TINYINT,
       allowNull: false,

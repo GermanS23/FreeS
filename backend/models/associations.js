@@ -13,5 +13,7 @@ Usuarios.belongsTo(Roles, { foreignKey: 'roles_rol_cod' })
 Usuarios.belongsToMany(Sucursales, { through: 'Usuarios_has_Sucursales', timestamps: false })
 Sucursales.belongsToMany(Usuarios, { through: 'Usuarios_has_Sucursales', timestamps: false })
 
-SaboresHelados.belongsTo(CategoriaSab, { foreignKey: 'catsab_cod'})
 CategoriaSab.hasMany(SaboresHelados, { foreignKey: 'catsab_cod'})
+
+
+
