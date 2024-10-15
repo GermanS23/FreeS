@@ -56,7 +56,8 @@ body {
 .logo {
   max-width: 100%;
   height: auto;
-  max-height: 50px;
+  max-height: 75px;
+  margin-left: 140px;
 }
 
 .sidebar-nav ul {

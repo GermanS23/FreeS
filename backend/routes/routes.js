@@ -25,7 +25,7 @@ router.use(function(req, res, next) {
 // Rutas para controlador Roles
 router.get('/roles', rolesController.getRoles)
 router.get('/roles/:rol_cod', rolesController.getRolesById)
-router.post('/roles', rolesController.createRole)
+router.post('/create/roles', rolesController.createRole)
 router.put('/roles/:rol_cod', rolesController.updateRole)
 router.delete('/roles/:rol_cod', rolesController.deleteRole)
 

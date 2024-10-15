@@ -13,7 +13,7 @@ dotenv.config() // Cargamos variables de entorno al inicio de la aplicación
 const app = express()
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:5173' ],
   methods: 'GET, POST, PUT, DELETE'
 }))
 app.use(express.json())

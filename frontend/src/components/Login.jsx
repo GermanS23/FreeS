@@ -1,29 +1,58 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';  
+import authService from '../services/auth.service';
+import { useNavigate } from 'react-router-dom';
+import Logo from '../assets/Logo.svg'
 
-function Login({ setIsLoggedIn }) {
-  const [email, setEmail] = useState('');
+function Login() {
+  const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      navigate('/')
+    }
+  })
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    // Aquí iría la lógica de autenticación
-    setIsLoggedIn(true);
+    // Aquí iría la lógica de autenticación 
+    if (user === '') {
+      alert("Campo de usuario vacio")
+    } else if (password === '') {
+      alert("Campo de password vacio")
+    }
+    const data={
+      us_user:user,
+      us_pass:password
+  }
+    await authService
+      .login(data)
+      .then((e) => {
+        localStorage.setItem('token', e.accessToken)
+        navigate('/')
+      })
+      .catch((error) => {
+        alert(error) 
+      })
+
+    e.preventDefault()
   };
 
   return (
     <div className="login-container">
       <div className="login-form">
-        <img src="/path-to-your-logo.svg" alt="Logo" className="logo" />
-        <h1>Sign in to your account</h1>
+        <img src={Logo} alt="Logo" className="logo" />
+        <h1>Inicia Sesion en tu cuenta</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="user">Usuario</label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="user"
+              id="user"
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
               required
             />
           </div>
@@ -40,9 +69,7 @@ function Login({ setIsLoggedIn }) {
           </div>
           <button type="submit" className="sign-in-button">Sign in</button>
         </form>
-        <p className="signup-link">
-          Not a member? <a href="#">Start a 14 day free trial</a>
-        </p>
+       
       </div>
     </div>
   );

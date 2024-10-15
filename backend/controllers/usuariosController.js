@@ -2,7 +2,7 @@ import Usuarios from '../models/usuarios.js'
 import Roles from '../models/roles.js'
 import { hashPassword, comparePassword } from '../utils/bcrypt.js'
 import jwt from 'jsonwebtoken'
-
+import config from '../config/auth.config.js'
 
 const getUsuarios = async (req, res) => {
   try {
@@ -115,7 +115,7 @@ const login = async (req, res) => {
           });
       }
 
-      const token = jwt.sign({ id: user.us_cod}, config.secret, { expiresIn: 
+      const token = jwt.sign({ id: user.us_cod}, config.secretkey, { expiresIn: 
 86400 }); // 24 horas
 
       res.status(200).send({
