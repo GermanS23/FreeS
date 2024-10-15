@@ -36,3 +36,5 @@ prod_dis: {
   timestamps: false
   
 })
+
+export default Productos;

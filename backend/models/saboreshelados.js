@@ -18,15 +18,7 @@ SaboresHelados.init({
   sab_disp: {
     type: DataTypes.BOOLEAN,
     allowNull: false
-  },
-    us_cod: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
-      references: {
-        model: 'Usuarios',
-        key: 'us_cod'
-      }
-    }
+  }
   },
   { sequelize,
     modelName: 'SaboresHelados',
