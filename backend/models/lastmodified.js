@@ -30,7 +30,6 @@ LastModified.init({
 {sequelize,
     modelName:'LastModified',
     tableName:'lastmodified',
-    timestamps: false
 }
 )
 

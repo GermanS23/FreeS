@@ -4,77 +4,134 @@ import authService from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/Logo.svg'
 
-function Login() {
+function Login({ setIsLoggedIn }) {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      navigate('/')
+      setIsLoggedIn(true);
+      navigate('/');
     }
-  })
+  }, [navigate, setIsLoggedIn]);
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí iría la lógica de autenticación 
     if (user === '') {
-      alert("Campo de usuario vacio")
+      alert("Campo de usuario vacio");
+      return;
     } else if (password === '') {
-      alert("Campo de password vacio")
+      alert("Campo de password vacio");
+      return;
     }
-    const data={
-      us_user:user,
-      us_pass:password
-  }
-    await authService
-      .login(data)
-      .then((e) => {
-        localStorage.setItem('token', e.accessToken)
-        navigate('/')
-      })
-      .catch((error) => {
-        alert(error) 
-      })
-
-    e.preventDefault()
+    const data = {
+      us_user: user,
+      us_pass: password
+    };
+    try {
+      const response = await authService.login(data);
+      localStorage.setItem('token', response.accessToken);
+      setIsLoggedIn(true);
+      navigate('/');
+    } catch (error) {
+      alert(error);
+    }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-form">
-        <img src={Logo} alt="Logo" className="logo" />
-        <h1>Inicia Sesion en tu cuenta</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="user">Usuario</label>
-            <input
-              type="user"
-              id="user"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <a href="#" className="forgot-password">Forgot password?</a>
-          </div>
-          <button type="submit" className="sign-in-button">Sign in</button>
-        </form>
-       
+<>
+{/*
+  This example requires updating your template:
+
+  ```
+  <html class="h-full bg-white">
+  <body class="h-full">
+  ```
+*/}
+<div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+  <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+    <img
+      alt="FreeShop Logo"
+      src={Logo}
+      className="mx-auto h-20 w-auto"
+    />
+    <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+      Inicia Sesión en tu cuenta
+    </h2>
+  </div>
+
+  <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label htmlFor="user" className="block text-sm font-medium leading-6 text-gray-900">
+          Usuario
+        </label>
+        <div className="mt-2">
+          <input
+            id="usuario"
+            name="usuario"
+            type="user"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+            required
+            autoComplete="user"
+            className="block w-full rounded-md border border-gray-600 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"          />
+        </div>
       </div>
-    </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+            Contraseña
+          </label>
+          <div className="text-sm">
+            <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+              Forgot password?
+            </a>
+          </div>
+        </div>
+        <div className="mt-2">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            className="block w-full rounded-md border border-gray-600 py-1.5 text-gray-900 shadow-sm placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"          />
+        </div>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Sign in
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+</>
+
+
+
+
   );
+
   
+
+
+
+
+
+
 }
+
 Login.propTypes = {
   setIsLoggedIn: PropTypes.func.isRequired
 };

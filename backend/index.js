@@ -7,7 +7,10 @@ import bcryp from 'bcrypt'
 import { rolesRouter, catprodRouter, catsabRouter, usuariosController, tdController, sucursalesController } from './routes/routes.js'
 // importar las asociaciones
 import './models/associations.js'
+
 import Usuarios from './models/usuarios.js'
+import Rol from './models/roles.js'
+
 dotenv.config() // Cargamos variables de entorno al inicio de la aplicación
 
 const app = express()
@@ -26,6 +29,8 @@ app.use('/api', tdController)
 app.use('/api', usuariosController)
 
 //initial();
+
+
 const PORT = process.env.PORT ?? 3000;
 ((async () => {
   try {
@@ -45,6 +50,13 @@ app.listen(PORT, () => {
 
 
 function initial() {
+
+  Rol.create({
+    rol_cod:4,
+    rol_desc:"ADMIN"
+  })
+
+
 
   Usuarios.create({
     us_cod: 1,

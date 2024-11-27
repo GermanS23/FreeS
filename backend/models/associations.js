@@ -14,35 +14,46 @@ import Plantilla from './plantilla.js'
 import Pantalla from './pantalla.js'
 import Proveedores from './proveedores.js'
 import LastModified from './lastmodified.js'
+import UsuariosSucursales from './UsuariosSucursales.js'
+import ProvProducts from './ProvProducts.js'
+import ProductsProm from './ProductsProm.js'
+import SucProms from './SucProms.js'
 
+
+
+// Relacion entre Usuario y Roles
 Roles.hasOne(Usuarios, { foreignKey: 'roles_rol_cod' })
 Usuarios.belongsTo(Roles, { foreignKey: 'roles_rol_cod' })
 
-Usuarios.belongsToMany(Sucursales, { through: 'Usuarios_has_Sucursales', timestamps: false })
-Sucursales.belongsToMany(Usuarios, { through: 'Usuarios_has_Sucursales', timestamps: false })
+Usuarios.belongsToMany(Sucursales, { through: UsuariosSucursales})
+Sucursales.belongsToMany(Usuarios, { through: UsuariosSucursales})
 
 Usuarios.hasMany(LastModified,{foreignKey:'us_cod'})
-
+LastModified.belongsTo(Usuarios,{foreignKey:'us_cod'})
 
 CategoriaSab.hasMany(SaboresHelados, { foreignKey: 'catsab_cod'})
+SaboresHelados.belongsTo(CategoriaSab, { foreignKey: 'catsab_cod'})
 
 CategoriaProd.hasMany(Productos, {foreignKey:'catprod_cod'})
+Productos.belongsTo(CategoriaProd, {foreignKey:'catprod_cod'})
 
 TipoDescuento.hasMany(Promociones, {foreignKey:'td_cod'})
+Promociones.belongsTo(TipoDescuento, {foreignKey:'td_cod'})
 
 Plantilla.hasMany(Pantalla,{foreignKey:'plan_cod'})
+Pantalla.belongsTo(Plantilla,{foreignKey:'plan_cod'})
 
 
 //Relacion muchos a mucho entre proveedores y productos
-Proveedores.belongsTo(Productos, {through: 'Proveedores_has_Productos', timestamps: false})
-Productos.belongsTo(Proveedores, {through: 'Proveedores_has_Productos', timestamps: false})
+Proveedores.belongsToMany(Productos, {through: ProvProducts})
+Productos.belongsToMany(Proveedores, {through: ProvProducts})
 
 //Relacion muchos a mucho entre Productos y Promociones
-Promociones.belongsTo(Productos, {through: 'Productos_has_Promociones', timestamps: false})
-Productos.belongsTo(Promociones, {through: 'Productos_has_Promociones', timestamps: false})
+Promociones.belongsToMany(Productos, {through: ProductsProm})
+Productos.belongsToMany(Promociones, {through: ProductsProm})
 
 
 //Relacion muchos a mucho entre Sucursales y Promociones
-Promociones.belongsTo(Sucursales, {through: 'Sucursales_has_Promociones', timestamps: false})
-Sucursales.belongsTo(Promociones, {through: 'Sucursales_has_Promociones', timestamps: false})
+Promociones.belongsToMany(Sucursales, {through: SucProms})
+Sucursales.belongsToMany(Promociones, {through: SucProms})
 

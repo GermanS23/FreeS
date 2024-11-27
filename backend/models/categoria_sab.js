@@ -19,8 +19,7 @@ CategoriaSab.init({
 {
   sequelize,
   modelName: 'CategoriaSab',
-  tableName: 'categoria_sab',
-  timestamps: false
+  tableName: 'categoria_sab'
 }
 )
 

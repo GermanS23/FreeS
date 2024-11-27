@@ -23,7 +23,6 @@ SaboresHelados.init({
   { sequelize,
     modelName: 'SaboresHelados',
     tableName: 'saboreshelados',
-    timestamps: false
   }
 )
 

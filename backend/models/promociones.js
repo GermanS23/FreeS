@@ -29,8 +29,7 @@ Promociones.init({
 {
   sequelize,
   modelName: 'Promociones',
-  tableName: 'promociones',
-  timestamps: false
+  tableName: 'promociones'
 }
 )
 

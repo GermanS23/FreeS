@@ -21,7 +21,6 @@ TipoDescuento.init({
   sequelize,
   modelName: 'TipoDescuento',
   tableName: 'tipodescuento',
-  timestamps: false
 }
 
 )

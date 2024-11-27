@@ -33,7 +33,6 @@ prod_dis: {
 { sequelize,
   modelName: 'Productos',
   tableName: 'productos',
-  timestamps: false
   
 })
 

@@ -2,25 +2,21 @@ import { Model, DataTypes } from 'sequelize'
 
 import sequelize from '../config/database.js'
 
-class Sucursales extends Model {}
+class UsuariosSucursales extends Model {}
 
-Sucursales.init({
-  suc_cod: {
+UsuariosSucursales.init({
+  us_cod: {
     type: DataTypes.TINYINT,
     allowNull: false,
     primaryKey: true,
     autoIncrement: true
   },
-  suc_name: {
-    type: DataTypes.STRING(45),
-    allowNull: false
-  }
 },
 {
   sequelize,
-  modelName: 'Sucursarles',
-  tableName: 'sucursarles',
+  modelName: 'Usuarios_has_Sucursales',
+  tableName: 'Usuarios_has_Sucursales',
 }
 )
 
-export default Sucursales
+export default UsuariosSucursales

@@ -18,7 +18,6 @@ Plantilla.init({
 { sequelize,
     modelName: 'Plantilla',
     tableName: 'plantilla',
-    timestamps: false,
 }
 )
 

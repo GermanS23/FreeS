@@ -19,8 +19,7 @@ CategoriaProd.init({
 {
   sequelize,
   modelName: 'CategoriaProd',
-  tableName: 'categoria_prod',
-  timestamps: true
+  tableName: 'categoria_prod'
 }
 
 )

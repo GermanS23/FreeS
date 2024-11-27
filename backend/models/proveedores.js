@@ -48,7 +48,6 @@ Proveedores.init({
   sequelize,
   modelName: 'Proveedores',
   tableName: 'proveedores',
-  timestamps: false
 }
 )
 

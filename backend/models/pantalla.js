@@ -21,7 +21,6 @@ Pantalla.init({
 { sequelize,
     modelName: 'Pantalla',
     tableName: 'pantalla',
-    timestamps: false
 }
 )
 

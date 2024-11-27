@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Home, Package, List, PlusCircle, Grid, User, LogOut, Menu } from 'lucide-react';
 import Logo from '../assets/Logo.svg'
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -19,6 +20,11 @@ export default function Sidebar() {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
   };
 
   const SidebarContent = () => (
@@ -49,7 +55,7 @@ export default function Sidebar() {
       </nav>
       <div className="sidebar-footer">
         <Link to="/perfil" onClick={() => setIsMobileMenuOpen(false)}><User size={20} /> <span>Perfil</span></Link>
-        <Link to="/logout" onClick={() => setIsMobileMenuOpen(false)}><LogOut size={20} /> <span>Salir</span></Link>
+        <Link to="/login" onClick={handleLogout}><LogOut size={20} /> <span>Salir</span></Link>
       </div>
     </>
   );
