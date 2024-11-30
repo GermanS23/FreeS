@@ -1,4 +1,6 @@
 import Roles from '../models/roles.js'
+import Page from '../utils/getPagingData.js'
+
 
 const getRoles = async (req, res) => {
   try {
@@ -57,10 +59,44 @@ const deleteRole = async (req, res) => {
     res.status(500).send('Error al eliminar el rol')
   }
 }
+const List = async (req, res) =>{
+  let { page, size, title } = req.query;
+  const limit = size ? +size : 5;
+  const offset = page ? page * limit : 0;
+
+  if (title == undefined) {
+    title = ""
+  }
+
+  const User  =  await Roles.findAndCountAll({
+    where: {
+      [Op.op]:[
+        {
+          rol_desc: {
+            [Op.like]: '%' + title + '%'
+          }
+        }
+      ]
+    },
+    order: [['id', 'DESC']],
+    limit,
+    offset,
+  })
+    .then(data => {
+      const response = new Page(data, Number(req.query.page), limit);
+      res.send(response);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving tutorials."
+      });
+    });
+}
 export default {
   getRoles,
   getRolesById,
   updateRole,
   createRole,
-  deleteRole
+  deleteRole,
+  List
 }

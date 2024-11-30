@@ -25,23 +25,24 @@ router.use(function(req, res, next) {
 // Rutas para controlador Roles
 router.get('/roles', rolesController.getRoles)
 router.get('/roles/:rol_cod', rolesController.getRolesById)
-router.post('/create/roles', rolesController.createRole)
-router.put('/roles/:rol_cod', rolesController.updateRole)
-router.delete('/roles/:rol_cod', rolesController.deleteRole)
+router.post('/roles/create', rolesController.createRole)
+router.put('/roles/update/:rol_cod', rolesController.updateRole)
+router.delete('/roles/delete/:rol_cod', rolesController.deleteRole)
+router.get('/roles/list', rolesController.List)
 
 // Rutas para controller Usuarios
 router.get('/usuarios', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuarios)
 router.get('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuariosById)
-router.post('/usuarios', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
+router.post('/usuarios/create', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
 router.put('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.updateUsuario)
-router.delete('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.deleteUsuario)
+router.delete('/usuarios/delete/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.deleteUsuario)
 router.post("/login", usuariosController.login)
-
+router.get('/usuarios/list', usuariosController.usList)
 
 // Rutas para controller CatProd
 router.get('/catprod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.getCatProd)
 router.get('/catprod/:id', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.getCatProdbyId)
-router.post('/catprod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.createCatProd)
+router.post('/catprod/create', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.createCatProd)
 router.put('/catprod/:id', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.updateCatProd)
 router.delete('/catprod/:id', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.deleteCatProd)
 

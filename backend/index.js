@@ -7,7 +7,6 @@ import bcryp from 'bcrypt'
 import { rolesRouter, catprodRouter, catsabRouter, usuariosController, tdController, sucursalesController } from './routes/routes.js'
 // importar las asociaciones
 import './models/associations.js'
-
 import Usuarios from './models/usuarios.js'
 import Rol from './models/roles.js'
 

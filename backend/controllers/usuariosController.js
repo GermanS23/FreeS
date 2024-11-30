@@ -3,10 +3,11 @@ import Roles from '../models/roles.js'
 import { hashPassword, comparePassword } from '../utils/bcrypt.js'
 import jwt from 'jsonwebtoken'
 import config from '../config/auth.config.js'
+import Page from '../utils/getPagingData.js'
 
 const getUsuarios = async (req, res) => {
   try {
-    const usuarios = Usuarios.findAll()
+    const usuarios = await Usuarios.findAll()
     res.json(usuarios)
   } catch (error) {
     console.error(error)
@@ -15,7 +16,7 @@ const getUsuarios = async (req, res) => {
 }
 
 const getUsuariosById = async (req, res) => {
-  const usuarios = Usuarios.findByPk(req.params.us_cod)
+  const usuarios = await Usuarios.findByPk(req.params.us_cod)
   if (usuarios) {
     res.json(usuarios)
   } else {
@@ -65,7 +66,7 @@ const createUsuario = async (req, res) => {
 
 const updateUsuario = async (req, res) => {
   try {
-    const usuarios = Usuarios.findByPk(req.params.us_cod)
+    const usuarios = await Usuarios.findByPk(req.params.us_cod)
     if (usuarios) {
       await usuarios.update(req.body)
       res.json(usuarios)
@@ -129,11 +130,35 @@ const login = async (req, res) => {
       res.status(500).send({ message: err.message });
   }
 };
+
+const usList = async (req, res) => {
+  const { page = 1, size = 10, title } = req.query;
+  const limit = size;
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await Usuarios.findAndCountAll({
+      where: {
+          [Op.or]: [
+              { us_nomape: { [Op.iLike]: `%${title}%` } },
+              { us_user: { [Op.iLike]: `%${title}%` } }
+          ]
+      },
+      order: [['id', 'DESC']],
+      limit,
+      offset
+  });
+
+  const response = new Page(rows, page, limit, count); // Assuming your Page class has a 'count' property
+  res.send(response);
+};
+
+
 export default {
   getUsuarios,
   getUsuariosById,
   createUsuario,
   updateUsuario,
   deleteUsuario,
-  login
+  login,
+  usList
 }

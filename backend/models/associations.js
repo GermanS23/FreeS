@@ -22,8 +22,8 @@ import SucProms from './SucProms.js'
 
 
 // Relacion entre Usuario y Roles
-Roles.hasOne(Usuarios, { foreignKey: 'roles_rol_cod' })
-Usuarios.belongsTo(Roles, { foreignKey: 'roles_rol_cod' })
+Roles.hasOne(Usuarios, { foreignKey: 'roles_rol_cod', as: "roles" })
+Usuarios.belongsTo(Roles, { foreignKey: 'roles_rol_cod', as: "roles" })
 
 Usuarios.belongsToMany(Sucursales, { through: UsuariosSucursales})
 Sucursales.belongsToMany(Usuarios, { through: UsuariosSucursales})
