@@ -31,7 +31,7 @@ const getUserLogger=(req, res, next) => {
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
       return res.status(401).send({
-        message: 'Acceso denegado'
+        message: 'Acceso denegado por Token Invalido'
       });
     }
     console.log(decoded)
@@ -60,7 +60,6 @@ const permit = (...permittedRoles) => {
       if (user.roles) {
         const userRole = user.roles.rol_desc; // Accede al valor del rol
         if (permittedRoles.includes(userRole)) {
-          console.log(userRole)
           next(); // Permite el acceso si el rol está en la lista permitida
         } else {
           return res.status(403).json({ message: 'Acceso denegado' });

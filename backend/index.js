@@ -4,7 +4,7 @@ import sequelize from './config/database.js'
 import cors from 'cors'
 import bcryp from 'bcrypt'
 // Importar las rutas de los controladores
-import { rolesRouter, catprodRouter, catsabRouter, usuariosController, tdController, sucursalesController } from './routes/routes.js'
+import { rolesRouter, catprodRouter, catsabRouter, usuariosController, tdController, sucursalesController, sabheladosController } from './routes/routes.js'
 // importar las asociaciones
 import './models/associations.js'
 import Usuarios from './models/usuarios.js'
@@ -26,6 +26,7 @@ app.use('/api', catsabRouter)
 app.use('/api', sucursalesController)
 app.use('/api', tdController)
 app.use('/api', usuariosController)
+app.use('/api', sabheladosController)
 
 //initial();
 

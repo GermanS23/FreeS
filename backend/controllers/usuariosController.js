@@ -4,6 +4,8 @@ import { hashPassword, comparePassword } from '../utils/bcrypt.js'
 import jwt from 'jsonwebtoken'
 import config from '../config/auth.config.js'
 import Page from '../utils/getPagingData.js'
+import { Op } from 'sequelize'
+
 
 const getUsuarios = async (req, res) => {
   try {
@@ -132,24 +134,49 @@ const login = async (req, res) => {
 };
 
 const usList = async (req, res) => {
-  const { page = 1, size = 10, title } = req.query;
-  const limit = size;
-  const offset = (page - 1) * limit;
+  let { page, size, title } = req.query;
+  const limit = size ? +size : 5;
+  const offset = page ? page * limit : 0;
 
-  const { count, rows } = await Usuarios.findAndCountAll({
-      where: {
-          [Op.or]: [
-              { us_nomape: { [Op.iLike]: `%${title}%` } },
-              { us_user: { [Op.iLike]: `%${title}%` } }
-          ]
-      },
-      order: [['id', 'DESC']],
-      limit,
-      offset
-  });
+  if (title == undefined) {
+    title = "";
+  }
 
-  const response = new Page(rows, page, limit, count); // Assuming your Page class has a 'count' property
-  res.send(response);
+  Usuarios.findAndCountAll({
+    include: [
+      {
+        model: Roles,
+        as: "roles"
+      }
+    ],
+    where: {
+      [Op.or]: [
+        {
+          us_user: {
+            [Op.like]: "%" + title + "%",
+          },
+        },
+        {
+          us_nomape: {
+            [Op.like]: "%" + title + "%",
+          },
+        }
+      ],
+    },
+    order: [["us_cod", "DESC"]],
+    limit,
+    offset,
+  })
+    .then((data) => {
+      const response = new Page(data, Number(req.query.page), limit);
+      res.send(response);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving tutorials.",
+      });
+    });
 };
 
 

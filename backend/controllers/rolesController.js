@@ -1,6 +1,6 @@
 import Roles from '../models/roles.js'
 import Page from '../utils/getPagingData.js'
-
+import { Op } from 'sequelize'
 
 const getRoles = async (req, res) => {
   try {
@@ -65,30 +65,37 @@ const List = async (req, res) =>{
   const offset = page ? page * limit : 0;
 
   if (title == undefined) {
-    title = ""
+    title = "";
   }
 
-  const User  =  await Roles.findAndCountAll({
+  Roles.findAndCountAll({
+    
     where: {
-      [Op.op]:[
+      [Op.or]: [
+        {
+          rol_cod: {
+            [Op.like]: "%" + title + "%",
+          },
+        },
         {
           rol_desc: {
-            [Op.like]: '%' + title + '%'
-          }
+            [Op.like]: "%" + title + "%",
+          },
         }
-      ]
+      ],
     },
-    order: [['id', 'DESC']],
+    order: [["rol_cod", "DESC"]],
     limit,
     offset,
   })
-    .then(data => {
+    .then((data) => {
       const response = new Page(data, Number(req.query.page), limit);
       res.send(response);
     })
-    .catch(err => {
+    .catch((err) => {
       res.status(500).send({
-        message: err.message || "Some error occurred while retrieving tutorials."
+        message:
+          err.message || "Some error occurred while retrieving tutorials.",
       });
     });
 }
