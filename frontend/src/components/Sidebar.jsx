@@ -1,75 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Home, Package, List, PlusCircle, Grid, User, LogOut, Menu } from 'lucide-react';
-import Logo from '../assets/Logo.svg'
+import React from 'react';
+import {
+  CSidebar,
+  CSidebarBrand,
+  CSidebarNav,
+  CSidebarToggler,
+  CSidebarHeader,
+} from '@coreui/react';
+import { AppSidebarNav } from './AppSidebarNav';
+import SimpleBar from 'simplebar-react';
+import 'simplebar-react/dist/simplebar.min.css';
+import Logo from '../assets/Logo.svg';
+import navigation from '../nav';
 
-export default function Sidebar({ onLogout }) {
-  const [isProductsOpen, setIsProductsOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/login');
-  };
-
-  const SidebarContent = () => (
-    <>
-      <div className="sidebar-header">
-        <img src={Logo} alt="Logo" className="logo" />
-      </div>
-      <nav className="sidebar-nav">
-        <ul>
-          <li>
-            <Link to="/" onClick={() => setIsMobileMenuOpen(false)}><Home size={20} /> <span>Dashboard</span></Link>
-          </li>
-          <li className={`dropdown ${isProductsOpen ? 'open' : ''}`}>
-            <button onClick={() => setIsProductsOpen(!isProductsOpen)}>
-              <Package size={20} /> <span>Productos</span>
-            </button>
-            {isProductsOpen && (
-              <ul className="dropdown-menu">
-                <li><Link to="/productos" onClick={() => setIsMobileMenuOpen(false)}><List size={16} /> <span>Lista de Productos</span></Link></li>
-                <li><Link to="/productos/nuevo" onClick={() => setIsMobileMenuOpen(false)}><PlusCircle size={16} /> <span>Añadir Producto</span></Link></li>
-              </ul>
-            )}
-          </li>
-          <li>
-            <Link to="/categorias" onClick={() => setIsMobileMenuOpen(false)}><Grid size={20} /> <span>Categorías</span></Link>
-          </li>
-        </ul>
-      </nav>
-      <div className="sidebar-footer">
-        <Link to="/perfil" onClick={() => setIsMobileMenuOpen(false)}><User size={20} /> <span>Perfil</span></Link>
-        <Link to="/login" onClick={handleLogout}><LogOut size={20} /> <span>Salir</span></Link>
-      </div>
-    </>
-  );
-
+const Sidebar = ({ visible, unfoldable, onVisibleChange, onUnfoldableChange, onLogout }) => {
   return (
-    <>
-      {isMobile && (
-        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
-          <Menu size={24} />
-        </button>
-      )}
-      <div className={`sidebar ${isMobile ? 'mobile' : ''} ${isMobileMenuOpen ? 'open' : ''}`}>
-        <SidebarContent />
-      </div>
-    </>
+    <CSidebar
+      position="fixed"
+      unfoldable={unfoldable}
+      visible={visible}
+      onVisibleChange={onVisibleChange}
+      className="border-end"
+      colorScheme="dark"
+    >
+      <CSidebarHeader className="border-bottom">
+        <CSidebarBrand className="d-none d-md-flex">
+          <a href="/"><img src={Logo} alt="Logo FreeShop" style={{ height: '65px', paddingLeft: '40px', margin: '10px' }} /></a>
+        </CSidebarBrand>
+      </CSidebarHeader>
+      <CSidebarNav>
+        <SimpleBar>
+          <AppSidebarNav items={navigation} />
+        </SimpleBar>
+      </CSidebarNav>
+      <CSidebarHeader className="border-top">
+        <CSidebarToggler
+          className="d-none d-lg-flex"
+          onClick={onLogout}
+        />
+      </CSidebarHeader>
+    </CSidebar>
   );
-}
+};
+
+export default React.memo(Sidebar);
+

@@ -1,0 +1,33 @@
+.header {
+  background-color: #242424;
+  color: rgba(255, 255, 255, 0.87);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  z-index: 1000;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+@media (max-width: 768px) {
+  .header {
+    left: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+}
+
