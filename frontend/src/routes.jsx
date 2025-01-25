@@ -1,28 +1,26 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import AppLayout from './components/AppLayout';
-import Login from './components/login/Login';
-import Dashboard from './components/Dashboard';
+import React from "react"
+import { Navigate } from "react-router-dom"
+import AppLayout from "./components/AppLayout"
+import Login from "./components/login/Login"
+import Dashboard from "./components/Dashboard"
+import CategoriasCRUD from "./components/Sabores/CategoriaSab/CategoriaSab"
 
 const routes = (isLoggedIn, setIsLoggedIn) => [
   {
-    path: '/',
+    path: "/",
     element: isLoggedIn ? <AppLayout setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/login" />,
     children: [
-      { path: '/', element: <Navigate to="/dashboard" /> },
-      { path: 'dashboard', element: <Dashboard /> },
-      // Add more routes here for components within AppLayout
+      { index: true, element: <Dashboard /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "sabores", element: <CategoriasCRUD /> },
+      // Add other routes here
     ],
   },
   {
-    path: '/login',
-    element: isLoggedIn ? (
-      <Navigate to="/" />
-    ) : (
-      <Login setIsLoggedIn={setIsLoggedIn} />
-    ),
+    path: "/login",
+    element: !isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" replace />,
   },
-];
+]
 
-export default routes;
+export default routes
 

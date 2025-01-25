@@ -1,7 +1,7 @@
 import  { useState, useEffect } from 'react';
-import api from '../../api/catsab.js'; // Adjust the import path as needed
+import api from '../../../api/catsab.js'; // Adjust the import path as needed
 
-function CategoriesCRUD() {
+function CategoriasCRUD() {
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState(null);
@@ -92,4 +92,4 @@ function CategoriesCRUD() {
   );
 }
 
-export default CategoriesCRUD;
+export default CategoriasCRUD;

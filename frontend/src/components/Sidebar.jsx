@@ -1,16 +1,11 @@
-import React from 'react';
-import {
-  CSidebar,
-  CSidebarBrand,
-  CSidebarNav,
-  CSidebarToggler,
-  CSidebarHeader,
-} from '@coreui/react';
-import { AppSidebarNav } from './AppSidebarNav';
-import SimpleBar from 'simplebar-react';
-import 'simplebar-react/dist/simplebar.min.css';
-import Logo from '../assets/Logo.svg';
-import navigation from '../nav';
+import React from "react"
+import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler, CSidebarHeader } from "@coreui/react"
+import { AppSidebarNav } from "./AppSidebarNav"
+import SimpleBar from "simplebar-react"
+import "simplebar-react/dist/simplebar.min.css"
+import Logo from "../assets/Logo.svg"
+import navigation from "../nav"
+import { Link } from "react-router-dom"
 
 const Sidebar = ({ visible, unfoldable, onVisibleChange, onUnfoldableChange, onLogout }) => {
   return (
@@ -24,7 +19,13 @@ const Sidebar = ({ visible, unfoldable, onVisibleChange, onUnfoldableChange, onL
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand className="d-none d-md-flex">
-          <a href="/"><img src={Logo} alt="Logo FreeShop" style={{ height: '65px', paddingLeft: '40px', margin: '10px' }} /></a>
+          <Link to="/">
+            <img
+              src={Logo || "/placeholder.svg"}
+              alt="Logo FreeShop"
+              style={{ height: "65px", paddingLeft: "40px", margin: "10px" }}
+            />
+          </Link>
         </CSidebarBrand>
       </CSidebarHeader>
       <CSidebarNav>
@@ -33,14 +34,11 @@ const Sidebar = ({ visible, unfoldable, onVisibleChange, onUnfoldableChange, onL
         </SimpleBar>
       </CSidebarNav>
       <CSidebarHeader className="border-top">
-        <CSidebarToggler
-          className="d-none d-lg-flex"
-          onClick={onLogout}
-        />
+        <CSidebarToggler className="d-none d-lg-flex" onClick={onLogout} />
       </CSidebarHeader>
     </CSidebar>
-  );
-};
+  )
+}
 
-export default React.memo(Sidebar);
+export default React.memo(Sidebar)
 

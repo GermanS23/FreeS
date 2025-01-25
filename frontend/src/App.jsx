@@ -1,31 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, useRoutes } from 'react-router-dom';
-import routes from './routes.jsx';
+import React, { useState, useEffect } from "react"
+import { BrowserRouter, useRoutes, useLocation } from "react-router-dom"
+import routes from "./routes"
 
 const AppWrapper = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, []);
+    const token = localStorage.getItem("token")
+    setIsLoggedIn(!!token)
+    console.log("Login status:", !!token)
+  }, [])
 
-  const routing = useRoutes(routes(isLoggedIn, setIsLoggedIn));
+  useEffect(() => {
+    console.log("Current location:", location.pathname)
+  }, [location])
 
-  return (
-    <>
-      {routing}
-    </>
-  );
-};
-
-function App() {
-  return (
-    <Router>
-      <AppWrapper />
-    </Router>
-  );
+  const element = useRoutes(routes(isLoggedIn, setIsLoggedIn))
+  return element
 }
 
-export default App;
+const App = () => {
+  return (
+    <BrowserRouter>
+      <AppWrapper />
+    </BrowserRouter>
+  )
+}
+
+export default App
 
