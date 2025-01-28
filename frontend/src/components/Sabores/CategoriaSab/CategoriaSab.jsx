@@ -1,95 +1,280 @@
-import  { useState, useEffect } from 'react';
-import api from '../../../api/catsab.js'; // Adjust the import path as needed
+import React, { useRef, useState } from 'react';
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCol,
+  CFormInput,
+  CInputGroup,
+  CRow,
+  CTable,
+  CTableBody,
+  CTableDataCell,
+  CTableHead,
+  CTableHeaderCell,
+  CTableRow,
+  CFormLabel,
+  CFormSwitch,
+  CBadge,
+} from '@coreui/react';
+import {
+  BsFillPencilFill,
+  BsSearch,
+  BsArrowClockwise,
+  BsPlus,
+  BsFillFilePdfFill,
+  BsFilePdf,
+  BsFillTrashFill,
+} from 'react-icons/bs';
+import ReactPaginate from 'react-paginate';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import AddCategoriaSabForm from './register'; // Asegúrate de que este componente existe
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de react-toastify
+import CategoriaSabService from '../../../api/catsab.js';
 
-function CategoriasCRUD() {
-  const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState('');
-  const [editingCategory, setEditingCategory] = useState(null);
+const CategoriaSab = () => {
+  // *** BUSQUEDA *** //
+  const [cliente, setCliente] = useState('');
+  const [loadingList, setLoading] = useState(false);
+  const [catsab_name, setCatsabName] = useState(null);
+  const [categoriasSab, setCategoriasSab] = React.useState([]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  // *** MODAL UPDATE REGISTRO *** //
+  const [showCustomerUpdate, setShowCustomerUpdate] = React.useState(false);
+  const handleShowCustomerUpdate = () => setShowCustomerUpdate(true);
 
-  const fetchCategories = async () => {
+  // *** MODAL ADD REGISTRO *** //
+  const [showUsersAdd, setShowUsersAdd] = React.useState(false);
+  const handleShowUsersAdd = () => setShowUsersAdd(true);
+
+  const [editing, setEditing] = React.useState(0);
+
+  // PAGINACION
+  const [page, setPage] = React.useState(0);
+  const [size, setSize] = React.useState(20);
+  const [pageCount, setPageCount] = React.useState(0);
+  const [totalSize, setTotalSize] = React.useState(0);
+  const [totalItemsPage, setTotalItemsPage] = useState(0);
+
+  //load list
+  const loadList = async (dataPage, dataPageSize) => {
+    setCategoriasSab([]);
+    setLoading(true);
+    var param = {
+      size: dataPageSize,
+      page: dataPage,
+      catsab_name: catsab_name,
+    };
+    CategoriaSabService.listCategoriasSab(param.page, param.size, param.catsab_name)
+      .then((response) => {
+        if (response.data && response.data.items) {
+          setCategoriasSab(response.data.items); // Cambia Aitems por items
+          setSize(response.data.size);
+          setTotalSize(response.data.totalItems);
+          setPageCount(response.data.totalPages);
+        } else {
+          setCategoriasSab([]); // Inicializa como un array vacío si no hay datos
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+      });
+  };
+
+  //search using string in service
+  const findByTitle = () => {
+    loadList(0, 20);
+  };
+  const handlePageClick = (event) => {
+    const newOffset = (event.selected * size) % cliente.length;
+    setTotalSize(newOffset);
+    loadList(event.selected, size);
+  };
+  React.useEffect(() => {
+    loadList(page, size);
+  }, [page, size, catsab_name]);
+
+  // *** BOTON RESET DEL BUSCADOR *** //
+  const refresh = () => {
+    setPage(0);
+    setCategoriasSab([]);
+    setSize(20);
+    loadList(0, 20);
+  };
+
+  // *** Notificaciones *** //
+  // Registro exitoso en create/update
+  const notifySuccess = () => {
+    toast.success('Registro con éxito!', {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
+  // Error
+  const notifyError = (data) => {
+    toast.error(data, {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
+
+  const handleCloseModal = () => {
+    setCliente('');
+    setShowUsersAdd();
+    loadList(0, 20, '');
+  };
+
+  async function abrirNuevoUsuario() {
     try {
-      const data = await api.getCatSab();
-      setCategories(data);
+      setCliente('');
+      handleShowUsersAdd();
+      setEditing(1);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.log(error);
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (editingCategory) {
-      await updateCategory(editingCategory.id, { name: newCategory });
-    } else {
-      await createCategory({ name: newCategory });
-    }
-    setNewCategory('');
-    setEditingCategory(null);
-  };
-
-  const createCategory = async (data) => {
-    try {
-      await api.createCatSab(data);
-      fetchCategories();
-    } catch (error) {
-      console.error('Error creating category:', error);
-    }
-  };
-
-  const updateCategory = async (id, data) => {
-    try {
-      await api.updateCatSab(id, data);
-      fetchCategories();
-    } catch (error) {
-      console.error('Error updating category:', error);
-    }
-  };
-
-  const deleteCategory = async (id) => {
-    try {
-      await api.deleteCatSab(id);
-      fetchCategories();
-    } catch (error) {
-      console.error('Error deleting category:', error);
-    }
-  };
-
-  const handleEdit = (category) => {
-    setEditingCategory(category);
-    setNewCategory(category.name);
-  };
+  }
 
   return (
-    <div className="categories-crud">
-      <h2>Categorías de Sabores</h2>
-      <form onSubmit={handleSubmit} className="category-form">
-        <input
-          type="text"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          placeholder="Nombre de la categoría"
-          required
-        />
-        <button type="submit">
-          {editingCategory ? 'Actualizar' : 'Añadir'}
-        </button>
-      </form>
-      <ul className="category-list">
-        {categories.map((category) => (
-          <li key={category.id} className="category-item">
-            <span>{category.name}</span>
-            <div className="category-actions">
-              <button onClick={() => handleEdit(category)}>Editar</button>
-              <button onClick={() => deleteCategory(category.id)}>Eliminar</button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <CCard style={{ padding: 50, borderRadius: 10 }}>
+      <CRow>
+        <CCol xs={12}>
+          <h4 id="traffic" className="card-title mb-0 text-primary">
+            Listado de Categorías
+          </h4>
+        </CCol>
+        <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
+          <CButton onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
+            <BsPlus />
+            Nueva Categoría
+          </CButton>
+        </div>
+        <CCol xs={12}>
+          <CCard className="mb-4">
+            <CCardBody className="text-medium-emphasis small">
+              <CCol xs={12} md={12}>
+                <CTable align="middle" responsive>
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell scope="col" align="center">
+                        Nombre
+                      </CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">
+                        Acción
+                      </CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {categoriasSab.length > 0 ? (
+                      categoriasSab.map((item) => (
+                        <CTableRow key={item.catsab_cod}>
+                          <CTableDataCell align="center">{item.catsab_name}</CTableDataCell>
+                          <CTableDataCell>
+                            <BsFillPencilFill
+                              size={15}
+                              className="btn-dell"
+                              title={'Editar registro'}
+                              onClick={() => {
+                                setCliente(item.catsab_cod);
+                                handleShowUsersAdd();
+                                setEditing(2);
+                              }}
+                            />
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <BsFillTrashFill
+                              size={15}
+                              className="btn-dell"
+                              title={'Eliminar Registro'}
+                              onClick={async () => {
+                                await CategoriaSabService.deleteCategoriaSab(item.catsab_cod);
+                                toast.success('Eliminado con éxito', {
+                                  position: 'top-right',
+                                  autoClose: 3000,
+                                  hideProgressBar: false,
+                                  closeOnClick: true,
+                                  pauseOnHover: true,
+                                  draggable: true,
+                                  progress: undefined,
+                                });
+                                loadList(0, 10);
+                              }}
+                            />
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <tr>
+                        <CTableDataCell colSpan={3}>
+                          No hay registros con los filtros actuales
+                        </CTableDataCell>
+                      </tr>
+                    )}
+                  </CTableBody>
+                </CTable>
+                {/* paginación */}
+                <ReactPaginate
+                  nextLabel="Sig. >"
+                  onPageChange={handlePageClick}
+                  pageRangeDisplayed={3}
+                  marginPagesDisplayed={2}
+                  pageCount={pageCount}
+                  previousLabel="< Ant."
+                  pageClassName="page-item"
+                  pageLinkClassName="page-link"
+                  previousClassName="page-item"
+                  previousLinkClassName="page-link"
+                  nextClassName="page-item"
+                  nextLinkClassName="page-link"
+                  breakLabel="..."
+                  breakClassName="page-item"
+                  breakLinkClassName="page-link"
+                  containerClassName="pagination"
+                  activeClassName="active"
+                  renderOnZeroPageCount={null}
+                />
+                <span># Registros: {totalSize}</span>
+              </CCol>
+            </CCardBody>
+          </CCard>
+        </CCol>
+        <CCol>
+          {editing === 1 ? (
+            <AddCategoriaSabForm
+              showUsersAdd={showUsersAdd}
+              handleCloseModal={handleCloseModal}
+              notifySuccess={notifySuccess}
+              notifyError={notifyError}
+            />
+          ) : editing === 2 ? (
+            <AddCategoriaSabForm
+              catsab_cod={cliente}
+              showUsersAdd={showUsersAdd}
+              handleCloseModal={handleCloseModal}
+              notifySuccess={notifySuccess}
+              notifyError={notifyError}
+            />
+          ) : (
+            <div></div>
+          )}
+        </CCol>
+      </CRow>
+      <ToastContainer />
+    </CCard>
   );
-}
+};
 
-export default CategoriasCRUD;
+export default CategoriaSab;

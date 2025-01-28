@@ -4,19 +4,48 @@ import {
   cilSpeedometer,
   cilPuzzle,
   cilCloudDownload,
-  cilLayers,
-  cilSettings
+  cilPeople,
+  cilSettings,
+  cilMonitor,
+  cilChartLine,
+  cilHistory,
+  cilTags
+
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [ 
   {
     component: CNavItem,
+    name: 'Pantallas',
+    to: '/pantallas',
+    meta: { role: ['ADMIN'] },
+    icon: <CIcon icon={cilMonitor
+    } customClassName="nav-icon" />,
+  },
+  {
+    component: CNavGroup,
     name: 'Sabores',
     to: '/sabores',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-  },
+    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Categorias',
+        to: '/categorias/sabores',
+        meta: { role: ['ADMIN'] },
+        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Sabores',
+        to: '/sabores',
+        meta: { role: ['ADMIN'] },
+        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      },
+  ]
+},
   {
     component: CNavItem,
     name: 'Productos',
@@ -29,21 +58,14 @@ const _nav = [
     name: 'Promociones',
     to: '/promociones',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilCloudDownload} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilTags} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Ventas',
     to: '/ventas',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Tickets',
-    to: '/tickets',
-    meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilLayers} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
   },
   {
     component: CNavTitle,
@@ -61,14 +83,14 @@ const _nav = [
         name: 'Usuarios',
         to: '/configuraciones/usuarios',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
-        name: 'Toners',
-        to: '/configuraciones/toners',
+        name: 'Historial',
+        to: '/historial',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,

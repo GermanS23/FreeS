@@ -4,7 +4,7 @@ const Dashboard = () => {
   return (
     <div>
       <h1>Dashboard</h1>
-      <p>Hola</p>
+      <p>Hola, esta es mi tesis</p>
     </div>
   );
 };

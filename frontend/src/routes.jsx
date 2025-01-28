@@ -12,7 +12,7 @@ const routes = (isLoggedIn, setIsLoggedIn) => [
     children: [
       { index: true, element: <Dashboard /> },
       { path: "dashboard", element: <Dashboard /> },
-      { path: "sabores", element: <CategoriasCRUD /> },
+      { path: "categorias/sabores", element: <CategoriasCRUD /> },
       // Add other routes here
     ],
   },
