@@ -4,8 +4,6 @@ import {
   CCard,
   CCardBody,
   CCol,
-  CFormInput,
-  CInputGroup,
   CRow,
   CTable,
   CTableBody,
@@ -13,22 +11,16 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CFormLabel,
   CFormSwitch,
-  CBadge,
 } from '@coreui/react';
 import {
   BsFillPencilFill,
-  BsSearch,
-  BsArrowClockwise,
   BsPlus,
-  BsFillFilePdfFill,
-  BsFilePdf,
   BsFillTrashFill,
 } from 'react-icons/bs';
 import ReactPaginate from 'react-paginate';
 import 'react-datepicker/dist/react-datepicker.css';
-import AddCategoriaSabForm from './RegisterSabs.jsx';
+import Register from './Register.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SaboresService from '../../services/sabores.service.js';
@@ -140,13 +132,13 @@ const Sabores = () => {
       <CRow>
         <CCol xs={12}>
           <h4 id="traffic" className="card-title mb-0 text-primary text-dark">
-            Listado de Sabores
+            Listado de Productos
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
           <CButton  color="dark" onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
             <BsPlus />
-            Nuevo Sabor
+            Nuevo Producto
           </CButton>
         </div>
         <CCol xs={12}>
@@ -157,10 +149,13 @@ const Sabores = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell scope="col" align="center">
-                        Sabor
+                        Producto
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Categoria
+                      </CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">
+                        Precio
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Disponible
@@ -175,6 +170,7 @@ const Sabores = () => {
                       sabores.map((item) => (
                         <CTableRow key={item.sab_cod}>
                           <CTableDataCell align="center">{item.sab_nom}</CTableDataCell>
+                          <CTableDataCell align="center">{item?.CategoriaSab?.catsab_name}</CTableDataCell>
                           <CTableDataCell align="center">{item?.CategoriaSab?.catsab_name}</CTableDataCell>
                           <CTableDataCell align="center" >
                             <CFormSwitch
@@ -283,14 +279,14 @@ const Sabores = () => {
         </CCol>
         <CCol>
           {editing === 1 ? (
-            <AddCategoriaSabForm
+            <Register
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
               notifyError={notifyError}
             />
           ) : editing === 2 ? (
-            <AddCategoriaSabForm
+            <Register
               sab_cod={cliente}
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}

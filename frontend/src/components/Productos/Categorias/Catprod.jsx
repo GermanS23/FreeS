@@ -4,8 +4,6 @@ import {
   CCard,
   CCardBody,
   CCol,
-  CFormInput,
-  CInputGroup,
   CRow,
   CTable,
   CTableBody,
@@ -13,58 +11,61 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CFormLabel,
-  CFormSwitch,
-  CBadge,
 } from '@coreui/react';
 import {
   BsFillPencilFill,
-  BsSearch,
-  BsArrowClockwise,
   BsPlus,
-  BsFillFilePdfFill,
-  BsFilePdf,
   BsFillTrashFill,
 } from 'react-icons/bs';
 import ReactPaginate from 'react-paginate';
 import 'react-datepicker/dist/react-datepicker.css';
-import AddCategoriaSabForm from './RegisterSabs.jsx';
+import Register from './Register.jsx'; // Asegúrate de que este componente existe
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import SaboresService from '../../services/sabores.service.js';
+import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de react-toastify
+import CategoriaProdService from '../../../services/catprod.service.js';
 
-const Sabores = () => {
+const CategoriaSab = () => {
+  // *** BUSQUEDA *** //
   const [cliente, setCliente] = useState('');
   const [loadingList, setLoading] = useState(false);
-  const [catsab_name, setCatsabName] = useState(null);
-  const [sabores, setSabores] = React.useState([]);
+  const [catprod_name, setCatprodName] = useState(null);
+  const [categoriasProd, setCategoriasProd] = React.useState([]);
+
+  // *** MODAL UPDATE REGISTRO *** //
   const [showCustomerUpdate, setShowCustomerUpdate] = React.useState(false);
+  const handleShowCustomerUpdate = () => setShowCustomerUpdate(true);
+
+  // *** MODAL ADD REGISTRO *** //
   const [showUsersAdd, setShowUsersAdd] = React.useState(false);
   const handleShowUsersAdd = () => setShowUsersAdd(true);
+
   const [editing, setEditing] = React.useState(0);
+
+  // PAGINACION
   const [page, setPage] = React.useState(0);
   const [size, setSize] = React.useState(20);
   const [pageCount, setPageCount] = React.useState(0);
   const [totalSize, setTotalSize] = React.useState(0);
   const [totalItemsPage, setTotalItemsPage] = useState(0);
 
+  //load list
   const loadList = async (dataPage, dataPageSize) => {
-    setSabores([]);
+    setCategoriasProd([]);
     setLoading(true);
     var param = {
       size: dataPageSize,
       page: dataPage,
-      catsab_name: catsab_name,
+      catprod_name: catprod_name,
     };
-    SaboresService.listSabores(param.page, param.size, param.catsab_name)
+    CategoriaProdService.listCatProd(param.page, param.size, param.catprod_name)
       .then((response) => {
         if (response.data && response.data.items) {
-          setSabores(response.data.items);
+          setCategoriasProd(response.data.items); // Cambia Aitems por items
           setSize(response.data.size);
           setTotalSize(response.data.totalItems);
           setPageCount(response.data.totalPages);
         } else {
-          setSabores([]);
+          setCategoriasProd([]); // Inicializa como un array vacío si no hay datos
         }
         setLoading(false);
       })
@@ -74,27 +75,29 @@ const Sabores = () => {
       });
   };
 
+  //search using string in service
   const findByTitle = () => {
     loadList(0, 20);
   };
-
   const handlePageClick = (event) => {
     const newOffset = (event.selected * size) % cliente.length;
     setTotalSize(newOffset);
     loadList(event.selected, size);
   };
-
   React.useEffect(() => {
     loadList(page, size);
-  }, [page, size, catsab_name]);
+  }, [page, size, catprod_name]);
 
+  // *** BOTON RESET DEL BUSCADOR *** //
   const refresh = () => {
     setPage(0);
-    setSabores([]);
+    setCategoriasProd([]);
     setSize(20);
     loadList(0, 20);
   };
 
+  // *** Notificaciones *** //
+  // Registro exitoso en create/update
   const notifySuccess = () => {
     toast.success('Registro con éxito!', {
       position: 'top-right',
@@ -106,7 +109,7 @@ const Sabores = () => {
       progress: undefined,
     });
   };
-
+  // Error
   const notifyError = (data) => {
     toast.error(data, {
       position: 'top-right',
@@ -140,13 +143,13 @@ const Sabores = () => {
       <CRow>
         <CCol xs={12}>
           <h4 id="traffic" className="card-title mb-0 text-primary text-dark">
-            Listado de Sabores
+            Listado de Categorías
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
           <CButton  color="dark" onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
             <BsPlus />
-            Nuevo Sabor
+            Nueva Categoría
           </CButton>
         </div>
         <CCol xs={12}>
@@ -157,13 +160,7 @@ const Sabores = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell scope="col" align="center">
-                        Sabor
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col" align="center">
-                        Categoria
-                      </CTableHeaderCell>
-                      <CTableHeaderCell scope="col" align="center">
-                        Disponible
+                        Nombre
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Acción
@@ -171,67 +168,28 @@ const Sabores = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {sabores.length > 0 ? (
-                      sabores.map((item) => (
-                        <CTableRow key={item.sab_cod}>
-                          <CTableDataCell align="center">{item.sab_nom}</CTableDataCell>
-                          <CTableDataCell align="center">{item?.CategoriaSab?.catsab_name}</CTableDataCell>
-                          <CTableDataCell align="center" >
-                            <CFormSwitch
-                              id={`disponible-${item.sab_cod}`}
-                              label={item.sab_disp ? 'Disponible' : 'No Disponible'}
-                              checked={item.sab_disp || false}
-                              onChange={async () => {
-                                try {
-                                  const updatedSabor = await SaboresService.updateSab(item.sab_cod, {
-                                    sab_disp: !item.sab_disp,
-                                  });
-                                  const updatedSabores = sabores.map((sabor) =>
-                                    sabor.sab_cod === item.sab_cod ? updatedSabor.data : sabor
-                                  );
-                                  setSabores(updatedSabores);
-                                  toast.success('Disponibilidad actualizada', {
-                                    position: 'top-right',
-                                    autoClose: 3000,
-                                    hideProgressBar: false,
-                                    closeOnClick: true,
-                                    pauseOnHover: true,
-                                    draggable: true,
-                                    progress: undefined,
-                                  });
-                                } catch (error) {
-                                  console.error('Error al actualizar la disponibilidad', error);
-                                  toast.error('Error al actualizar la disponibilidad', {
-                                    position: 'top-right',
-                                    autoClose: 3000,
-                                    hideProgressBar: false,
-                                    closeOnClick: true,
-                                    pauseOnHover: true,
-                                    draggable: true,
-                                    progress: undefined,
-                                  });
-                                }
-                              }}
-                            />
-                          </CTableDataCell>
+                    {categoriasProd.length > 0 ? (
+                      categoriasProd.map((item) => (
+                        <CTableRow key={item.catprod_cod}>
+                          <CTableDataCell align="center">{item.catprod_name}</CTableDataCell>
+                          
                           <CTableDataCell>
                             <BsFillPencilFill
                               size={15}
                               className="btn-dell"
                               title={'Editar registro'}
                               onClick={() => {
-                                setCliente(item.sab_cod);
+                                setCliente(item.catprod_cod);
                                 handleShowUsersAdd();
                                 setEditing(2);
                               }}
                             />
-                            <BsFillTrashFill
-                              style={{ marginLeft: 30 }}
+                             <BsFillTrashFill style={{ marginLeft: 30 }}
                               size={15}
                               className="btn-dell"
                               title={'Eliminar Registro'}
                               onClick={async () => {
-                                await SaboresService.deleteSab(item.sab_cod);
+                                await CategoriaProdService.deleteCatProd(item.catprod_cod);
                                 toast.success('Eliminado con éxito', {
                                   position: 'top-right',
                                   autoClose: 3000,
@@ -245,6 +203,7 @@ const Sabores = () => {
                               }}
                             />
                           </CTableDataCell>
+                          
                         </CTableRow>
                       ))
                     ) : (
@@ -256,6 +215,7 @@ const Sabores = () => {
                     )}
                   </CTableBody>
                 </CTable>
+                {/* paginación */}
                 <ReactPaginate
                   nextLabel="Sig. >"
                   onPageChange={handlePageClick}
@@ -283,15 +243,15 @@ const Sabores = () => {
         </CCol>
         <CCol>
           {editing === 1 ? (
-            <AddCategoriaSabForm
+            <Register
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
               notifyError={notifyError}
             />
           ) : editing === 2 ? (
-            <AddCategoriaSabForm
-              sab_cod={cliente}
+            <Register
+              catprod_cod={cliente}
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
@@ -307,4 +267,4 @@ const Sabores = () => {
   );
 };
 
-export default Sabores;
+export default CategoriaSab;

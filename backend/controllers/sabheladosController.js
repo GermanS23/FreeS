@@ -24,14 +24,32 @@ const getSaborById = async (req, res) => {
 }
 
 const updateSab = async (req, res) => {
-  const sabhelados = await SaboresHelados.findByPk(req.params.sab_cod);
-  if (sabhelados) {
-    await sabhelados.update(req.body);
-    res.json(sabhelados);
-  } else {
-    res.status(404).send('Sabor no encontrado');
+  try {
+    const { sab_nom, sab_disp, catsab_cod } = req.body;
+
+    // Buscar el sabor por su código
+    const sabhelados = await SaboresHelados.findByPk(req.params.sab_cod, {
+      include: [{ model: CategoriaSab }], // Incluir la relación con CategoriaSab
+    });
+
+    if (!sabhelados) {
+      return res.status(404).send('Sabor no encontrado');
+    }
+
+    // Actualizar los campos
+    sabhelados.sab_nom = sab_nom || sabhelados.sab_nom;
+    sabhelados.sab_disp = sab_disp !== undefined ? sab_disp : sabhelados.sab_disp;
+    sabhelados.catsab_cod = catsab_cod || sabhelados.catsab_cod;
+
+    // Guardar los cambios
+    await sabhelados.save();
+
+    res.json(sabhelados); // Devolver el sabor actualizado con la categoría
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al actualizar el Sabor');
   }
-}
+};
 
 const createSab = async (req, res) => {
   try {

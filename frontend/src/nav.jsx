@@ -36,27 +36,44 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Categorias',
-        to: '/categorias/sabores',
-        meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
-      },
-      {
-        component: CNavItem,
         name: 'Sabores',
         to: '/sabores',
         meta: { role: ['ADMIN'] },
         icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
       },
+      {
+        component: CNavItem,
+        name: 'Categorias',
+        to: '/categorias/sabores',
+        meta: { role: ['ADMIN'] },
+        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      }
+      
   ]
 },
-  {
-    component: CNavItem,
-    name: 'Productos',
-    to: '/productos',
-    meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
-  },
+{
+  component: CNavGroup,
+  name: 'Productos',
+  meta: { role: ['ADMIN'] },
+  icon: <CIcon icon={cilList} customClassName="nav-icon" />,
+  items: [
+   
+    {
+      component: CNavItem,
+      name: 'Productos',
+      to: '/productos',
+      meta: { role: ['ADMIN'] },
+      icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
+    },
+    {
+      component: CNavItem,
+      name: 'Categorias',
+      to: '/categorias/productos',
+      meta: { role: ['ADMIN'] },
+      icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    }
+]
+},
   {
     component: CNavItem,
     name: 'Promociones',

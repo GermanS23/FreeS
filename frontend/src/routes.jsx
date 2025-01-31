@@ -5,6 +5,11 @@ import Login from "./components/login/Login"
 import Dashboard from "./components/Dashboard"
 import CategoriasCRUD from "./components/Sabores/CategoriaSab/CategoriaSab"
 import Sabores from "./components/Sabores/Sabores"
+import CategoriasProd from "./components/Productos/Categorias/Catprod"
+import Productos from "./components/Productos/Productos"
+
+
+
 
 const routes = (isLoggedIn, setIsLoggedIn) => [
   {
@@ -15,6 +20,8 @@ const routes = (isLoggedIn, setIsLoggedIn) => [
       { path: "dashboard", element: <Dashboard /> },
       { path: "categorias/sabores", element: <CategoriasCRUD /> },
       { path: "sabores", element: <Sabores /> },
+      { path: "categorias/productos", element: <CategoriasProd /> },
+      { path: "productos", element: <Productos /> },
       // Add other routes here
     ],
   },

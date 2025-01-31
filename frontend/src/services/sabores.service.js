@@ -4,7 +4,7 @@ import authHeader from '../services/auth-header';
 
 class SaboresService {
   getSab() {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/catsab`, { headers: authHeader() });
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sab`, { headers: authHeader() });
   }
 
   getSabById(sab_cod) {
@@ -16,7 +16,7 @@ class SaboresService {
   }
 
   updateSab(sab_cod, data) {
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/sab/:catsab_cod/${sab_cod}`, data, { headers: authHeader() });
+    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/sab/${sab_cod}`, data, { headers: authHeader() });
   }
 
   deleteSab(sab_cod) {

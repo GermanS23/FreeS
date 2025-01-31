@@ -1,9 +1,7 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {
   CButton,
-  CCard,
   CCardBody,
-  CCardHeader,
   CCol,
   CForm,
   CFormFeedback,
@@ -12,19 +10,7 @@ import {
   CFormSelect,
   CFormSwitch,
   CInputGroup,
-  CInputGroupText,
   CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CModal,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilAperture, cilSave, cilBook, cilMoney, cilSearch } from '@coreui/icons';
