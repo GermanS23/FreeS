@@ -9,7 +9,11 @@ import {
   cilMonitor,
   cilChartLine,
   cilHistory,
-  cilTags
+  cilTags,
+  cilBasket,
+  cilList,
+  cilTruck,
+  cilPizza
 
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
@@ -28,7 +32,7 @@ const _nav = [
     name: 'Sabores',
     to: '/sabores',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilList} customClassName="nav-icon" />,
     items: [
       {
         component: CNavItem,
@@ -42,7 +46,7 @@ const _nav = [
         name: 'Sabores',
         to: '/sabores',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
       },
   ]
 },
@@ -51,7 +55,7 @@ const _nav = [
     name: 'Productos',
     to: '/productos',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilBasket} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
@@ -97,7 +101,7 @@ const _nav = [
         name: 'Proveedores',
         to: '/proveedores',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
       },
     ],
   },

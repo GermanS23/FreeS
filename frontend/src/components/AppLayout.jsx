@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar"
 import Header from "./Header"
 import "@coreui/coreui/dist/css/coreui.min.css"
 import "simplebar-react/dist/simplebar.min.css"
+import Footer from "./Footer"
 
 const AppLayout = ({ setIsLoggedIn }) => {
   const [sidebarVisible, setSidebarVisible] = useState(true)
@@ -34,6 +35,7 @@ const AppLayout = ({ setIsLoggedIn }) => {
         <div className="body flex-grow-1 px-3">
           <Outlet />
         </div>
+        <Footer/>
       </div>
     </div>
   )

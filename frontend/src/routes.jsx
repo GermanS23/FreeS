@@ -4,6 +4,7 @@ import AppLayout from "./components/AppLayout"
 import Login from "./components/login/Login"
 import Dashboard from "./components/Dashboard"
 import CategoriasCRUD from "./components/Sabores/CategoriaSab/CategoriaSab"
+import Sabores from "./components/Sabores/Sabores"
 
 const routes = (isLoggedIn, setIsLoggedIn) => [
   {
@@ -13,6 +14,7 @@ const routes = (isLoggedIn, setIsLoggedIn) => [
       { index: true, element: <Dashboard /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "categorias/sabores", element: <CategoriasCRUD /> },
+      { path: "sabores", element: <Sabores /> },
       // Add other routes here
     ],
   },
