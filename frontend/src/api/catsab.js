@@ -16,7 +16,7 @@ class CategoriaSabService {
   }
 
   updateCategoriaSab(catsab_cod, data) {
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/catsab/:catsab_cod/${catsab_cod}`, data, { headers: authHeader() });
+    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/catsab/${catsab_cod}`, data, { headers: authHeader() });
   }
 
   deleteCategoriaSab(catsab_cod) {

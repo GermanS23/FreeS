@@ -23,13 +23,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import Register from './Register.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import SaboresService from '../../services/sabores.service.js';
+import ProductosService from '../../services/productos.service.js';
 
-const Sabores = () => {
+const Productos = () => {
   const [cliente, setCliente] = useState('');
   const [loadingList, setLoading] = useState(false);
-  const [catsab_name, setCatsabName] = useState(null);
-  const [sabores, setSabores] = React.useState([]);
+  const [catprod_name, setCatprodName] = useState(null);
+  const [productos, setProductos] = React.useState([]);
   const [showCustomerUpdate, setShowCustomerUpdate] = React.useState(false);
   const [showUsersAdd, setShowUsersAdd] = React.useState(false);
   const handleShowUsersAdd = () => setShowUsersAdd(true);
@@ -41,22 +41,22 @@ const Sabores = () => {
   const [totalItemsPage, setTotalItemsPage] = useState(0);
 
   const loadList = async (dataPage, dataPageSize) => {
-    setSabores([]);
+    setProductos([]);
     setLoading(true);
     var param = {
       size: dataPageSize,
       page: dataPage,
-      catsab_name: catsab_name,
+      catprod_name: catprod_name,
     };
-    SaboresService.listSabores(param.page, param.size, param.catsab_name)
+    ProductosService.listProductos(param.page, param.size, param.catprod_name)
       .then((response) => {
         if (response.data && response.data.items) {
-          setSabores(response.data.items);
+          setProductos(response.data.items);
           setSize(response.data.size);
           setTotalSize(response.data.totalItems);
           setPageCount(response.data.totalPages);
         } else {
-          setSabores([]);
+          setProductos([]);
         }
         setLoading(false);
       })
@@ -78,11 +78,11 @@ const Sabores = () => {
 
   React.useEffect(() => {
     loadList(page, size);
-  }, [page, size, catsab_name]);
+  }, [page, size, catprod_name]);
 
   const refresh = () => {
     setPage(0);
-    setSabores([]);
+    setProductos([]);
     setSize(20);
     loadList(0, 20);
   };
@@ -166,26 +166,26 @@ const Sabores = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {sabores.length > 0 ? (
-                      sabores.map((item) => (
-                        <CTableRow key={item.sab_cod}>
-                          <CTableDataCell align="center">{item.sab_nom}</CTableDataCell>
-                          <CTableDataCell align="center">{item?.CategoriaSab?.catsab_name}</CTableDataCell>
-                          <CTableDataCell align="center">{item?.CategoriaSab?.catsab_name}</CTableDataCell>
+                    {productos.length > 0 ? (
+                      productos.map((item) => (
+                        <CTableRow key={item.prod_cod}>
+                          <CTableDataCell align="center">{item.prod_nom}</CTableDataCell>
+                          <CTableDataCell align="center">{item?.CategoriaProd?.catprod_name}</CTableDataCell>
+                          <CTableDataCell align="center">${item.prod_pre}</CTableDataCell>
                           <CTableDataCell align="center" >
                             <CFormSwitch
-                              id={`disponible-${item.sab_cod}`}
-                              label={item.sab_disp ? 'Disponible' : 'No Disponible'}
-                              checked={item.sab_disp || false}
+                              id={`disponible-${item.prod_cod}`}
+                              label={item.prod_dis ? 'Disponible' : 'No Disponible'}
+                              checked={item.prod_dis || false}
                               onChange={async () => {
                                 try {
-                                  const updatedSabor = await SaboresService.updateSab(item.sab_cod, {
-                                    sab_disp: !item.sab_disp,
+                                  const updatedSabor = await ProductosService.updateProd(item.prod_cod, {
+                                    prod_dis: !item.prod_dis,
                                   });
-                                  const updatedSabores = sabores.map((sabor) =>
-                                    sabor.sab_cod === item.sab_cod ? updatedSabor.data : sabor
+                                  const updatedProductos = productos.map((producto) =>
+                                    producto.prod_cod === item.prod_cod ? updatedSabor.data : producto
                                   );
-                                  setSabores(updatedSabores);
+                                  setProductos(updatedProductos);
                                   toast.success('Disponibilidad actualizada', {
                                     position: 'top-right',
                                     autoClose: 3000,
@@ -216,7 +216,7 @@ const Sabores = () => {
                               className="btn-dell"
                               title={'Editar registro'}
                               onClick={() => {
-                                setCliente(item.sab_cod);
+                                setCliente(item.prod_cod);
                                 handleShowUsersAdd();
                                 setEditing(2);
                               }}
@@ -227,7 +227,7 @@ const Sabores = () => {
                               className="btn-dell"
                               title={'Eliminar Registro'}
                               onClick={async () => {
-                                await SaboresService.deleteSab(item.sab_cod);
+                                await ProductosService.deleteProd(item.prod_cod);
                                 toast.success('Eliminado con éxito', {
                                   position: 'top-right',
                                   autoClose: 3000,
@@ -287,7 +287,7 @@ const Sabores = () => {
             />
           ) : editing === 2 ? (
             <Register
-              sab_cod={cliente}
+              prod_cod={cliente}
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
@@ -303,4 +303,4 @@ const Sabores = () => {
   );
 };
 
-export default Sabores;
+export default Productos;

@@ -15,10 +15,6 @@ Productos.init({
     type: DataTypes.STRING(45),
     allowNull: false
   },
-  prod_desc: {
-    type: DataTypes.STRING(45),
-    allowNull: false
-  },
   // Precio Producto
   prod_pre: {
   type: DataTypes.DECIMAL,

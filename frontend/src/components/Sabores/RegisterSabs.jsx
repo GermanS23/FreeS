@@ -32,7 +32,7 @@ import { Modal, Card, Button } from 'react-bootstrap';
 import SaboresService from '../../services/sabores.service.js';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
-
+import CategoriaSabService from "../../api/catsab.js"
 const Register = (props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [closeModal, setCloseModal] = useState(true);
@@ -47,12 +47,13 @@ const Register = (props) => {
 
   const fetchCategorias = async () => {
     try {
-      const response = await SaboresService.getSab();
-      setCategorias(response.data);
+      const response = await CategoriaSabService.listCategoriasSab(0, 50, ''); // Ajusta los parámetros según tu API
+      setCategorias(response.data.items); // Ajusta según la estructura de la respuesta
     } catch (error) {
       console.error('Error al obtener las categorías', error);
     }
   };
+  
 
   useEffect(() => {
     fetchCategorias();
@@ -158,23 +159,18 @@ const Register = (props) => {
                     </CInputGroup>
                   </CCol>
                   <CCol md={12}>
-                    <CFormLabel htmlFor="validationCustom03">Categoría</CFormLabel>
-                    <CFormSelect
-                      id="validationCustom03"
-                      required
-                      value={formObject.catsab_cod || ''}
-                      onChange={(e) => {
-                        let temp = formObject;
-                        setFormObject({ ...temp, catsab_cod: e.target.value });
-                      }}
-                    >
-                      <option value="">Seleccione una categoría</option>
-                      {categorias.map((categoria) => (
-                        <option key={categoria.catsab_cod} value={categoria.catsab_cod}>
-                          {categoria.catsab_name}
-                        </option>
-                      ))}
-                    </CFormSelect>
+                  <CFormLabel>Seleccionar Categoría</CFormLabel>
+                      <CFormSelect
+                        value={formObject.catsab_cod || ''}
+                        onChange={(e) => setFormObject({ ...formObject, catsab_cod: e.target.value })}
+                      >
+                        <option value="">Seleccione una categoría</option>
+                        {categorias.map((cat) => (
+                          <option key={cat.catsab_cod} value={cat.catsab_cod}>
+                            {cat.catsab_name}
+                          </option>
+                        ))}
+                      </CFormSelect>
                     <CFormFeedback invalid>Por favor seleccione una categoría.</CFormFeedback>
                   </CCol>
                   <CCol md={12}>

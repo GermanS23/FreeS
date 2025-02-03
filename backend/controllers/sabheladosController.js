@@ -6,7 +6,9 @@ import CategoriaSab from '../models/categoria_sab.js'
 
 const getSabor = async (req, res) => {
   try {
-    const sabhelados = await SaboresHelados.findAll()
+    const sabhelados = await SaboresHelados.findAll({
+      include: [{ model: CategoriaSab }], // Incluir la relación con CategoriaSab
+    })
     res.json(sabhelados)
   } catch (error) {
     console.error(error)
@@ -14,7 +16,9 @@ const getSabor = async (req, res) => {
   }
 }
 const getSaborById = async (req, res) => {
-  const sabhelados = await SaboresHelados.findByPk(req.params.sab_cod)
+  const sabhelados = await SaboresHelados.findByPk(req.params.sab_cod,{
+    include: [{ model: CategoriaSab }], // Incluir la relación con CategoriaSab
+  })
   if (sabhelados) {
     res.json(sabhelados)
   } else {

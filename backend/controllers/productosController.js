@@ -39,7 +39,6 @@ const updateProd = async (req, res) => {
     // Actualizar los campos
     productos.prod_nom = prod_nom || productos.prod_nom;
     productos.prod_pre = prod_pre || productos.prod_pre;
-    productos.prod_desc = prod_desc || productos.prod_desc;
     productos.prod_dis = prod_dis !== undefined ? prod_dis : productos.prod_dis;
     productos.catprod_cod = catsab_cod || productos.catprod_cod;
 
