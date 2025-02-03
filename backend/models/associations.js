@@ -45,15 +45,25 @@ Pantalla.belongsTo(Plantilla,{foreignKey:'plan_cod'})
 
 
 //Relacion muchos a mucho entre proveedores y productos
-Proveedores.belongsToMany(Productos, {through: ProvProducts})
-Productos.belongsToMany(Proveedores, {through: ProvProducts})
+Proveedores.belongsToMany(Productos, {
+  through: ProvProducts,
+  uniqueKey: 'unique_prov_product', // Nombre personalizado más corto
+});
+Productos.belongsToMany(Proveedores, {
+  through: ProvProducts,
+  uniqueKey: 'unique_prov_product', // Nombre personalizado más corto
+});
 
 //Relacion muchos a mucho entre Productos y Promociones
-Promociones.belongsToMany(Productos, {through: ProductsProm})
-Productos.belongsToMany(Promociones, {through: ProductsProm})
+Promociones.belongsToMany(Productos, {through: ProductsProm,
+  uniqueKey: 'unique_prom_product'})
+Productos.belongsToMany(Promociones, {through: ProductsProm,
+  uniqueKey: 'unique_prom_product',})
 
 
 //Relacion muchos a mucho entre Sucursales y Promociones
-Promociones.belongsToMany(Sucursales, {through: SucProms})
-Sucursales.belongsToMany(Promociones, {through: SucProms})
+Promociones.belongsToMany(Sucursales, {through: SucProms,
+  uniqueKey: 'unique_suc_prom'})
+Sucursales.belongsToMany(Promociones, {through: SucProms,
+  uniqueKey: 'unique_suc_prom'})
 

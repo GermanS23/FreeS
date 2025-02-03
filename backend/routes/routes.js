@@ -54,11 +54,12 @@ router.get('/catprods/list', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑ
 
 // Rutas para controller Productos
 router.get('/prod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.getProducto)
-router.get('/prod/:catprod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.getProductoById)
+router.get('/prod/:prod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.getProductoById)
 router.post('/prod/create', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.createProd)
-router.put('/prod/:catprod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.updateProd)
-router.delete('/prod/:catprod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.deleteProd)
+router.put('/prod/:prod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.updateProd)
+router.delete('/prod/:prod_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), productosController.deleteProd)
 router.get('/prods/list', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), productosController.List)
+
 // Rutas para controller CatSab
 router.get('/catsab', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), catsabController.getCatSab)
 router.get('/catsab/:catsab_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), catsabController.getCatSabById)

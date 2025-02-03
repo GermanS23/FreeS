@@ -179,11 +179,11 @@ const Productos = () => {
                               checked={item.prod_dis || false}
                               onChange={async () => {
                                 try {
-                                  const updatedSabor = await ProductosService.updateProd(item.prod_cod, {
+                                  const updatedProducto = await ProductosService.updateProd(item.prod_cod, {
                                     prod_dis: !item.prod_dis,
                                   });
                                   const updatedProductos = productos.map((producto) =>
-                                    producto.prod_cod === item.prod_cod ? updatedSabor.data : producto
+                                    producto.prod_cod === item.prod_cod ? updatedProducto.data : producto
                                   );
                                   setProductos(updatedProductos);
                                   toast.success('Disponibilidad actualizada', {
