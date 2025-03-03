@@ -163,7 +163,7 @@ const Sabores = () => {
                         Categoria
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
-                        Disponible
+                        Disponibilidad
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Acción

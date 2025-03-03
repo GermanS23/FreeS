@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import CategoriaSabService from '../../../api/catsab.js';
 import { toast } from 'react-toastify';
@@ -8,9 +8,23 @@ const AddCategoriaSabForm = ({ showUsersAdd, handleCloseModal, notifySuccess, no
     catsab_name: '',
   });
 
+  const inputRef = useRef(null); // Crear una referencia al input
+
+  // Reiniciar el estado del formulario y enfocar el input cuando el modal se abra
+  useEffect(() => {
+    if (showUsersAdd) {
+      setFormData({
+        catsab_name: '',
+      });
+      if (inputRef.current) {
+        inputRef.current.focus(); // Enfocar el input
+      }
+    }
+  }, [showUsersAdd]);
+
   // Si se está editando, carga los datos de la categoría
   useEffect(() => {
-    if (catsab_cod) {
+    if (catsab_cod && showUsersAdd) {
       CategoriaSabService.getCategoriaSabById(catsab_cod)
         .then((response) => {
           setFormData({ catsab_name: response.data.catsab_name });
@@ -19,7 +33,7 @@ const AddCategoriaSabForm = ({ showUsersAdd, handleCloseModal, notifySuccess, no
           console.error('Error al cargar la categoría:', error);
         });
     }
-  }, [catsab_cod]);
+  }, [catsab_cod, showUsersAdd]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +64,7 @@ const AddCategoriaSabForm = ({ showUsersAdd, handleCloseModal, notifySuccess, no
               value={formData.catsab_name}
               onChange={(e) => setFormData({ ...formData, catsab_name: e.target.value })}
               required
+              ref={inputRef} // Asignar la referencia al input
             />
           </Form.Group>
           <Button type="submit" className="mt-3">

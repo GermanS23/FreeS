@@ -120,11 +120,33 @@ const List = async (req, res) =>{
       });
     });
 }
+
+const getProductosDisponibles = async (req, res) => {
+  try {
+    const productos = await Productos.findAll({
+      include: [
+        {
+          model: CategoriaProd
+        }
+      ],
+      where: {
+        prod_dis: true
+      },
+      order: [["prod_cod", "DESC"]]
+    });
+    
+    res.json(productos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al obtener productos disponibles');
+  }
+};
 export default {
   getProducto,
   getProductoById,
   createProd,
   updateProd,
   deleteProd,
-  List
+  List,
+  getProductosDisponibles
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import CategoriaProdService from '../../../services/catprod.service.js';
 import { toast } from 'react-toastify';
@@ -9,12 +9,17 @@ const AddCategoriaProdForm = ({ showUsersAdd, handleCloseModal, notifySuccess, n
     catprod_name: '',
   });
 
-  // Reiniciar el estado del formulario cuando el modal se abra
+  const inputRef = useRef(null); // Crear una referencia al input
+
+  // Reiniciar el estado del formulario y enfocar el input cuando el modal se abra
   useEffect(() => {
     if (showUsersAdd) {
       setFormData({
         catprod_name: '',
       });
+      if (inputRef.current) {
+        inputRef.current.focus(); // Enfocar el input
+      }
     }
   }, [showUsersAdd]);
 
@@ -112,6 +117,7 @@ const AddCategoriaProdForm = ({ showUsersAdd, handleCloseModal, notifySuccess, n
               value={formData.catprod_name}
               onChange={(e) => setFormData({ ...formData, catprod_name: e.target.value })}
               required
+              ref={inputRef} // Asignar la referencia al input
             />
           </Form.Group>
           <Button type="submit" className="mt-3">

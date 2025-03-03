@@ -21,7 +21,7 @@ const getCatProdbyId = async (req, res) => {
 
 const updateCatProd = async (req, res) => {
   try {
-    const catprod = CatProd.findByPk(req.params.catprod_cod)
+    const catprod = await CatProd.findByPk(req.params.catprod_cod)
     if (catprod) {
       await catprod.update(req.body)
       res.json(catprod)

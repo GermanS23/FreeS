@@ -22,7 +22,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Pantallas',
-    to: '/pantallas',
+    to: '/pantalla/productos',
     meta: { role: ['ADMIN'] },
     icon: <CIcon icon={cilMonitor
     } customClassName="nav-icon" />,

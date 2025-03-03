@@ -22,11 +22,10 @@ const AppWrapper = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/">
       <AppWrapper />
     </BrowserRouter>
   )
 }
 
 export default App
-

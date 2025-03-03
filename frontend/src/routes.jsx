@@ -7,7 +7,7 @@ import CategoriasCRUD from "./components/Sabores/CategoriaSab/CategoriaSab"
 import Sabores from "./components/Sabores/Sabores"
 import CategoriasProd from "./components/Productos/Categorias/Catprod"
 import Productos from "./components/Productos/Productos"
-
+import PanProductos from "./components/Pantallas/PantallaProductos"
 
 
 
@@ -22,6 +22,7 @@ const routes = (isLoggedIn, setIsLoggedIn) => [
       { path: "sabores", element: <Sabores /> },
       { path: "categorias/productos", element: <CategoriasProd /> },
       { path: "productos", element: <Productos /> },
+      {path: "pantalla/productos", element: <PanProductos />},
       // Add other routes here
     ],
   },
