@@ -1,0 +1,135 @@
+.sabores-menu-container {
+  min-height: 100vh;
+  background: linear-gradient(to right, #e6f7ff 60%, #1890ff 100%);
+  padding: 20px;
+}
+
+.sabores-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 2rem;
+  height: 100%;
+  min-height: 80vh;
+}
+
+.menu-section-title {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.5rem;
+}
+
+.sabores-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sabor-item {
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.sabor-descripcion {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 1rem;
+  font-style: italic;
+}
+
+.central-content {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.brand-logo {
+  width: 100px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.heart-icon {
+  color: #ff4d4f;
+  width: 24px;
+  height: 24px;
+}
+
+.footer-note {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sabores-card {
+    padding: 1rem;
+  }
+
+  .menu-section-title {
+    font-size: 1.2rem;
+  }
+
+  .sabor-item {
+    font-size: 1rem;
+  }
+
+  .central-content {
+    padding: 1rem 0;
+  }
+}
+
+/* Animaciones suaves */
+.sabores-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.sabor-item {
+  animation: slideIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Aplicar delay a cada item para crear efecto cascada */
+.sabor-item:nth-child(1) { animation-delay: 0.1s; }
+.sabor-item:nth-child(2) { animation-delay: 0.2s; }
+.sabor-item:nth-child(3) { animation-delay: 0.3s; }
+.sabor-item:nth-child(4) { animation-delay: 0.4s; }
+.sabor-item:nth-child(5) { animation-delay: 0.5s; }
+/* ... continuar según necesidad */

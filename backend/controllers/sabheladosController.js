@@ -123,11 +123,34 @@ const List = async (req, res) =>{
       });
     });
 }
+
+
+const getSaboresDisponibles = async (req, res) => {
+  try {
+    const sabores = await SaboresHelados.findAll({
+      include: [
+        {
+          model: CategoriaSab
+        }
+      ],
+      where: {
+        sab_disp: true
+      },
+      order: [["sab_cod", "DESC"]]
+    });
+    
+    res.json(sabores);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al obtener los ssabores disponibles');
+  }
+};
 export default {
   getSabor,
   getSaborById,
   createSab,
   updateSab,
   deleteSab,
-  List
+  List,
+  getSaboresDisponibles
 }

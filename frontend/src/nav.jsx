@@ -17,6 +17,17 @@ import {
 
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { 
+  IceCreamBowl, 
+  IceCreamCone, 
+  Cast, 
+  Settings, 
+  TicketPercent,
+  UserCog,
+  History,
+  ChartNoAxesCombined,
+  Truck 
+  } from 'lucide-react';
 
 const _nav = [ 
   {
@@ -24,29 +35,37 @@ const _nav = [
     name: 'Pantallas',
     to: '/pantalla/productos',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilMonitor
-    } customClassName="nav-icon" />,
+    icon: <Cast icon={cilMonitor
+    } customclassname="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Pantalla Sabor',
+    to: '/pantalla/sabores',
+    meta: { role: ['ADMIN'] },
+    icon: <Cast icon={cilMonitor
+    } customclassname="nav-icon" />,
   },
   {
     component: CNavGroup,
     name: 'Sabores',
     to: '/sabores',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilList} customClassName="nav-icon" />,
+    icon: <IceCreamBowl icon={cilList} customclassname="nav-icon" />,
     items: [
       {
         component: CNavItem,
         name: 'Sabores',
         to: '/sabores',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
+        icon: <IceCreamCone  customclassname="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Categorias',
         to: '/categorias/sabores',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+        icon: <IceCreamBowl customclassname="nav-icon" />,
       }
       
   ]
@@ -55,7 +74,7 @@ const _nav = [
   component: CNavGroup,
   name: 'Productos',
   meta: { role: ['ADMIN'] },
-  icon: <CIcon icon={cilList} customClassName="nav-icon" />,
+  icon: <CIcon icon={cilList} customclassname="nav-icon" />,
   items: [
    
     {
@@ -63,14 +82,14 @@ const _nav = [
       name: 'Productos',
       to: '/productos',
       meta: { role: ['ADMIN'] },
-      icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilPizza} customclassname="nav-icon" />,
     },
     {
       component: CNavItem,
       name: 'Categorias',
       to: '/categorias/productos',
       meta: { role: ['ADMIN'] },
-      icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilSettings} customclassname="nav-icon" />,
     }
 ]
 },
@@ -79,14 +98,14 @@ const _nav = [
     name: 'Promociones',
     to: '/promociones',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilTags} customClassName="nav-icon" />,
+    icon: <TicketPercent customclassname="nav-icon" />,
   },
   {
     component: CNavItem,
     name: 'Ventas',
     to: '/ventas',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilChartLine} customClassName="nav-icon" />,
+    icon: <ChartNoAxesCombined  customclassname="nav-icon" />,
   },
   {
     component: CNavTitle,
@@ -97,28 +116,28 @@ const _nav = [
     name: 'Configuraciones',
     to: '/configuraciones',
     meta: { role: ['ADMIN'] },
-    icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+    icon: <Settings  customclassname="nav-icon" />,
     items: [
       {
         component: CNavItem,
         name: 'Usuarios',
         to: '/configuraciones/usuarios',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+        icon: <UserCog  customclassname="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Historial',
         to: '/historial',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
+        icon: <History  customclassname="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Proveedores',
         to: '/proveedores',
         meta: { role: ['ADMIN'] },
-        icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
+        icon: <Truck  customclassname="nav-icon" />,
       },
     ],
   },

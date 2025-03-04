@@ -1,0 +1,136 @@
+.menu-productos-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #1e3c72 100%);
+  padding: 20px;
+}
+
+.menu-card {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 0;
+  min-height: 90vh;
+}
+
+.last-update {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #666;
+  z-index: 1000;
+}
+
+.seccion-menu {
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.seccion-titulo {
+  color: #1e3c72;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #1e3c72;
+  padding-bottom: 0.5rem;
+}
+
+.productos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.producto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.producto-nombre {
+  color: #333;
+  font-size: 1rem;
+}
+
+.producto-precio {
+  color: #1e3c72;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Estilos específicos por sección */
+.columna-derecha {
+  background-color: #1e3c72;
+  color: white;
+}
+
+.columna-derecha .seccion-titulo {
+  color: white;
+  border-bottom-color: white;
+}
+
+.columna-derecha .producto-nombre,
+.columna-derecha .producto-precio {
+  color: white;
+}
+
+.promos-seccion {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 2rem;
+}
+
+.menu-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.footer-logo {
+  height: 40px;
+}
+
+/* Animaciones */
+.seccion-menu {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.producto-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-card {
+    padding: 0.5rem;
+  }
+
+  .seccion-titulo {
+    font-size: 1.2rem;
+  }
+
+  .producto-nombre,
+  .producto-precio {
+    font-size: 0.9rem;
+  }
+}
