@@ -1,0 +1,20 @@
+.pantalla-viewer {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.pantalla-viewer-content {
+  width: 100%;
+  height: 100%;
+}
+
+.pantalla-error {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 20px;
+}

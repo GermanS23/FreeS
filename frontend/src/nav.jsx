@@ -1,19 +1,13 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilSpeedometer,
-  cilPuzzle,
-  cilCloudDownload,
-  cilPeople,
   cilSettings,
   cilMonitor,
-  cilChartLine,
-  cilHistory,
-  cilTags,
-  cilBasket,
   cilList,
-  cilTruck,
-  cilPizza
+  cilPizza,
+  cilOptions,
+  cilPuzzle,
+  cilScreenDesktop
 
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
@@ -26,25 +20,34 @@ import {
   UserCog,
   History,
   ChartNoAxesCombined,
-  Truck 
+  Truck,
+  Logs 
   } from 'lucide-react';
 
 const _nav = [ 
   {
-    component: CNavItem,
-    name: 'Pantallas',
-    to: '/pantalla/productos',
-    meta: { role: ['ADMIN'] },
-    icon: <Cast icon={cilMonitor
-    } customclassname="nav-icon" />,
+    component: CNavTitle,
+    name: 'PANTALLAS',
   },
   {
-    component: CNavItem,
-    name: 'Pantalla Sabor',
-    to: '/pantalla/sabores',
-    meta: { role: ['ADMIN'] },
-    icon: <Cast icon={cilMonitor
-    } customclassname="nav-icon" />,
+    component: CNavGroup,
+    name: 'Administración',
+    to: '/admin',
+    icon: <CIcon icon={cilOptions} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Plantillas',
+        to: '/admin/plantillas',
+        icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Pantallas',
+        to: '/admin/pantallas',
+        icon: <CIcon icon={cilScreenDesktop} customClassName="nav-icon" />,
+      }
+    ],
   },
   {
     component: CNavGroup,
@@ -74,7 +77,7 @@ const _nav = [
   component: CNavGroup,
   name: 'Productos',
   meta: { role: ['ADMIN'] },
-  icon: <CIcon icon={cilList} customclassname="nav-icon" />,
+  icon: <Logs customclassname="nav-icon" />,
   items: [
    
     {
@@ -121,7 +124,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Usuarios',
-        to: '/configuraciones/usuarios',
+        to: '/config/usuarios',
         meta: { role: ['ADMIN'] },
         icon: <UserCog  customclassname="nav-icon" />,
       },

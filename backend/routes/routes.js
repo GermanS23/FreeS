@@ -8,8 +8,9 @@ import tdController from '../controllers/tdController.js'
 import sucursalesController from '../controllers/sucursalesController.js'
 import sabheladosController from '../controllers/sabheladosController.js'
 import productosController from '../controllers/productosController.js'
-
-
+import plantillaController from '../controllers/plantillaController.js'
+import pantallaController from '../controllers/pantallaController.js'
+import authController from '../controllers/authController.js'
 
 import authJwt from '../middleware/authjwt.js'
 
@@ -33,16 +34,20 @@ router.get('/rol/:rol_cod', rolesController.getRolesById)
 router.post('/rol/create', rolesController.createRole)
 router.put('/rol/update/:rol_cod', rolesController.updateRole)
 router.delete('/rol/delete/:rol_cod', rolesController.deleteRole)
-router.get('/roles/list', rolesController.List)
+router.get('/auth/roles', rolesController.List)
 
 // Rutas para controller Usuarios
 router.get('/usuario', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuarios)
 router.get('/usuario/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuariosById)
-router.post('/usuarios/create', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
+router.post('/usuarios/', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
 router.put('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.updateUsuario)
-router.delete('/usuarios/delete/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.deleteUsuario)
+router.delete('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.deleteUsuario)
 router.post("/login", usuariosController.login)
 router.get('/usuarios/list', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.usList)
+router.get('/auth/getLogger', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), authController.logger)
+
+
+
 
 // Rutas para controller CatProd
 router.get('/catprod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), catprodController.getCatProd)
@@ -92,7 +97,22 @@ router.post('/sucursal', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"),
 router.put('/sucursal/:suc_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.updateSucursal)
 router.delete('/sucursal/:suc_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.deleteSucursal)
 
+// Rutas para plantillas
+router.get('/plantillas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"),plantillaController.getPlantillas);
+router.get('/plantillas/:plan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), plantillaController.getPlantillaById);
+router.post('/plantillas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), plantillaController.createPlantilla);
+router.put('/plantillas/:plan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), plantillaController.updatePlantilla);
+router.delete('/plantillas/:plan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), plantillaController.deletePlantilla);
+router.get('/plantillas/list',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), plantillaController.listPlantillas);
 
+// Rutas para pantallas
+router.get('/pantallas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallas);
+router.get('/pantallas/:pan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallaById);
+router.post('/pantallas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.createPantalla);
+router.put('/pantallas/:pan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.updatePantalla);
+router.delete('/pantallas/:pan_cod',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.deletePantalla);
+router.get('/pantallas/list',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.listPantallas);
+router.get('/pantallas/activas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallasActivas);
 
 
 
@@ -107,3 +127,7 @@ export { router as usuariosController }
 export { router as sabheladosController }
 
 export {router as productosController}
+
+export {router as plantillaController}
+export {router as authController}
+export {router as pantallaController}

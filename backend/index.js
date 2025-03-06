@@ -6,7 +6,19 @@ import bcryp from 'bcrypt'
 import path from 'path'; // Importa el módulo 'path'
 import { fileURLToPath } from 'url'; // Importa fileURLToPath
 // Importar las rutas de los controladores
-import { rolesRouter, catprodRouter, catsabRouter, usuariosController, tdController, sucursalesController, sabheladosController, productosController } from './routes/routes.js'
+import { rolesRouter, 
+    catprodRouter, 
+    catsabRouter, 
+    usuariosController, 
+    tdController, 
+    sucursalesController, 
+    sabheladosController, 
+    productosController,
+    plantillaController,
+    pantallaController,
+    authController
+} from './routes/routes.js'
+
 // importar las asociaciones
 import './models/associations.js'
 import Usuarios from './models/usuarios.js'
@@ -18,9 +30,10 @@ const app = express()
 
 // Mover el middleware cors al principio
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
-    methods: 'GET, POST, PUT, DELETE',
-    preflightContinue: true, // Permite que las solicitudes OPTIONS continúen
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // Asegúrate de que tu frontend esté aquí
+    methods: 'GET, POST, PUT, DELETE, OPTIONS', // Asegúrate de que OPTIONS esté incluido
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'], //Agrega x-access-token.
+    preflightContinue: true,
 }));
 
 app.use(express.json())
@@ -33,7 +46,9 @@ app.use('/api', tdController)
 app.use('/api', usuariosController)
 app.use('/api', sabheladosController)
 app.use('/api', productosController)
-
+app.use('/api', plantillaController)
+app.use('/api', pantallaController)
+app.use('/api', authController)
 //initial();
 
 

@@ -9,7 +9,10 @@ import CategoriasProd from "./components/Productos/Categorias/Catprod";
 import Productos from "./components/Productos/Productos";
 import PanProductos from "./components/Pantallas/PantallaProductos";
 import PanSabores from "./components/Pantallas/PantallaSabores";
-
+import AdminPlantillas from "./components/Plantillas/AdminPlantillas";
+import AdminPantallas from "./components/Pantallas/AdminPantallas";
+import PantallaViewer from "./components/Pantallas/PantallaViewer";
+import Users from "./components/Usuarios/index"
 const routes = (isLoggedIn, setIsLoggedIn) => [
     {
         path: "/",
@@ -22,7 +25,11 @@ const routes = (isLoggedIn, setIsLoggedIn) => [
             { path: "categorias/productos", element: <CategoriasProd /> },
             { path: "productos", element: <Productos /> },
             { path: "pantalla/productos", element: <PanProductos /> },
-            { path: "pantalla/sabores", element: <PanSabores /> },
+            { path: "pantalla/cremas-heladas", element: <PanSabores /> },
+            { path: "admin/plantillas", element: <AdminPlantillas /> },
+            { path: "admin/pantallas", element: <AdminPantallas /> },
+            { path: "pantalla/:id", element: <PantallaViewer /> },
+            {path: "config/usuarios", element: <Users />}
         ],
     },
     {

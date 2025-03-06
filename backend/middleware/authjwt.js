@@ -43,37 +43,46 @@ const getUserLogger=(req, res, next) => {
 
 const permit = (...permittedRoles) => {
   return async (req, res, next) => {
-    try {
-      const user = await Usuarios.findByPk(req.userId, {
-        include: [{
-          model: Roles,
-          as: 'roles',
-          attributes: ['rol_desc']
-        }]
-      });
-
-      if (!user) {
-        return res.status(404).json({ message: 'Usuario no encontrado' });
+      if (req.method === 'OPTIONS') {
+          // Permite las solicitudes OPTIONS sin verificar roles
+          return next();
       }
+      try {
+          const user = await Usuarios.findByPk(req.userId, {
+              include: [{
+                  model: Roles,
+                  as: 'roles',
+                  attributes: ['rol_desc']
+              }]
+          });
 
-      // Verifica si el usuario tiene roles asignados y obtiene el rol
-      if (user.roles) {
-        const userRole = user.roles.rol_desc; // Accede al valor del rol
-        if (permittedRoles.includes(userRole)) {
-          next(); // Permite el acceso si el rol está en la lista permitida
-        } else {
-          return res.status(403).json({ message: 'Acceso denegado' });
-        }
-      } else {
-        console.log(user.roles)
-        return res.status(403).json({ message: 'El usuario no tiene roles asignados' });
+          if (!user) {
+              return res.status(404).json({ message: 'Usuario no encontrado' });
+          }
+
+          // Verifica si el usuario tiene roles asignados y obtiene el rol
+          if (user.roles) {
+              const userRole = user.roles.rol_desc; // Accede al valor del rol
+              if (permittedRoles.includes(userRole)) {
+                  next(); // Permite el acceso si el rol está en la lista permitida
+              } else {
+                  return res.status(403).json({ message: 'Acceso denegado' });
+              }
+          } else {
+              console.log(user.roles);
+              return res.status(403).json({ message: 'El usuario no tiene roles asignados' });
+          }
+      } catch (error) {
+          console.error('Error al verificar permisos:', error);
+          return res.status(500).json({ message: 'Error interno del servidor' });
       }
-    } catch (error) {
-      console.error('Error al verificar permisos:', error);
-      return res.status(500).json({ message: 'Error interno del servidor' });
-    }
   };
 };
+
+
+
+
+
 const authJwt = {
   verifyToken,
   permit,

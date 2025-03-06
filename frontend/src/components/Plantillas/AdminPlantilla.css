@@ -1,0 +1,19 @@
+.admin-plantillas-container {
+  padding: 20px;
+}
+
+.config-preview {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.config-preview-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.config-preview-content {
+  min-height: 100px;
+}

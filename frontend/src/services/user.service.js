@@ -1,23 +1,26 @@
 import axios from 'axios';
-import authHeader from './auth-header';
+import authHeader from '../services/auth-header';
 
 export class UserService {
 
   getListUser(page, size, title) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/user/list?page=${page}&size=${size}&title=${title}`, { headers: authHeader() });
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/list`, {
+      params: { page, size, title },
+      headers: authHeader(),
+    });
   }
 
   getCurrentUser() {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/auth/getLogger`, { headers: authHeader() });
   }
-  createUser(form) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/user/create`, form, { headers: authHeader() });
+  createUser(data) {
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/usuarios`, data, { headers: authHeader() });
   }
-  updateUser(id, form) {
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/user/update/${id}`, form, { headers: authHeader() });
+  updateUser(us_cod, data) {
+    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/${us_cod}`, data, { headers: authHeader() });
   }
-  removeUser(id) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/user/remove/${id}`, { headers: authHeader() });
+  removeUser(us_cod) {
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/${us_cod}`, { headers: authHeader() });
   }
   //   getAdminBoard() {
   //     return axios.get(API_URL + 'admin', { headers: authHeader() });
