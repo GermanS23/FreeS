@@ -12,30 +12,43 @@ import PanSabores from "./components/Pantallas/PantallaSabores";
 import AdminPlantillas from "./components/Plantillas/AdminPlantillas";
 import AdminPantallas from "./components/Pantallas/AdminPantallas";
 import PantallaViewer from "./components/Pantallas/PantallaViewer";
-import Users from "./components/Usuarios/index"
-const routes = (isLoggedIn, setIsLoggedIn) => [
-    {
-        path: "/",
-        element: isLoggedIn ? <AppLayout setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/login" />,
-        children: [
-            { index: true, element: <Dashboard /> },
-            { path: "dashboard", element: <Dashboard /> },
-            { path: "categorias/sabores", element: <CategoriasCRUD /> },
-            { path: "sabores", element: <Sabores /> },
-            { path: "categorias/productos", element: <CategoriasProd /> },
-            { path: "productos", element: <Productos /> },
-            { path: "pantalla/productos", element: <PanProductos /> },
-            { path: "pantalla/cremas-heladas", element: <PanSabores /> },
-            { path: "admin/plantillas", element: <AdminPlantillas /> },
-            { path: "admin/pantallas", element: <AdminPantallas /> },
-            { path: "pantalla/:id", element: <PantallaViewer /> },
-            {path: "config/usuarios", element: <Users />}
-        ],
-    },
-    {
-        path: "/login",
-        element: !isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" replace />,
-    },
-];
+import Users from "./components/Usuarios/index";
+
+const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
+    // Si está cargando, no renderices rutas protegidas
+    if (isLoading) {
+        return [
+            {
+                path: "*",
+                element: <div>Cargando...</div>, // Mensaje de carga global
+            },
+        ];
+    }
+
+    return [
+        {
+            path: "/",
+            element: isLoggedIn ? <AppLayout setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/login" replace />,
+            children: [
+                { index: true, element: <Dashboard /> },
+                { path: "dashboard", element: <Dashboard /> },
+                { path: "categorias/sabores", element: <CategoriasCRUD /> },
+                { path: "sabores", element: <Sabores /> },
+                { path: "categorias/productos", element: <CategoriasProd /> },
+                { path: "productos", element: <Productos /> },
+                { path: "pantalla/productos", element: <PanProductos /> },
+                { path: "pantalla/cremas-heladas", element: <PanSabores /> },
+                { path: "admin/plantillas", element: <AdminPlantillas /> },
+                { path: "admin/pantallas", element: <AdminPantallas /> },
+                { path: "pantalla/:id", element: <PantallaViewer /> },
+                { path: "config/usuarios", element: <Users /> },
+            ],
+        },
+        {
+            path: "/login",
+            element: !isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" replace />,
+        },
+    ];
+};
 
 export default routes;

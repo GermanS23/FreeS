@@ -25,5 +25,9 @@ export class UserService {
   //   getAdminBoard() {
   //     return axios.get(API_URL + 'admin', { headers: authHeader() });
   //   }
+  getRoles() {
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/rol`, { headers: authHeader() });
+ }
 }
+
 export default new UserService();

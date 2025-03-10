@@ -4,8 +4,6 @@ import {
   CCard,
   CCardBody,
   CCol,
-  CFormInput,
-  CInputGroup,
   CRow,
   CTable,
   CTableBody,
@@ -13,17 +11,11 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CFormLabel,
   CFormSwitch,
-  CBadge,
 } from '@coreui/react';
 import {
   BsFillPencilFill,
-  BsSearch,
-  BsArrowClockwise,
   BsPlus,
-  BsFillFilePdfFill,
-  BsFilePdf,
   BsFillTrashFill,
 } from 'react-icons/bs';
 import ReactPaginate from 'react-paginate';
@@ -150,12 +142,12 @@ const Sabores = () => {
           </CButton>
         </div>
         <CCol xs={12}>
-          <CCard className="mb-4">
-            <CCardBody className="text-medium-emphasis small">
+          <CCard className="mb-4"  >
+            <CCardBody className="text-medium-emphasis small"  >
               <CCol xs={12} md={12}>
-                <CTable align="middle" responsive>
+                <CTable align="middle" responsive  >
                   <CTableHead>
-                    <CTableRow>
+                    <CTableRow >
                       <CTableHeaderCell scope="col" align="center">
                         Sabor
                       </CTableHeaderCell>

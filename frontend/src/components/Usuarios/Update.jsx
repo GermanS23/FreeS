@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import {
   CButton,
   CCardBody,
@@ -8,255 +8,303 @@ import {
   CFormInput,
   CFormLabel,
   CFormSelect,
-  CFormSwitch,
   CInputGroup,
   CInputGroupText,
   CRow,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-
-import { cilUser, cilAperture, cilSave } from '@coreui/icons'
-import { Modal, Card } from 'react-bootstrap'
-import userService from '../../services/user.service'
-import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-
+  CSpinner
+} from '@coreui/react';
+import CIcon from '@coreui/icons-react';
+import { cilUser, cilAperture, cilSave, cilX } from '@coreui/icons';
+import { Modal, Card } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
+import 'react-toastify/dist/ReactToastify.css';
+import UserService from '../../services/user.service';
 
 const Update = (props) => {
-  // Validación de los campos
-  const [validated, setValidated] = useState(false)
-  const handleSubmitValidation = () => {
-    setValidated(true)
-  }
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
 
-  const [roles, setRoles] = useState([{ nombre: "USER" }, { nombre: "ADMIN" }, { nombre: "SUPER_ADMIN" }])
-
-  // Para validar el formulario con react-hook-form
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     reset,
     setValue,
-  } = useForm()
-
-  React.useEffect(() => {
-
-    if (props.user !== null || props.user !== undefined) {
-      setValue('nombre', props.user.nombre)
-      setValue('apellido', props.user.apellido)
-      setValue('username', props.user.username)
-      setValue('email', props.user.email)
-      setValue('rol', props.user.rol)
-      setValue('enabled', props.user.enabled)
+    watch
+  } = useForm({
+    mode: 'onChange', // Validar al cambiar los campos
+    defaultValues: {
+      us_user: '',
+      us_nomape: '',
+      us_email: '',
+      us_tel: '',
+      roles_rol_cod: ''
     }
-  }, [props.roles, props.user, setValue, reset])
+  });
 
-  const onSubmit = async (data, e) => {
-    let formValue = {};
-    formValue = {
-      nombre: data.nombre.charAt(0).toUpperCase() + data.nombre.slice(1).toLowerCase(),
-      apellido: data.apellido.charAt(0).toUpperCase() + data.apellido.slice(1).toLowerCase(),
-      username: data.username.toLowerCase(),
-      email: data.email.toLowerCase(),
-      rol: data.rol,
-      enabled: data.enabled,
+  // Cargar roles cuando se abre el modal
+  useEffect(() => {
+    if (props.showUserUpdate) {
+      fetchRoles();
     }
+  }, [props.showUserUpdate]);
+
+  // Función para cargar los roles desde el servicio
+  const fetchRoles = async () => {
     try {
-      await userService.updateUser(props.user.id, formValue)
-      reset();
-      props.handleCloseModalUpdate()
-      props.notifySuccess()
-    } catch (errors) {
-      notifyError(errors.response.data.message)
-      console.log(errors)
+      setLoadingRoles(true);
+      const response = await UserService.getRoles();
+      setRoles(response.data);
+      setLoadingRoles(false);
+    } catch (error) {
+      console.error('Error al cargar roles:', error);
+      setFormError('Error al cargar los roles. Por favor, intente nuevamente.');
+      setLoadingRoles(false);
     }
-  }
+  };
 
-  // // *** Notificaciones *** //
-  // Error
-  const notifyError = (data) => {
-    toast.error(data, {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    })
-  }
+  // Cargar datos del usuario seleccionado cuando cambia props.user
+  useEffect(() => {
+    if (props.user) {
+      // Establecer los valores del formulario con los datos del usuario
+      setValue('us_user', props.user.us_user || '');
+      setValue('us_nomape', props.user.us_nomape || '');
+      setValue('us_email', props.user.us_email || '');
+      setValue('us_tel', props.user.us_tel || '');
+      setValue('roles_rol_cod', props.user.roles_rol_cod?.toString() || '');
+    }
+  }, [props.user, setValue]);
 
-  // *** EVENTO AL CERRAR MODAL CON X ***//
-  const clearForm = useRef();
-  const cierraModal = () => {
-    reset()
-    setValidated(false)
-  }
+  // Función para manejar el envío del formulario
+  const onSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      setFormError(null);
+      
+      const formValue = {
+        us_user: data.us_user,
+        us_nomape: data.us_nomape,
+        us_email: data.us_email,
+        us_tel: data.us_tel,
+        roles_rol_cod: data.roles_rol_cod,
+      };
+      
+      // Usar directamente el servicio en lugar de props.updateUser
+      await UserService.updateUser(props.user.us_cod, formValue);
+      
+      // Notificar éxito si existe la función
+      if (typeof props.notifySuccess === 'function') {
+        props.notifySuccess('Usuario actualizado con éxito');
+      }
+      
+      handleCloseModal();
+      
+      // Si existe una función de callback para actualizar la lista, llamarla
+      if (typeof props.onUpdateSuccess === 'function') {
+        props.onUpdateSuccess();
+      }
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+      const errorMessage = error.response?.data?.message || 'Error al actualizar el usuario';
+      setFormError(errorMessage);
+      
+      // Notificar error si existe la función
+      if (typeof props.notifyError === 'function') {
+        props.notifyError(errorMessage);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Función para cerrar el modal y limpiar el formulario
+  const handleCloseModal = () => {
+    reset();
+    setFormError(null);
+    props.handleCloseModalUpdate();
+  };
+
+  // Determinar qué roles mostrar (los cargados por el componente o los pasados por props)
+  const rolesToDisplay = roles.length > 0 ? roles : props.roles || [];
 
   return (
-    <Modal show={props.showUserUpdate} onHide={props.handleCloseModalUpdate} backdrop="static" size="xl">
-      <Modal.Header closeButton onClick={cierraModal}>
-        <Modal.Title className="text-center text-primary" id="titulo">
-          Actualización de registro
-        </Modal.Title>
+    <Modal 
+      show={props.showUserUpdate} 
+      onHide={handleCloseModal} 
+      backdrop="static" 
+      size="xl"
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title className="text-primary">Actualizar Usuario</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
+        
         <CRow className="justify-content-center">
           <CCol>
-            <Card className="mx-1">
-              <CCardBody className="p-1">
+            <Card className="mx-1 shadow-sm">
+              <CCardBody className="p-4">
                 <CForm
                   className="row g-3 needs-validation"
-                  ref={clearForm}
-                  noValidate
-                  validated={validated}
-                  onSubmit={handleSubmit(onSubmit, handleSubmitValidation)}
+                  onSubmit={handleSubmit(onSubmit)}
                 >
                   <CCol md={4}>
-                    <CFormLabel htmlFor="validationCustom01">Nombre</CFormLabel>
-                    <CInputGroup className="has-validation">
-                      <CInputGroupText id="inputGroupPrepend">
+                    <CFormLabel htmlFor="us_nomape">Nombre y Apellido</CFormLabel>
+                    <CInputGroup className={errors.us_nomape ? "has-validation is-invalid" : ""}>
+                      <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
                       <CFormInput
                         type="text"
-                        id="validationCustom01"
-                        placeholder="Nombre"
-                        required
-                        // pattern='/[A-Za-z]/'
-                        maxLength={20}
-                        minLength={1}
-
-                        {...register('nombre', {
-                          required: { value: true, message: 'Se requiere un nombre' },
-                          minLength: {
-                            value: 3,
-                            message: 'El nombre no puede tener menos de 3 caracteres',
-                          },
-                          // pattern: { value: /[A-Za-z]/, message: 'Solo se admiten letras' },
+                        id="us_nomape"
+                        placeholder="Nombre y Apellido"
+                        invalid={!!errors.us_nomape}
+                        {...register('us_nomape', { 
+                          required: 'El nombre y apellido es obligatorio',
+                          minLength: { value: 3, message: 'Mínimo 3 caracteres' }
                         })}
                       />
-                      <CFormFeedback invalid>
-                        {errors.nombre && <span>{errors.nombre.message}</span>}
-                      </CFormFeedback>
                     </CInputGroup>
+                    {errors.us_nomape && (
+                      <CFormFeedback invalid>{errors.us_nomape.message}</CFormFeedback>
+                    )}
                   </CCol>
+                  
                   <CCol md={4}>
-                    <CFormLabel htmlFor="validationCustom02">Apellido</CFormLabel>
-
-                    <CInputGroup className="has-validation">
-                      <CInputGroupText id="inputGroupPrepend">
+                    <CFormLabel htmlFor="us_user">Usuario</CFormLabel>
+                    <CInputGroup className={errors.us_user ? "has-validation is-invalid" : ""}>
+                      <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
                       <CFormInput
                         type="text"
-                        id="validationCustom02"
-                        required
-                        maxLength={20}
-                        minLength={1}
-                        // pattern='/[A-Za-z]/'
-
-                        {...register('apellido', {
-                          required: { value: true, message: 'Se requiere un apellido' },
-                          minLength: {
-                            value: 3,
-                            message: 'El apellido no puede tener menos de 3 caracteres',
-                          },
-                          // pattern: { value: /[A-Za-z]/, message: 'Solo se admiten letras' }
-                        })}
-                        placeholder="Apellido"
-                      />
-                      {/* <CFormFeedback valid>Correcto!</CFormFeedback> */}
-                      <CFormFeedback invalid>
-                        {errors.apellido && <span> {errors.apellido.message}</span>}
-                      </CFormFeedback>
-                    </CInputGroup>
-                  </CCol>
-                  <CCol md={4}>
-                    <CFormLabel htmlFor="validationCustomUsername">Usuario</CFormLabel>
-                    <CInputGroup className="has-validation">
-                      <CInputGroupText id="inputGroupPrepend">
-                        <CIcon icon={cilUser} />
-                      </CInputGroupText>
-                      <CFormInput
-                        type="text"
-                        id="validationCustomUsername"
-                        aria-describedby="inputGroupPrepend"
-                        required
-                        maxLength={20}
-                        minLength={1}
-                        {...register('username', {
-                          required: { value: true, message: 'Se requiere un nombre de usuario' },
-                          minLength: {
-                            value: 3,
-                            message: 'El nombre de usuario no puede tener menos de 3 caracteres',
-                          },
-                        })}
+                        id="us_user"
                         placeholder="Usuario"
-                      />
-                      <CFormFeedback invalid>Usuario no disponible.</CFormFeedback>
-                    </CInputGroup>
-                  </CCol>
-                  <CCol md={6}>
-                    <CFormLabel htmlFor="validationCustom03">Email</CFormLabel>
-                    <CInputGroup>
-                      <CInputGroupText id="inputGroupPrepend">@</CInputGroupText>
-                      <CFormInput
-                        type="text"
-                        placeholder="Email"
-                        id="validationCustom03"
-                        required
-                        maxLength={100}
-                        minLength={1}
-                        // pattern='/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i'
-                        {...register('email', {
-                          required: { value: true, message: 'Se requiere una dirección de mail' },
-                          minLength: {
-                            value: 3,
-                            message: 'El email no puede tener menos de 3 caracteres',
-                          },
-                          // pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: "Ingrese un mail válido"}
+                        invalid={!!errors.us_user}
+                        {...register('us_user', { 
+                          required: 'El usuario es obligatorio',
+                          minLength: { value: 3, message: 'Mínimo 3 caracteres' }
                         })}
                       />
-                      <CFormFeedback invalid>
-                        {errors.email && <span> {errors.email.message}</span>}
-                      </CFormFeedback>
                     </CInputGroup>
+                    {errors.us_user && (
+                      <CFormFeedback invalid>{errors.us_user.message}</CFormFeedback>
+                    )}
                   </CCol>
-
-                  <CCol md={3}>
-                    <CFormLabel htmlFor="validationCustom04">Rol</CFormLabel>
-                    <CInputGroup className="has-validation">
-                      <CInputGroupText id="inputGroupPrepend">
+                  
+                  <CCol md={4}>
+                    <CFormLabel htmlFor="us_email">Email</CFormLabel>
+                    <CInputGroup className={errors.us_email ? "has-validation is-invalid" : ""}>
+                      <CInputGroupText>@</CInputGroupText>
+                      <CFormInput
+                        type="email"
+                        id="us_email"
+                        placeholder="Email"
+                        invalid={!!errors.us_email}
+                        {...register('us_email', { 
+                          required: 'El email es obligatorio',
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: 'Email inválido'
+                          }
+                        })}
+                      />
+                    </CInputGroup>
+                    {errors.us_email && (
+                      <CFormFeedback invalid>{errors.us_email.message}</CFormFeedback>
+                    )}
+                  </CCol>
+                  
+                  <CCol md={4}>
+                    <CFormLabel htmlFor="us_tel">Teléfono</CFormLabel>
+                    <CInputGroup className={errors.us_tel ? "has-validation is-invalid" : ""}>
+                      <CInputGroupText>
                         <CIcon icon={cilAperture} />
                       </CInputGroupText>
-                      <CFormSelect id="validationCustom04" {...register('rol')} placeholder="rol">
-                        {roles.map((roles) => (
-                          <option key={roles.nombre}>{roles.nombre}</option>
-                        ))}
-                      </CFormSelect>
-                      <CFormFeedback invalid>Seleccione un elemento de la lista.</CFormFeedback>
+                      <CFormInput
+                        type="text"
+                        id="us_tel"
+                        placeholder="Teléfono"
+                        invalid={!!errors.us_tel}
+                        {...register('us_tel', { 
+                          required: 'El teléfono es obligatorio'
+                        })}
+                      />
                     </CInputGroup>
+                    {errors.us_tel && (
+                      <CFormFeedback invalid>{errors.us_tel.message}</CFormFeedback>
+                    )}
                   </CCol>
-
-                  <CCol xs={12}>
-                    <CFormSwitch
-                      {...register('enabled')}
-                      label="Habilitado"
-                      id="Switch"
-                      valid={props.user.enabled}
-                      invalid={!props.user.enabled}
-                      defaultChecked
-                    />
+                  
+                  <CCol md={4}>
+                    <CFormLabel htmlFor="roles_rol_cod">Rol</CFormLabel>
+                    <CInputGroup className={errors.roles_rol_cod ? "has-validation is-invalid" : ""}>
+                      <CInputGroupText>
+                        <CIcon icon={cilAperture} />
+                      </CInputGroupText>
+                      {loadingRoles ? (
+                        <CFormInput
+                          placeholder="Cargando roles..."
+                          disabled
+                        />
+                      ) : (
+                        <CFormSelect
+                          id="roles_rol_cod"
+                          invalid={!!errors.roles_rol_cod}
+                          {...register('roles_rol_cod', { 
+                            required: 'Debe seleccionar un rol' 
+                          })}
+                        >
+                          <option value="">Seleccione un rol</option>
+                          {rolesToDisplay.map((role) => (
+                            <option key={role.rol_cod} value={role.rol_cod}>
+                              {role.rol_desc}
+                            </option>
+                          ))}
+                        </CFormSelect>
+                      )}
+                    </CInputGroup>
+                    {errors.roles_rol_cod && (
+                      <CFormFeedback invalid>{errors.roles_rol_cod.message}</CFormFeedback>
+                    )}
                   </CCol>
-                  <div className="d-grid">
-                    <CButton type="submit" color="success" className="mx-auto">
-                      <CIcon className="btn-icon mx-2" icon={cilSave} />
-                      Actualizar usuario
+                  
+                  <CCol xs={12} className="d-flex justify-content-center mt-4">
+                    <CButton 
+                      type="button" 
+                      color="secondary" 
+                      className="me-2"
+                      onClick={handleCloseModal}
+                      disabled={isSubmitting}
+                    >
+                      <CIcon icon={cilX} className="me-2" />
+                      Cancelar
                     </CButton>
-                  </div>
+                    <CButton 
+                      type="submit" 
+                      color="success"
+                      disabled={isSubmitting || !isValid || loadingRoles}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <CSpinner size="sm" className="me-2" />
+                          Actualizando...
+                        </>
+                      ) : (
+                        <>
+                          <CIcon icon={cilSave} className="me-2" />
+                          Actualizar Usuario
+                        </>
+                      )}
+                    </CButton>
+                  </CCol>
                 </CForm>
               </CCardBody>
             </Card>
@@ -264,6 +312,7 @@ const Update = (props) => {
         </CRow>
       </Modal.Body>
     </Modal>
-  )
-}
-export default Update
+  );
+};
+
+export default Update;

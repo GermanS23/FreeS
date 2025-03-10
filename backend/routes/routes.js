@@ -39,7 +39,7 @@ router.get('/auth/roles', rolesController.List)
 // Rutas para controller Usuarios
 router.get('/usuario', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuarios)
 router.get('/usuario/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO") , usuariosController.getUsuariosById)
-router.post('/usuarios/', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
+router.post('/usuarios', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.createUsuario)
 router.put('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.updateUsuario)
 router.delete('/usuarios/:us_cod', authJwt.verifyToken , authJwt.permit("ADMIN", "DUEÑO"), usuariosController.deleteUsuario)
 router.post("/login", usuariosController.login)

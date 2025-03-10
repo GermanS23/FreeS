@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react';
 import {
   CButton,
   CCard,
@@ -13,127 +13,115 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-} from '@coreui/react'
-import { BsFillPencilFill, BsSearch, BsArrowClockwise, BsPlus } from 'react-icons/bs'
-import ReactPaginate from 'react-paginate'
-import userService from '../../services/user.service'
-import AddUsersForm from './Register'
-import UpdateUserForm from './Update'
-import authService from '../../services/auth.service'
-import { toast, ToastContainer } from 'react-toastify'
-import { cilSave } from '@coreui/icons'
+} from '@coreui/react';
+import { BsFillPencilFill, BsSearch, BsArrowClockwise, BsPlus } from 'react-icons/bs';
+import ReactPaginate from 'react-paginate';
+import userService from '../../services/user.service';
+import AddUsersForm from './Register';
+import UpdateUserForm from './Update';
+import authService from '../../services/auth.service';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Users = () => {
-  // *** BUSQUEDA *** // Se usa antes del listar porque usamos title en useEffect
+  const [title, setTitle] = useState('');
+  const [user, setUser] = useState(null);
+  const [userRoot, setUserRoot] = useState(false);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(5);
+  const [pageCount, setPageCount] = useState(0);
+  const [totalSize, setTotalSize] = useState(0);
+  const [roles, setRoles] = useState([]);
+  const [users, setUsuarios] = useState([]);
+  const [showUsersAdd, setShowUsersAdd] = useState(false);
+  const [showUserUpdate, setShowUserUpdate] = useState(false);
+  const [editing, setEditing] = useState(0);
 
-  const [title, setTitle] = React.useState('')
-  const valorBusqueda = document.querySelector('#buscador')
-  const [user, setUser] = useState('')
-  const [userRoot, setUserRoot] = useState(false)
-
-  const searchingUsuarios = () => {
-    setTitle(valorBusqueda.value)
-    if (title.length === 1) {
-      getUsuarios(page, size)
-    } else getUsuarios(page, size, valorBusqueda.value)
-  }
-
-  // PAGINACION
-
-  const [page, setPage] = React.useState(0)
-  const [size, setSize] = React.useState(5)
-  const [pageCount, setPageCount] = React.useState(0)
-  const [totalSize, setTotalSize] = React.useState(0)
-  const [roles, setRoles] = useState([])
+  const buscador = useRef('');
 
   const getUsuarios = async (page, size, title) => {
     try {
-      const response = await userService.getListUser(page, size, title)
-      setPage(0)
-      setUsuarios(response.data.items)
-      setSize(response.data.size)
-      setTotalSize(response.data.totalItems)
-      setPageCount(response.data.totalPages)
+      const response = await userService.getListUser(page, size, title);
+      setUsuarios(response.data.items);
+      setSize(response.data.size);
+      setTotalSize(response.data.totalItems);
+      setPageCount(response.data.totalPages);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   const handlePageClick = (event) => {
-    const newOffset = (event.selected * size) % users.length
-    setTotalSize(newOffset)
-    getUsuarios(event.selected, size, title)
-  }
+    const newOffset = (event.selected * size) % users.length;
+    setTotalSize(newOffset);
+    getUsuarios(event.selected, size, title);
+  };
 
-  // *** MODAL ADD REGISTRO *** //
-  const [showUsersAdd, setShowUsersAdd] = React.useState(false)
-  const handleShowUsersAdd = () => setShowUsersAdd(true)
-  const [editing, setEditing] = React.useState(0)
+  const searchingUsuarios = () => {
+    const valorBusqueda = buscador.current.value;
+    setTitle(valorBusqueda);
+    getUsuarios(page, size, valorBusqueda);
+  };
 
-  async function abrirNuevoUsuario() {
-    try {
-      setUser('')
-      handleShowUsersAdd()
-      setEditing(1)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  // *** MODAL UPDATE REGISTRO *** //
-  const [showUserUpdate, setShowUserUpdate] = React.useState(false)
-  const handleShowUserUpdate = () => setShowUserUpdate(true)
+  const refresh = () => {
+    buscador.current.value = '';
+    setPage(0);
+    setSize(5);
+    searchingUsuarios();
+  };
+
+  const abrirNuevoUsuario = () => {
+    setUser(null);
+    setShowUsersAdd(true);
+    setEditing(1);
+  };
+
+  const handleCloseModal = () => {
+    setUser(null);
+    setShowUsersAdd(false);
+    getUsuarios(page, size, title);
+  };
 
   const handleCloseModalUpdate = () => {
-    setUser('')
-    setShowUserUpdate()
-    getUsuarios(0, 5, '')
-  }
+    setUser(null);
+    setShowUserUpdate(false);
+    getUsuarios(page, size, title);
+  };
 
-  // *** LISTAR REGISTROS *** //
-  const [users, setUsuarios] = React.useState([])
+  const createUser = async (userData) => {
+    try {
+      await userService.createUser(userData);
+      getUsuarios(page, size, title); // Refrescar la lista de usuarios
+    } catch (error) {
+      throw error; // Propagar el error para manejarlo en el componente Register
+    }
+  };
 
   React.useEffect(() => {
-    getUsuarios(page, size, title)
-    getRoles()
-    getUser()
-  }, [page, size, title])
+    getUsuarios(page, size, title);
+    getRoles();
+    getUser();
+  }, [page, size, title]);
 
   const getRoles = async () => {
     try {
-      const response = await authService.getRoles()
-      setRoles(response.data.rows)
+      const response = await authService.getRoles();
+      setRoles(response.data.rows);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   const getUser = async () => {
     try {
-      const response = await authService.getCurrentUser()
-      if (response.data.body.rol === 'SUPER_ADMIN') {
-        setUserRoot(true)
+      const response = await authService.getCurrentUser();
+      if (response.data.body.roles.rol_desc === 'ADMIN' || response.data.body.roles.rol_desc === 'DUEÑO') {
+        setUserRoot(true);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
-  const handleCloseModal = () => {
-    setUser('')
-    setShowUsersAdd()
-    getUsuarios(0, 5, '')
-  }
-  // *** BOTON RESET DEL BUSCADOR *** //
-  const buscador = useRef('')
-  const refresh = () => {
-    buscador.current.value = ''
-    setPage(0)
-    setSize(5)
-    searchingUsuarios()
-  }
-
-  // *** Notificaciones *** //
-  // Registro exitoso en create/update
   const notifySuccess = () => {
     toast.success('Registro con éxito!', {
       position: 'top-right',
@@ -143,9 +131,9 @@ const Users = () => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-    })
-  }
-  // Error
+    });
+  };
+
   const notifyError = (data) => {
     toast.error(data, {
       position: 'top-right',
@@ -155,8 +143,8 @@ const Users = () => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-    })
-  }
+    });
+  };
 
   return (
     <CCard style={{ padding: 50, borderRadius: 10 }}>
@@ -176,27 +164,17 @@ const Users = () => {
               className="form-control"
             />
             <CRow>
-              <BsSearch
-                className="mt-2 btn-buscar"
-                title={'Buscar'}
-                id="botonBuscar"
-                onClick={searchingUsuarios}
-              />
+              <BsSearch className="mt-2 btn-buscar" title={'Buscar'} id="botonBuscar" onClick={searchingUsuarios} />
             </CRow>
             <CRow>
-              <BsArrowClockwise
-                className="mt-2 btn-refresh"
-                title={'Limpiar'}
-                id="botonLimpiar"
-                onClick={refresh}
-              />
+              <BsArrowClockwise className="mt-2 btn-refresh" title={'Limpiar'} id="botonLimpiar" onClick={refresh} />
             </CRow>
           </CInputGroup>
         </CCol>
 
         {userRoot && (
           <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
-            <CButton onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
+            <CButton onClick={abrirNuevoUsuario} title={'Crear nuevo registro'} color="dark">
               <BsPlus />
               Nuevo Usuario
             </CButton>
@@ -211,43 +189,31 @@ const Users = () => {
                     <CTableRow>
                       <CTableHeaderCell scope="col">ID</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Usuario</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Apellido</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Nombre y Apellido</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Email</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Rol</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Teléfono</CTableHeaderCell>
-                      <CTableHeaderCell scope="col">Activo</CTableHeaderCell>
+                      <CTableHeaderCell scope="col">Rol</CTableHeaderCell>
                       <CTableHeaderCell scope="col">Acción</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {users.length > 0 ? (
-                      users.map((users) => (
-                        // Pasamos la key porque sino da error en la consola avisando que no tiene key
-                        <CTableRow key={users.us_cod}>
-                          <CTableDataCell>{users.us_cod}</CTableDataCell>
-                          <CTableDataCell>{users.us_user}</CTableDataCell>
-                          <CTableDataCell>{users.us_nomape}</CTableDataCell>
-                          <CTableDataCell>{users?.us_email}</CTableDataCell>
-                          <CTableDataCell>{users?.roles?.rol_desc}</CTableDataCell>
-                          <CTableDataCell>{users.us_tel}</CTableDataCell>
-                          {users.enabled === true && (
-                            <CTableDataCell>
-                              <strong className="text-success">HABILITADO</strong>
-                            </CTableDataCell>
-                          )}
-                          {users.enabled === false && (
-                            <CTableDataCell>
-                              <strong className="text-danger">NO HABILITADO</strong>
-                            </CTableDataCell>
-                          )}
+                      users.map((user) => (
+                        <CTableRow key={user.us_cod}>
+                          <CTableDataCell>{user.us_cod}</CTableDataCell>
+                          <CTableDataCell>{user.us_user}</CTableDataCell>
+                          <CTableDataCell>{user.us_nomape}</CTableDataCell>
+                          <CTableDataCell>{user.us_email}</CTableDataCell>
+                          <CTableDataCell>{user.us_tel}</CTableDataCell>
+                          <CTableDataCell>{user.roles?.rol_desc}</CTableDataCell>
                           <CTableDataCell>
                             <BsFillPencilFill
                               className="btn-dell"
                               title={'Editar registro'}
                               onClick={() => {
-                                setUser(users)
-                                handleShowUserUpdate()
-                                setEditing(2)
+                                setUser(user);
+                                setShowUserUpdate(true);
+                                setEditing(2);
                               }}
                             />
                           </CTableDataCell>
@@ -255,12 +221,11 @@ const Users = () => {
                       ))
                     ) : (
                       <tr>
-                        <CTableDataCell colSpan={3}>No hay Usuarios Registrados</CTableDataCell>
+                        <CTableDataCell colSpan={7}>No hay Usuarios Registrados</CTableDataCell>
                       </tr>
                     )}
                   </CTableBody>
                 </CTable>
-                {/* paginación */}
                 <ReactPaginate
                   nextLabel="Sig. >"
                   onPageChange={handlePageClick}
@@ -284,7 +249,6 @@ const Users = () => {
                 <span># Usuarios: {totalSize}</span>
               </CCol>
               <CInputGroup>
-                {/* Notificaciones */}
                 <ToastContainer
                   position="top-right"
                   autoClose={3000}
@@ -306,6 +270,7 @@ const Users = () => {
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
               notifyError={notifyError}
+              createUser={createUser} // Pasar la función createUser
             />
           ) : editing === 2 ? (
             <UpdateUserForm
@@ -322,7 +287,7 @@ const Users = () => {
         </CCol>
       </CRow>
     </CCard>
-  )
-}
+  );
+};
 
-export default Users
+export default Users;

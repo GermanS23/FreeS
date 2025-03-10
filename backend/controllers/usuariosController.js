@@ -1,135 +1,160 @@
-import Usuarios from '../models/usuarios.js'
-import Roles from '../models/roles.js'
-import { hashPassword, comparePassword } from '../utils/bcrypt.js'
-import jwt from 'jsonwebtoken'
-import config from '../config/auth.config.js'
-import Page from '../utils/getPagingData.js'
-import { Op } from 'sequelize'
-
+import Usuarios from '../models/usuarios.js';
+import Roles from '../models/roles.js';
+import { hashPassword, comparePassword } from '../utils/bcrypt.js';
+import jwt from 'jsonwebtoken';
+import config from '../config/auth.config.js';
+import Page from '../utils/getPagingData.js';
+import { Op } from 'sequelize';
 
 const getUsuarios = async (req, res) => {
   try {
-    const usuarios = await Usuarios.findAll()
-    res.json(usuarios)
+    const usuarios = await Usuarios.findAll();
+    res.json(usuarios);
   } catch (error) {
-    console.error(error)
-    res.status(500).send('Error al obtener el Usuario')
+    console.error(error);
+    res.status(500).send('Error al obtener el Usuario');
   }
-}
+};
 
 const getUsuariosById = async (req, res) => {
-  const usuarios = await Usuarios.findByPk(req.params.us_cod)
+  const usuarios = await Usuarios.findByPk(req.params.us_cod);
   if (usuarios) {
-    res.json(usuarios)
+    res.json(usuarios);
   } else {
-    res.status(404).send('Usuario no encontrado')
+    res.status(404).send('Usuario no encontrado');
   }
-}
+};
 
 const createUsuario = async (req, res) => {
   try {
-      const { us_user, us_pass, us_nomape, us_email, us_tel, roles_rol_cod } = req.body;
+    const { us_user, us_pass, us_nomape, us_email, us_tel, roles_rol_cod } = req.body;
 
-      // Validar que el rol del usuario que está creando sea válido según la jerarquía
-      const usuarioCreando = await Usuarios.findByPk(req.user.us_cod); // Obtener información del usuario que está realizando la solicitud
-      const rolCreando = await Roles.findByPk(usuarioCreando.roles_rol_cod);
-      const rolNuevo = await Roles.findByPk(roles_rol_cod);
+    // Verificar si req.user y req.user.id existen
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'No autorizado' });
+    }
 
-      // Lógica para validar la jerarquía de roles
-      if (rolCreando.rol_desc === 'Admin') {
-          // Un administrador puede crear cualquier rol
-      } else if (rolCreando.rol_desc === 'Dueño') {
-          if (rolNuevo.rol_desc !== 'Encargado') {
-              return res.status(403).json({ message: 'Un dueño solo puede crear usuarios con el rol de Encargado' });
-          }
-      } else {
-          return res.status(403).json({ message: 'No tienes permisos para crear usuarios' });
-      }
+    const usuarioCreando = await Usuarios.findByPk(req.user.id); // Usar req.user.id
 
+    if (!usuarioCreando) {
+      return res.status(404).json({ message: 'Usuario creador no encontrado' });
+    }
 
-      const hashPassword = await hashPassword(us_pass);
+    const rolCreando = await Roles.findByPk(usuarioCreando.roles_rol_cod);
+    const rolNuevo = await Roles.findByPk(roles_rol_cod);
+
+    // Lógica para validar la jerarquía de roles
+    if (rolCreando.rol_desc === 'ADMIN') {
+      // Un administrador puede crear cualquier rol
+      const hashedPassword = await hashPassword(us_pass);
 
       // Crear el nuevo usuario
       const newUser = await Usuarios.create({
+        us_user,
+        us_pass: hashedPassword,
+        us_nomape,
+        us_email,
+        us_tel,
+        roles_rol_cod,
+      });
+
+      return res.status(201).json(newUser);
+    } else if (rolCreando.rol_desc === 'DUEÑO') {
+      if (rolNuevo.rol_desc !== 'ENCARGADO') {
+        return res
+          .status(403)
+          .json({ message: 'Un dueño solo puede crear usuarios con el rol de Encargado' });
+      } else {
+        const hashedPassword = await hashPassword(us_pass);
+
+        // Crear el nuevo usuario
+        const newUser = await Usuarios.create({
           us_user,
-          us_pass: hashPassword,
+          us_pass: hashedPassword,
           us_nomape,
           us_email,
           us_tel,
-          roles_rol_cod
-      });
+          roles_rol_cod,
+        });
 
-      res.status(201).json(newUser);
+        return res.status(201).json(newUser);
+      }
+    } else if (rolCreando.rol_desc === 'ENCARGADO') {
+      return res.status(403).json({ message: 'Un encargado no puede crear usuarios' });
+    } else {
+      return res.status(403).json({ message: 'No tienes permisos para crear usuarios' });
+    }
   } catch (error) {
-      console.error(error);
-      res.status(500).send('Error al crear el usuario');
+    console.error(error);
+    return res.status(500).send('Error al crear el usuario');
   }
 };
 
 const updateUsuario = async (req, res) => {
   try {
-    const usuarios = await Usuarios.findByPk(req.params.us_cod)
+    const usuarios = await Usuarios.findByPk(req.params.us_cod);
     if (usuarios) {
-      await usuarios.update(req.body)
-      res.json(usuarios)
+      await usuarios.update(req.body);
+      res.json(usuarios);
     } else {
-      res.status(404).send('Usuario no encontrado')
+      res.status(404).send('Usuario no encontrado');
+    }
+    if (req.body.us_pass) {
+      req.body.us_pass = await hashPassword(req.body.us_pass);
     }
   } catch (error) {
-    console.error(error)
-    res.status(500).send('Error al actualizar el Usuario')
+    console.error(error);
+    res.status(500).send('Error al actualizar el Usuario');
   }
-  if (req.body.us_pass){
-   req.body.us_pass = await hashPassword(req.body.us_pass)
-  }
-}
+};
 
 const deleteUsuario = async (req, res) => {
   try {
-    const td = await Usuarios.findByPk(req.params.us_cod)
+    const td = await Usuarios.findByPk(req.params.us_cod);
     if (td) {
-      await td.destroy()
-      res.json({ message: 'Usuario eliminado' })
+      await td.destroy();
+      res.json({ message: 'Usuario eliminado' });
     } else {
-      res.status(404).send('Usuario no encontrado')
+      res.status(404).send('Usuario no encontrado');
     }
   } catch (error) {
-    console.error(error)
-    res.status(500).send('Error al eliminar el Usuario')
+    console.error(error);
+    res.status(500).send('Error al eliminar el Usuario');
   }
-}
+};
 
 const login = async (req, res) => {
   try {
-      const { us_user, us_pass } = req.body;
+    const { us_user, us_pass } = req.body;
 
-      const user = await Usuarios.findOne({ where: { us_user } });
+    const user = await Usuarios.findOne({ where: { us_user } });
 
-      if (!user) {
-          return res.status(404).send({ message: "Usuario incorrecto!" });
-      }
+    if (!user) {
+      return res.status(404).send({ message: 'Usuario incorrecto!' });
+    }
 
-      const passwordIsValid = await comparePassword(req.body.us_pass , user.us_pass);
+    const passwordIsValid = await comparePassword(req.body.us_pass, user.us_pass);
 
-      if (!passwordIsValid) {
-          return res.status(401).send({
-              accessToken: null,
-              message: "Contraseña Incorrecta!"
-          });
-      }
-
-      const token = jwt.sign({ id: user.us_cod}, config.secretkey, { expiresIn: 
-        config.tokenExpiration }); // tiempo para que el token expire (9 horas)
-
-      res.status(200).send({
-          id: user.us_cod,
-          us_user: user.us_user,
-          us_email: user.us_email,
-          rol: user.roles_rol_cod,
-          accessToken: token
+    if (!passwordIsValid) {
+      return res.status(401).send({
+        accessToken: null,
+        message: 'Contraseña Incorrecta!',
       });
+    }
+
+    const token = jwt.sign({ id: user.us_cod }, config.secretkey, {
+      expiresIn: config.tokenExpiration,
+    }); // tiempo para que el token expire (9 horas)
+
+    res.status(200).send({
+      id: user.us_cod,
+      us_user: user.us_user,
+      us_email: user.us_email,
+      rol: user.roles_rol_cod,
+      accessToken: token,
+    });
   } catch (err) {
-      res.status(500).send({ message: err.message });
+    res.status(500).send({ message: err.message });
   }
 };
 
@@ -139,31 +164,31 @@ const usList = async (req, res) => {
   const offset = page ? page * limit : 0;
 
   if (title == undefined) {
-    title = "";
+    title = '';
   }
 
   Usuarios.findAndCountAll({
     include: [
       {
         model: Roles,
-        as: "roles"
-      }
+        as: 'roles',
+      },
     ],
     where: {
       [Op.or]: [
         {
           us_user: {
-            [Op.like]: "%" + title + "%",
+            [Op.like]: '%' + title + '%',
           },
         },
         {
           us_nomape: {
-            [Op.like]: "%" + title + "%",
+            [Op.like]: '%' + title + '%',
           },
-        }
+        },
       ],
     },
-    order: [["us_cod", "DESC"]],
+    order: [['us_cod', 'DESC']],
     limit,
     offset,
   })
@@ -173,12 +198,10 @@ const usList = async (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message:
-          err.message || "Some error occurred while retrieving tutorials.",
+        message: err.message || 'Some error occurred while retrieving tutorials.',
       });
     });
 };
-
 
 export default {
   getUsuarios,
@@ -187,5 +210,5 @@ export default {
   updateUsuario,
   deleteUsuario,
   login,
-  usList
-}
+  usList,
+};
