@@ -4,8 +4,6 @@ import {
   CCard,
   CCardBody,
   CCol,
-  CFormInput,
-  CInputGroup,
   CRow,
   CTable,
   CTableBody,
@@ -13,31 +11,25 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
-  CFormLabel,
-  CFormSwitch,
-  CBadge,
 } from '@coreui/react';
 import {
   BsFillPencilFill,
-  BsSearch,
-  BsArrowClockwise,
   BsPlus,
   BsFillTrashFill,
 } from 'react-icons/bs';
 import ReactPaginate from 'react-paginate';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import AddCategoriaSabForm from './registercatsab.jsx'; // Asegúrate de que este componente existe
+import AddCategoriaSabForm from './RegisterSuc.jsx'; 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de react-toastify
-import CategoriaSabService from '../../../api/catsab.js';
+import SucursalesService from '../../services/sucursales.service.js';
 
-const CategoriaSab = () => {
+const Sucursales = () => {
   // *** BUSQUEDA *** //
   const [cliente, setCliente] = useState('');
   const [loadingList, setLoading] = useState(false);
-  const [catsab_name, setCatsabName] = useState(null);
-  const [categoriasSab, setCategoriasSab] = React.useState([]);
+  const [suc_name, setSucName] = useState(null);
+  const [sucursales, setSucursales] = React.useState([]);
 
   // *** MODAL UPDATE REGISTRO *** //
   const [showCustomerUpdate, setShowCustomerUpdate] = React.useState(false);
@@ -58,22 +50,22 @@ const CategoriaSab = () => {
 
   //load list
   const loadList = async (dataPage, dataPageSize) => {
-    setCategoriasSab([]);
+    setSucursales([]);
     setLoading(true);
     var param = {
       size: dataPageSize,
       page: dataPage,
-      catsab_name: catsab_name,
+      suc_name: suc_name,
     };
-    CategoriaSabService.listCategoriasSab(param.page, param.size, param.catsab_name)
+    SucursalesService.listSucursales(param.page, param.size, param.suc_name)
       .then((response) => {
         if (response.data && response.data.items) {
-          setCategoriasSab(response.data.items); // Cambia Aitems por items
+          setSucursales(response.data.items); // Cambia Aitems por items
           setSize(response.data.size);
           setTotalSize(response.data.totalItems);
           setPageCount(response.data.totalPages);
         } else {
-          setCategoriasSab([]); // Inicializa como un array vacío si no hay datos
+          setSucursales([]); // Inicializa como un array vacío si no hay datos
         }
         setLoading(false);
       })
@@ -94,12 +86,12 @@ const CategoriaSab = () => {
   };
   React.useEffect(() => {
     loadList(page, size);
-  }, [page, size, catsab_name]);
+  }, [page, size, suc_name]);
 
   // *** BOTON RESET DEL BUSCADOR *** //
   const refresh = () => {
     setPage(0);
-    setCategoriasSab([]);
+    setSucursales([]);
     setSize(20);
     loadList(0, 20);
   };
@@ -151,13 +143,13 @@ const CategoriaSab = () => {
       <CRow>
         <CCol xs={12}>
           <h4 id="traffic" className="card-title mb-0 text-primary">
-            Listado de Categorías
+            Listado de Sucursales
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
           <CButton color="dark" onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
             <BsPlus />
-            Nueva Categoría
+            Nueva Sucursal
           </CButton>
         </div>
         <CCol xs={12}>
@@ -168,7 +160,7 @@ const CategoriaSab = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell scope="col" align="center">
-                        Nombre
+                        Sucursal
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Acción
@@ -176,10 +168,10 @@ const CategoriaSab = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {categoriasSab.length > 0 ? (
-                      categoriasSab.map((item) => (
-                        <CTableRow key={item.catsab_cod}>
-                          <CTableDataCell align="center">{item.catsab_name}</CTableDataCell>
+                    {sucursales.length > 0 ? (
+                      sucursales.map((item) => (
+                        <CTableRow key={item.suc_cod}>
+                          <CTableDataCell align="center">{item.suc_name}</CTableDataCell>
                           
                           <CTableDataCell>
                             <BsFillPencilFill
@@ -187,7 +179,7 @@ const CategoriaSab = () => {
                               className="btn-dell"
                               title={'Editar registro'}
                               onClick={() => {
-                                setCliente(item.catsab_cod);
+                                setCliente(item.suc_cod);
                                 handleShowUsersAdd();
                                 setEditing(2);
                               }}
@@ -197,7 +189,7 @@ const CategoriaSab = () => {
                               className="btn-dell"
                               title={'Eliminar Registro'}
                               onClick={async () => {
-                                await CategoriaSabService.deleteCategoriaSab(item.catsab_cod);
+                                await SucursalesService.deleteSucursal(item.suc_cod);
                                 toast.success('Eliminado con éxito', {
                                   position: 'top-right',
                                   autoClose: 3000,
@@ -259,7 +251,7 @@ const CategoriaSab = () => {
             />
           ) : editing === 2 ? (
             <AddCategoriaSabForm
-              catsab_cod={cliente}
+              suc_cod={cliente}
               showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
@@ -275,4 +267,4 @@ const CategoriaSab = () => {
   );
 };
 
-export default CategoriaSab;
+export default Sucursales;

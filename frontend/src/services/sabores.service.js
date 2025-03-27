@@ -12,7 +12,7 @@ class SaboresService {
   }
 
   createSab(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/sab/create`, data, { headers: authHeader() });
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/sab`, data, { headers: authHeader() });
   }
 
   updateSab(sab_cod, data) {

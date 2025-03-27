@@ -1,5 +1,6 @@
 import Sucursales from '../models/sucursales.js'
-
+import { Op } from 'sequelize'
+import Page from '../utils/getPagingData.js'
 const getSucursal = async (req, res) => {
   try {
     const sucursales = Sucursales.findAll()
@@ -22,7 +23,7 @@ const getSucursalById = async (req, res) => {
 const createSucursal = async (req, res) => {
   try {
     const newuser = await Sucursales.create(req.body)
-    res.status(404).json(newuser)
+    res.status(201).json(newuser)
   } catch (error) {
     console.error(error)
     res.status(505).send('Error al crear la Sucursal')
@@ -59,10 +60,52 @@ const deleteSucursal = async (req, res) => {
   }
 }
 
+const List = async (req, res) =>{
+  let { page, size, title } = req.query;
+  const limit = size ? +size : 5;
+  const offset = page ? page * limit : 0;
+
+  if (title == undefined) {
+    title = "";
+  }
+
+  Sucursales.findAndCountAll({
+    
+    where: {
+      [Op.or]: [
+        {
+          suc_cod: {
+            [Op.like]: "%" + title + "%",
+          },
+        },
+        {
+          suc_name: {
+            [Op.like]: "%" + title + "%",
+          },
+        }
+      ],
+    },
+    order: [["suc_cod", "DESC"]],
+    limit,
+    offset,
+  })
+    .then((data) => {
+      const response = new Page(data, Number(req.query.page), limit);
+      res.send(response);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving tutorials.",
+      });
+    });
+}
+
 export default {
   getSucursal,
   getSucursalById,
   createSucursal,
   updateSucursal,
-  deleteSucursal
+  deleteSucursal,
+  List
 }

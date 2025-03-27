@@ -2,7 +2,6 @@ import React from 'react'
 import CIcon from '@coreui/icons-react'
 import {
   cilSettings,
-  cilMonitor,
   cilList,
   cilPizza,
   cilOptions,
@@ -14,14 +13,14 @@ import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 import { 
   IceCreamBowl, 
   IceCreamCone, 
-  Cast, 
   Settings, 
   TicketPercent,
   UserCog,
   History,
   ChartNoAxesCombined,
   Truck,
-  Logs 
+  Logs,
+  Rat 
   } from 'lucide-react';
 
 const _nav = [ 
@@ -141,6 +140,13 @@ const _nav = [
         to: '/proveedores',
         meta: { role: ['ADMIN'] },
         icon: <Truck  customclassname="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Sucursales',
+        to: '/sucursales',
+        meta: { role: ['ADMIN'] },
+        icon: <Rat   customclassname="nav-icon" />,
       },
     ],
   },

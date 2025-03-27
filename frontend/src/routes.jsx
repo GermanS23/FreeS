@@ -13,6 +13,9 @@ import AdminPlantillas from "./components/Plantillas/AdminPlantillas";
 import AdminPantallas from "./components/Pantallas/AdminPantallas";
 import PantallaViewer from "./components/Pantallas/PantallaViewer";
 import Users from "./components/Usuarios/index";
+import Sucursarles from "./components/Sucursales/Sucursales";
+
+
 
 const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
     // Si está cargando, no renderices rutas protegidas
@@ -42,6 +45,7 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
                 { path: "admin/pantallas", element: <AdminPantallas /> },
                 { path: "pantalla/:id", element: <PantallaViewer /> },
                 { path: "config/usuarios", element: <Users /> },
+                { path: "sucursales", element: <Sucursarles /> },
             ],
         },
         {

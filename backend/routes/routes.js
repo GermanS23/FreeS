@@ -96,6 +96,7 @@ router.get('/sucursal/:suc_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "D
 router.post('/sucursal', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.createSucursal)
 router.put('/sucursal/:suc_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.updateSucursal)
 router.delete('/sucursal/:suc_cod', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.deleteSucursal)
+router.get('/sucursales/list', authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"), sucursalesController.List)
 
 // Rutas para plantillas
 router.get('/plantillas',authJwt.verifyToken ,authJwt.permit("ADMIN", "DUEÑO"),plantillaController.getPlantillas);
