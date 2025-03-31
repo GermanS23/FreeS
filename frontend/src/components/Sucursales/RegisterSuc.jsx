@@ -27,7 +27,7 @@ const AddSucursalesForm = ({ showUsersAdd, handleCloseModal, notifySuccess, noti
     if (suc_cod && showUsersAdd) {
       sucursalesService.getSucursalById(suc_cod)
         .then((response) => {
-          setFormData({ catsab_name: response.data.suc_name });
+          setFormData({ suc_name: response.data.suc_name });
         })
         .catch((error) => {
           console.error('Error al cargar la categoría:', error);

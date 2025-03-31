@@ -14,7 +14,7 @@ const getProducto = async (req, res) => {
   }
 }
 const getProductoById = async (req, res) => {
-  const productos = await Productos.findByPk(req.params.sab_cod)
+  const productos = await Productos.findByPk(req.params.prod_cod)
   if (productos) {
     res.json(productos)
   } else {

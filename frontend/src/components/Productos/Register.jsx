@@ -1,9 +1,7 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {
   CButton,
-  CCard,
   CCardBody,
-  CCardHeader,
   CCol,
   CForm,
   CFormFeedback,
@@ -12,19 +10,7 @@ import {
   CFormSelect,
   CFormSwitch,
   CInputGroup,
-  CInputGroupText,
   CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CModal,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilUser, cilAperture, cilSave, cilBook, cilMoney, cilSearch } from '@coreui/icons';
@@ -33,6 +19,7 @@ import ProductosService from '../../services/productos.service.js';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import CategoriaSProdService from "../../services/catprod.service.js"
+import productosService from '../../services/productos.service.js';
 const Register = (props) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [closeModal, setCloseModal] = useState(true);
@@ -54,11 +41,27 @@ const Register = (props) => {
       console.error('Error al obtener las categorías', error);
     }
   };
-  
+
+  const fetchProductos = async () => {
+    try {
+      let { data } = await productosService.getProdById(props.prod_cod);
+      setFormObject({
+        prod_nom: data.prod_nom,
+        prod_pre: data.prod_pre,
+        prod_dis: data.prod_dis,
+        catprod_cod: data.catprod_cod,
+      });
+    } catch (e) {
+      console.log('No se pudo cargar la info', e);
+    }
+  };
 
   useEffect(() => {
     fetchCategorias();
-  }, []);
+    if (props.prod_cod) {
+      fetchProductos();
+    }
+  }, [props.prod_cod]);
 
   const save = async () => {
     if (formObject.prod_nom === null || formObject.prod_pre === null || formObject.prod_pre === null) {
@@ -113,26 +116,7 @@ const Register = (props) => {
     setCloseModal(false);
   };
 
-  const fetchProducto = async () => {
-    try {
-      let { data } = await ProductosService.getProdById(props.prod_cod);
-      setFormObject({
-        prod_nom: null,
-        prod_pre: null,
-        prod_dis: false,
-        catprod_cod: null,
-      });
-    } catch (e) {
-      console.log('No se pudo cargar la info', e);
-    }
-  };
-
-  useEffect(() => {
-    if (props.prod_cod) {
-      fetchProducto();
-    }
-  }, [props.prod_cod]);
-
+ 
   return (
     <Modal show={props.showUsersAdd} onHide={props.handleCloseModal} backdrop="static" size="xl" id="modal">
       <Modal.Header closeButton onClick={cierraModal}>

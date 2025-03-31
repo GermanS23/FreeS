@@ -12,7 +12,7 @@ const getSucursal = async (req, res) => {
 }
 
 const getSucursalById = async (req, res) => {
-  const sucursales = Sucursales.findByPk(req.params.suc_cod)
+  const sucursales = await Sucursales.findByPk(req.params.suc_cod)
   if (sucursales) {
     res.json(sucursales)
   } else {
@@ -32,7 +32,7 @@ const createSucursal = async (req, res) => {
 
 const updateSucursal = async (req, res) => {
   try {
-    const sucursales = Sucursales.findByPk(req.params.suc_cod)
+    const sucursales = await Sucursales.findByPk(req.params.suc_cod)
     if (sucursales) {
       await sucursales.update(req.body)
       res.json(sucursales)
