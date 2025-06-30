@@ -18,8 +18,8 @@ Sucursales.init({
 },
 {
   sequelize,
-  modelName: 'Sucursarles',
-  tableName: 'sucursarles',
+  modelName: 'Sucursales',
+  tableName: 'sucursales',
 }
 )
 

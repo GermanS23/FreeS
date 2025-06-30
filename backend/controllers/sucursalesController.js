@@ -10,6 +10,16 @@ const getSucursal = async (req, res) => {
     res.status(500).send('Eror al obtener la Sucursal')
   }
 }
+const getAllSucursales = async (req, res) => {
+  try {
+    const sucursales = await Sucursales.findAll(); // Obtener todas las sucursales
+    res.json(sucursales);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener las sucursales' });
+  }
+};
+
 
 const getSucursalById = async (req, res) => {
   const sucursales = await Sucursales.findByPk(req.params.suc_cod)
@@ -107,5 +117,6 @@ export default {
   createSucursal,
   updateSucursal,
   deleteSucursal,
-  List
+  List,
+  getAllSucursales
 }

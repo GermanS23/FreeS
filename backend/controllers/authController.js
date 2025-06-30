@@ -7,7 +7,7 @@ import Roles from '../models/roles.js';
 const login = (req, res) => {
     Usuarios.findOne({
         where: {
-            us_user: req.body.us_user, // Asegúrate de que el campo en tu modelo sea us_user
+            us_user: req.body.us_user,
         },
     })
         .then((user) => {
@@ -17,7 +17,7 @@ const login = (req, res) => {
 
             const passwordIsValid = bcrypt.compareSync(
                 req.body.us_pass,
-                user.us_pass // Asegúrate de que el campo en tu modelo sea us_pass
+                user.us_pass 
             );
 
             if (!passwordIsValid) {
@@ -28,7 +28,7 @@ const login = (req, res) => {
             }
 
             const token = jwt.sign({ id: user.us_cod }, config.secretkey, {
-                // expiresIn: 86400 // 24 hours - Puedes agregar expiración si lo deseas
+                 expiresIn: 86400 // 24 hours - Puedes agregar expiración si lo deseas
             });
 
             // Obtener el rol del usuario

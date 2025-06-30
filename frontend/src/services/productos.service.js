@@ -12,7 +12,7 @@ class ProductosService {
   }
 
   createProd(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/prod/create`, data, { headers: authHeader() });
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/prod`, data, { headers: authHeader() });
   }
 
   updateProd(prod_cod, data) {

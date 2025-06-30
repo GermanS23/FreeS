@@ -12,7 +12,7 @@ class CatProdService {
   }
 
   createCatProd(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/catprod/create`, data, { headers: authHeader() });
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/catprod`, data, { headers: authHeader() });
   }
 
   updateCatProd(catprod_cod, data) {

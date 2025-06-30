@@ -49,7 +49,8 @@ app.use('/api', productosController)
 app.use('/api', plantillaController)
 app.use('/api', pantallaController)
 app.use('/api', authController)
-//initial();
+
+//initial(); //Comando para inicializar la base de datos y crear el usuario admin
 
 
 const PORT = process.env.PORT ?? 3000;
@@ -70,13 +71,15 @@ app.listen(PORT, () => {
 })
 
 
-function initial() {
+async function initial() {
+try{
 
-    Rol.create({
+    
+    await Rol.create({
         rol_cod: 4,
         rol_desc: "ADMIN"
-    })
-    Usuarios.create({
+    });
+    await Usuarios.create({
         us_cod: 1,
         us_user: "admin",
         us_pass: bcryp.hashSync("123456", 10),
@@ -84,6 +87,10 @@ function initial() {
         us_email: "german99sanchez@gmail.com",
         us_tel: "3482297539",
         roles_rol_cod: 4
-    })
+    });
+    console.log("Usuario creado correctamente")
 
+} catch (error) {
+    console.error("Error al crear el usuario admin", error)
+}
 }

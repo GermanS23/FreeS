@@ -6,6 +6,9 @@ class SucursalesService {
   getSucursal() {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sucursal`, { headers: authHeader() });
   }
+  getSucursalAll() {
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sucursales`, { headers: authHeader() });
+  }
 
   getSucursalById(suc_cod) {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sucursal/${suc_cod}`, { headers: authHeader() });

@@ -12,7 +12,7 @@ class CategoriaSabService {
   }
 
   createCategoriaSab(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/catsab/create`, data, { headers: authHeader() });
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/catsab`, data, { headers: authHeader() });
   }
 
   updateCategoriaSab(catsab_cod, data) {
