@@ -13,6 +13,16 @@ Plantilla.init({
     plan_nomb:{
         type: DataTypes.STRING(45),
         allowNull: false
+    },
+    plan_imagen: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: "URL o base64 de la imagen de fondo",
+    },
+    plan_config: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {},
     }
 },
 { sequelize,

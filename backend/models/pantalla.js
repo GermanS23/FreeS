@@ -16,7 +16,16 @@ Pantalla.init({
     },
     pan_desc:{
         type: DataTypes.STRING(45)
-    }
+    },
+    pan_activa: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    pan_componente: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+      defaultValue: "SaboresMenu",
+    },
 },
 { sequelize,
     modelName: 'Pantalla',

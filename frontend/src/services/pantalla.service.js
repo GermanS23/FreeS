@@ -32,6 +32,14 @@ class PantallasService {
   getPantallasActivas() {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/activas`, { headers: authHeader() });
   }
+
+  uploadImagen(plan_cod, imagenBase64) {
+    return axios.post(
+      `${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}/imagen`,
+      { plan_imagen: imagenBase64 },
+      { headers: authHeader() }
+    );
+  }
 }
 
 export default new PantallasService();

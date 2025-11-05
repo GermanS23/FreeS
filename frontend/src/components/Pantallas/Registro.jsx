@@ -1,68 +1,101 @@
-import MenuProductos from './PantallaProductos';
-import MenuSabores from './PantallaSabores';
+import MenuProductos from "./PantallaProductos"
+import MenuSabores from "./PantallaSabores"
 
 // Registro de componentes disponibles
 const componentRegistry = {
   // Menús
-  'menu-productos': {
+  "menu-productos": {
     component: MenuProductos,
-    name: 'Menú de Productos',
-    description: 'Muestra un menú con los productos disponibles',
-    category: 'menu',
-    previewImage: '/previews/menu-productos.png',
+    name: "Menú de Productos",
+    description: "Muestra un menú con los productos disponibles",
+    category: "menu",
+    previewImage: "/previews/menu-productos.png",
     defaultConfig: {
-      titulo: 'PRODUCTOS',
+      titulo: "PRODUCTOS",
       columnas: 2,
       mostrarPrecios: true,
-      colorFondo: '#e6f7ff',
-      colorTexto: '#000000',
-      fuenteTitulo: 'Arial',
-      fuenteTexto: 'Arial',
-      tamanoFuenteTitulo: '24px',
-      tamanoFuenteTexto: '16px'
-    }
+      colorFondo: "#e6f7ff",
+      colorTexto: "#000000",
+      fuenteTitulo: "Arial",
+      fuenteTexto: "Arial",
+      tamanoFuenteTitulo: "24px",
+      tamanoFuenteTexto: "16px",
+    },
   },
-  'menu-sabores': {
+  "menu-sabores": {
     component: MenuSabores,
-    name: 'Menú de Sabores',
-    description: 'Muestra un menú con los sabores disponibles',
-    category: 'menu',
-    previewImage: '/previews/menu-sabores.png',
+    name: "Menú de Sabores",
+    description: "Muestra un menú con los sabores disponibles",
+    category: "menu",
+    previewImage: "/previews/menu-sabores.png",
     defaultConfig: {
-      titulo: 'CREMAS HELADAS',
+      titulo: "CREMAS HELADAS",
       columnas: 2,
       mostrarDescripciones: true,
-      colorFondo: '#e6f7ff',
-      colorTexto: '#000000',
-      fuenteTitulo: 'Arial',
-      fuenteTexto: 'Arial',
-      tamanoFuenteTitulo: '24px',
-      tamanoFuenteTexto: '16px'
-    }
-  }
-};
+      colorFondo: "#e6f7ff",
+      colorTexto: "#000000",
+      fuenteTitulo: "Arial",
+      fuenteTexto: "Arial",
+      tamanoFuenteTitulo: "24px",
+      tamanoFuenteTexto: "16px",
+    },
+  },
+  SaboresMenu: {
+    component: MenuSabores,
+    name: "Menú de Sabores",
+    description: "Muestra un menú con los sabores disponibles",
+    category: "menu",
+    previewImage: "/previews/menu-sabores.png",
+    defaultConfig: {
+      titulo: "CREMAS HELADAS",
+      columnas: 2,
+      mostrarDescripciones: true,
+      colorFondo: "#e6f7ff",
+      colorTexto: "#000000",
+      fuenteTitulo: "Arial",
+      fuenteTexto: "Arial",
+      tamanoFuenteTitulo: "24px",
+      tamanoFuenteTexto: "16px",
+    },
+  },
+}
 
 // Función para obtener un componente por su ID
 export const getComponent = (componentId) => {
-  return componentRegistry[componentId] || null;
-};
+  return componentRegistry[componentId] || null
+}
 
 // Función para obtener todos los componentes
 export const getAllComponents = () => {
-  return Object.keys(componentRegistry).map(key => ({
+  return Object.keys(componentRegistry).map((key) => ({
     id: key,
-    ...componentRegistry[key]
-  }));
-};
+    ...componentRegistry[key],
+  }))
+}
+
+export const getAvailableComponents = () => {
+  // Filtrar duplicados (alias)
+  const uniqueComponents = {}
+  Object.keys(componentRegistry).forEach((key) => {
+    const comp = componentRegistry[key]
+    if (!uniqueComponents[comp.name]) {
+      uniqueComponents[comp.name] = {
+        id: key,
+        ...comp,
+      }
+    }
+  })
+  return Object.values(uniqueComponents)
+}
 
 // Función para obtener componentes por categoría
 export const getComponentsByCategory = (category) => {
   return Object.keys(componentRegistry)
-    .filter(key => componentRegistry[key].category === category)
-    .map(key => ({
+    .filter((key) => componentRegistry[key].category === category)
+    .map((key) => ({
       id: key,
-      ...componentRegistry[key]
-    }));
-};
+      ...componentRegistry[key],
+    }))
+}
 
-export default componentRegistry;
+export default componentRegistry

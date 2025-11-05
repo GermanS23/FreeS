@@ -10,9 +10,6 @@ import { Heart } from 'lucide-react';
 import SaboresService from '../../services/sabores.service';
 import './SaboresMenu.css';
 
-// Puedes recibir la categoría como prop o definirla como constante
-const CATEGORIA_NOMBRE = "Cremas Heladas Dulce de Leche"; // O cualquier otra categoría que necesites
-
 const SaboresMenu = () => {
   const [saboresIzquierda, setSaboresIzquierda] = useState([]);
   const [saboresDerecha, setSaboresDerecha] = useState([]);
@@ -27,7 +24,7 @@ const SaboresMenu = () => {
       // Filtrar por categoría y disponibilidad
       const saboresDisponibles = response.data.items.filter(
         sabor => sabor.sab_disp === true && 
-                sabor.CategoriaSab?.catsab_name === "Cremas Heladas"
+                sabor.CategoriaSab?.catsab_name === "CREMAS"
       );
 
       // Dividir los sabores en dos arrays

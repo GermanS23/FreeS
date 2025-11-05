@@ -16,32 +16,27 @@ Proveedores.init({
         allowNull: false
     },
     prov_email:{
-        type: DataTypes.STRING(45) ,
-        allowNull: false
+        type: DataTypes.STRING(45) 
     },
     prov_tel:{
         type: DataTypes.STRING(45) ,
         allowNull: false
     },
     prov_direc:{
-        type: DataTypes.STRING(45) ,
-        allowNull: false
+        type: DataTypes.STRING(45) 
     },
     prov_saldo:{
         type: DataTypes.FLOAT() ,
         allowNull: false
     },
     prov_activo:{
-        type: DataTypes.BOOLEAN() ,
-        allowNull: false
+        type: DataTypes.BOOLEAN() 
     },
     prov_nrotributario:{
-        type: DataTypes.STRING(45) ,
-        allowNull: false
+        type: DataTypes.STRING(45)
     },
     prov_coment:{
-        type: DataTypes.STRING(45) ,
-        allowNull: false
+        type: DataTypes.STRING(45) 
     }
 },
 {

@@ -173,6 +173,22 @@ const getPantallasActivas = async (req, res) => {
   }
 };
 
+// Actualizar una plantilla
+const updatePlantilla = async (req, res) => {
+  try {
+    const plantilla = await Plantilla.findByPk(req.params.plan_cod)
+    if (plantilla) {
+      await plantilla.update(req.body)
+      res.json(plantilla)
+    } else {
+      res.status(404).send("Plantilla no encontrada")
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).send("Error al actualizar la plantilla")
+  }
+}
+
 export default {
   getPantallas,
   getPantallaById,
@@ -180,5 +196,6 @@ export default {
   updatePantalla,
   deletePantalla,
   listPantallas,
-  getPantallasActivas
+  getPantallasActivas,
+  updatePlantilla
 };
