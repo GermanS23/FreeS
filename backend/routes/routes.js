@@ -13,6 +13,7 @@ import pantallaController from "../controllers/pantallaController.js"
 import authController from "../controllers/authController.js"
 
 import authJwt from "../middleware/authjwt.js"
+import upload from "../config/multer.config.js"
 
 const rolesRouter = express.Router()
 const catprodRouter = express.Router()
@@ -247,6 +248,7 @@ plantillaRouter.post(
   "/plantillas",
   authJwt.verifyToken,
   authJwt.permit("ADMIN", "DUEÑO"),
+  upload.single("imagen"), // Middleware de multer para procesar el archivo
   plantillaController.createPlantilla,
 )
 
@@ -261,6 +263,7 @@ plantillaRouter.put(
   "/plantillas/:plan_cod",
   authJwt.verifyToken,
   authJwt.permit("ADMIN", "DUEÑO"),
+  upload.single("imagen"), // Middleware de multer para procesar el archivo
   plantillaController.updatePlantilla,
 )
 

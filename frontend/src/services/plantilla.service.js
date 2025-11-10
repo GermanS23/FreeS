@@ -10,12 +10,54 @@ class PlantillasService {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, { headers: authHeader() })
   }
 
-  createPlantilla(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/plantillas`, data, { headers: authHeader() })
+  createPlantilla(data, imagenFile) {
+    const formData = new FormData()
+
+    // Agregar todos los campos de texto
+    formData.append("plan_nomb", data.plan_nomb)
+    formData.append("plan_tipo", data.plan_tipo || "")
+
+    // Agregar la configuración como JSON string
+    if (data.plan_config) {
+      formData.append("plan_config", JSON.stringify(data.plan_config))
+    }
+
+    // Agregar el archivo de imagen si existe
+    if (imagenFile) {
+      formData.append("imagen", imagenFile)
+    }
+
+    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/plantillas`, formData, {
+      headers: {
+        ...authHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    })
   }
 
-  updatePlantilla(plan_cod, data) {
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, data, { headers: authHeader() })
+  updatePlantilla(plan_cod, data, imagenFile) {
+    const formData = new FormData()
+
+    // Agregar todos los campos de texto
+    formData.append("plan_nomb", data.plan_nomb)
+    formData.append("plan_tipo", data.plan_tipo || "")
+
+    // Agregar la configuración como JSON string
+    if (data.plan_config) {
+      formData.append("plan_config", JSON.stringify(data.plan_config))
+    }
+
+    // Agregar el archivo de imagen si existe (nueva imagen)
+    if (imagenFile) {
+      formData.append("imagen", imagenFile)
+    }
+
+    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, formData, {
+      headers: {
+        ...authHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    })
   }
 
   deletePlantilla(plan_cod) {

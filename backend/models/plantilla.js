@@ -1,34 +1,36 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../config/database.js";
+import { DataTypes, Model } from "sequelize"
+import sequelize from "../config/database.js"
 
-class Plantilla extends Model{};
+class Plantilla extends Model {}
 
-Plantilla.init({
-    plan_cod:{
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true
+Plantilla.init(
+  {
+    plan_cod: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
     },
-    plan_nomb:{
-        type: DataTypes.STRING(45),
-        allowNull: false
+    plan_nomb: {
+      type: DataTypes.STRING(45),
+      allowNull: false,
+    },
+    plan_tipo: {
+      type: DataTypes.STRING(45),
+      allowNull: true,
     },
     plan_imagen: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(255),
       allowNull: true,
-      comment: "URL o base64 de la imagen de fondo",
+      comment: "Ruta relativa de la imagen de fondo (ej: /uploads/plantillas/imagen-123456.jpg)",
     },
     plan_config: {
       type: DataTypes.JSON,
       allowNull: true,
       defaultValue: {},
-    }
-},
-{ sequelize,
-    modelName: 'Plantilla',
-    tableName: 'plantilla',
-}
+    },
+  },
+  { sequelize, modelName: "Plantilla", tableName: "plantilla", timestamps: true },
 )
 
-export default Plantilla;
+export default Plantilla
