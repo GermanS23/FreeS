@@ -23,11 +23,13 @@ class CategoriaSabService {
     return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/catsab/${catsab_cod}`, { headers: authHeader() });
   }
 
-  listCategoriasSab(page, size, title) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/catsabs/list`, {
-      params: { page, size, title },
-      headers: authHeader(),
-    });
+  listSabores(page = 0, size = 1000, title = "", cats = null) {
+    const params = { page, size, title }
+    if (cats) {
+      // cats puede ser array o valores individuales -> convertir a string "1,2"
+      params.cats = Array.isArray(cats) ? cats.join(",") : String(cats)
+    }
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sabores`, { params, headers: authHeader() })
   }
 }
 

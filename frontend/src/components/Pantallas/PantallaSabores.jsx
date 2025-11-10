@@ -1,159 +1,205 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  CCard, 
-  CCardBody, 
-  CContainer, 
-  CRow, 
-  CCol 
-} from '@coreui/react';
-import { Heart } from 'lucide-react';
-import SaboresService from '../../services/sabores.service';
-import './SaboresMenu.css';
+import React, { useState, useEffect, useMemo } from 'react'
+import {
+  CCard,
+  CCardBody,
+  CContainer,
+  CRow,
+  CCol,
+  CSpinner,
+  CAlert,
+} from '@coreui/react'
+import { Heart } from 'lucide-react'
+import SaboresService from '../../services/sabores.service'
+import './SaboresMenu.css' // Usamos tu CSS original
 
-const SaboresMenu = () => {
-  const [saboresIzquierda, setSaboresIzquierda] = useState([]);
-  const [saboresDerecha, setSaboresDerecha] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+const DEFAULT_CONFIG = {
+  colorFondo: '#ffffff',
+  colorTexto: '#000000',
+  fuenteTexto: 'Arial, sans-serif',
+  fuenteTitulo: 'Arial, sans-serif',
+  tamanoFuenteTitulo: '24px',
+  tamanoFuenteTexto: '16px',
+  mostrarLogo: true,
+  mostrarFooter: true,
+};
 
-  // Función actualizada para obtener sabores
-  const fetchSabores = useCallback(async () => {
-    try {
-      const response = await SaboresService.listSabores(0, 100, '');
-      // Filtrar por categoría y disponibilidad
-      const saboresDisponibles = response.data.items.filter(
-        sabor => sabor.sab_disp === true && 
-                sabor.CategoriaSab?.catsab_name === "CREMAS"
-      );
+const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 30000 }) => {
+  const [categorias, setCategorias] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [lastUpdate, setLastUpdate] = useState(null)
 
-      // Dividir los sabores en dos arrays
-      const mitad = Math.ceil(saboresDisponibles.length / 2);
-      setSaboresIzquierda(saboresDisponibles.slice(0, mitad));
-      setSaboresDerecha(saboresDisponibles.slice(mitad));
-      setLastUpdate(new Date());
-      
-      if (isLoading) setIsLoading(false);
-    } catch (error) {
-      console.error('Error al cargar sabores:', error);
-      setError('Error al cargar los sabores. Por favor, intente nuevamente.');
-      setIsLoading(false);
+  // La lógica de carga de datos (agrupación) sigue siendo la misma. Esto funciona.
+  useEffect(() => {
+    let isMounted = true
+
+    const loadSabores = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await SaboresService.listSaboresPublic(categoria)
+        const items = response.data.items || []
+        const disponibles = items.filter(s => s.sab_disp === true)
+
+        const groups = {}
+        disponibles.forEach(sabor => {
+          const catId = sabor.catsab_cod;
+          if (!groups[catId]) {
+            groups[catId] = {
+              cat_cod: catId,
+              cat_name: sabor.CategoriaSab?.catsab_name || 'Otros',
+              sabores: [] 
+            };
+          }
+          groups[catId].sabores.push(sabor);
+        });
+
+        const groupedArray = Object.values(groups);
+
+        if (isMounted) {
+          setCategorias(groupedArray)
+          setLastUpdate(new Date())
+        }
+
+      } catch (err) {
+        console.error("Error en loadSabores:", err)
+        if (isMounted) setError("No se pudieron cargar los sabores.")
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
     }
-  }, [isLoading]);
 
-  // Efecto inicial para cargar datos
-  useEffect(() => {
-    fetchSabores();
-  }, [fetchSabores]);
+    loadSabores()
+    const interval = setInterval(loadSabores, refreshInterval)
 
-  // Efecto para actualización periódica
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchSabores();
-    }, 30000); // Actualiza cada 30 segundos
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [categoria, refreshInterval])
 
-    // Cleanup al desmontar el componente
-    return () => clearInterval(intervalId);
-  }, [fetchSabores]);
+  // --- 🔹 NUEVA LÓGICA DE COLUMNAS 🔹 ---
+  // Asignamos la primera categoría a la izquierda y la segunda a la derecha.
+  const { catIzquierda, catDerecha } = useMemo(() => {
+    return {
+      catIzquierda: categorias[0] || null, // Toma la primera categoría
+      catDerecha: categorias[1] || null,  // Toma la segunda categoría
+    }
+  }, [categorias])
 
-  // Opcional: Función para forzar actualización manual
-  const handleManualRefresh = () => {
-    setIsLoading(true);
-    fetchSabores();
-  };
+  // --- LÓGICA DE ESTILOS (Limpia) ---
+  const plantillaConfig = plantilla?.plan_config || {}
+  const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig }
+  const plantillaImageUrl = plantilla?.plan_imagen
+  
+  // Usamos los estilos de tu CSS (.sabores-menu-container)
+  const rootStyle = {
+    backgroundImage: plantillaImageUrl ? `url(${plantillaImageUrl})` : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: plantillaImageUrl ? undefined : configFinal.colorFondo,
+    color: configFinal.colorTexto,
+    fontFamily: configFinal.fuenteTexto,
+    fontSize: configFinal.tamanoFuenteTexto,
+  }
+
+  // --- RENDERIZADO ---
 
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="text-center p-5 d-flex justify-content-center align-items-center" style={{ minHeight: '200px', zIndex: 10, position: 'relative' }}>
+        <CSpinner color="warning" />
+        <p className="ms-3">Cargando Sabores...</p> 
       </div>
-    );
+    )
   }
 
   if (error) {
-    return (
-      <div className="alert alert-danger m-5">
-        {error}
-        <button 
-          className="btn btn-outline-danger ms-3"
-          onClick={handleManualRefresh}
-        >
-          Reintentar
-        </button>
-      </div>
-    );
+    return ( <CAlert color="danger" className="m-5 text-center">{error}</CAlert> )
   }
 
-  return (
-    <div className="sabores-menu-container">
-      <CContainer fluid>
-        <CCard className="sabores-card">
-          <CCardBody>
-            {/* Indicador de última actualización */}
-            <div className="last-update">
-              Última actualización: {lastUpdate.toLocaleTimeString()}
-            </div>
+  if (categorias.length === 0) {
+    return (
+      <CAlert color="info" className="m-5 text-center">
+        No se encontraron sabores disponibles para esta categoría.
+      </CAlert>
+    )
+  }
 
+  // --- 🔹 RENDERIZADO FINAL CON 3 COLUMNAS 🔹 ---
+  return (
+    <div className="sabores-menu-container" style={rootStyle}>
+      <CContainer fluid>
+        <CCard className="sabores-card" style={{ background: 'transparent', boxShadow: 'none' }}>
+          <CCardBody>
+            <div className="last-update" style={{ color: configFinal.colorTexto }}>
+              Última actualización: {lastUpdate ? lastUpdate.toLocaleTimeString() : '-'}
+            </div>
+            
+            {/* Volvemos a la estructura de 3 columnas */}
             <CRow>
-              {/* Columna izquierda */}
+              {/* --- Columna Izquierda (Categoría 1) --- */}
               <CCol md={5}>
-                <h2 className="menu-section-title">CREMAS HELADAS</h2>
-                <ul className="sabores-list">
-                  {saboresIzquierda.map((sabor) => (
-                    <li key={sabor.sab_cod} className="sabor-item">
-                      • {sabor.sab_nom}
-                      {sabor.sab_desc && (
-                        <div className="sabor-descripcion">
-                          {sabor.sab_desc}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                {catIzquierda && (
+                  <>
+                    <h2 className="menu-section-title" style={{ 
+                      color: configFinal.colorTitulo || configFinal.colorTexto, 
+                      fontFamily: configFinal.fuenteTitulo || configFinal.fuenteTexto, 
+                      fontSize: configFinal.tamanoFuenteTitulo, 
+                      marginTop:0 
+                    }}>
+                      {catIzquierda.cat_name.toUpperCase()}
+                    </h2>
+                    <ul className="sabores-list">
+                      {catIzquierda.sabores.map(s => (<li key={s.sab_cod} style={{ color: configFinal.colorTexto }}>• {s.sab_nom}</li>))}
+                    </ul>
+                  </>
+                )}
               </CCol>
 
-              {/* Columna central */}
+              {/* --- Columna Central (Logo) --- */}
               <CCol md={2} className="d-flex justify-content-center align-items-center">
-                <div className="central-content">
-                  <img 
-                    src="../src/assets/Logo.svg" 
-                    alt="Free Shop Logo" 
-                    className="brand-logo"
-                  />
-                  <div className="social-icons">
-                    <Heart className="heart-icon" />
-                    <Heart className="heart-icon" />
-                  </div>
+                <div className="central-content" style={{textAlign:'center'}}>
+                  {configFinal.mostrarLogo && (<img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="brand-logo" />)}
+                  <div className="social-icons" style={{ marginTop: 8 }}><Heart className="heart-icon" /><Heart className="heart-icon" /></div>
                 </div>
               </CCol>
 
-              {/* Columna derecha */}
+              {/* --- Columna Derecha (Categoría 2) --- */}
               <CCol md={5}>
-                <ul className="sabores-list mt-5">
-                  {saboresDerecha.map((sabor) => (
-                    <li key={sabor.sab_cod} className="sabor-item">
-                      • {sabor.sab_nom}
-                      {sabor.sab_desc && (
-                        <div className="sabor-descripcion">
-                          {sabor.sab_desc}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                 {catDerecha && (
+                  <>
+                    <h2 className="menu-section-title" style={{ 
+                      color: configFinal.colorTitulo || configFinal.colorTexto, 
+                      fontFamily: configFinal.fuenteTitulo || configFinal.fuenteTexto, 
+                      fontSize: configFinal.tamanoFuenteTitulo, 
+                      marginTop:0 
+                    }}>
+                      {catDerecha.cat_name.toUpperCase()}
+                    </h2>
+                    <ul className="sabores-list">
+                      {catDerecha.sabores.map(s => (<li key={s.sab_cod} style={{ color: configFinal.colorTexto }}>• {s.sab_nom}</li>))}
+                    </ul>
+                  </>
+                )}
               </CCol>
             </CRow>
 
-            <div className="footer-note">
-              Los sabores <b>FREE SHOP</b> tienen bombones Marroc, chips de chocolate y DDL repostero | www.freeshophelados.com.ar
-            </div>
+            {/* El footer usará tu CSS para 'margin-top: auto' y se irá al fondo */}
+            {configFinal.mostrarFooter && (
+              <div 
+                className="footer-note" 
+                style={{ color: configFinal.colorTexto }}
+              >
+                Los sabores <b>FREE SHOP</b> ...
+              </div>
+            )}
           </CCardBody>
         </CCard>
       </CContainer>
     </div>
-  );
-};
+  )
+}
 
-export default SaboresMenu;
+export default SaboresMenu

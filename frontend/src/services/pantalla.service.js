@@ -1,45 +1,63 @@
-import axios from 'axios';
-import authHeader from '../services/auth-header';
+// src/services/pantalla.service.js
+import axios from "axios"
+import authHeader from "./auth-header"
+
+const API_URL = import.meta.env.VITE_REDIRECT_URI
 
 class PantallasService {
+  // Obtener todas las pantallas (ADMIN)
   getPantallas() {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/pantallas`, { headers: authHeader() });
-  }
-
-  getPantallaById(pan_cod) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/${pan_cod}`, { headers: authHeader() });
-  }
-
-  createPantalla(data) {
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/pantallas`, data, { headers: authHeader() });
-  }
-
-  updatePantalla(pan_cod, data) {
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/${pan_cod}`, data, { headers: authHeader() });
-  }
-
-  deletePantalla(pan_cod) {
-    return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/${pan_cod}`, { headers: authHeader() });
-  }
-
-  listPantallas(page, size, title) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/list`, {
-      params: { page, size, title },
+    return axios.get(`${API_URL}/pantallas`, {
       headers: authHeader(),
-    });
+    })
   }
 
+  // Obtener una pantalla por ID (ADMIN)
+  getPantallaById(id) {
+    return axios.get(`${API_URL}/pantallas/${id}`, {
+      headers: authHeader(),
+    })
+  }
+
+  //
+  // 🔹 NUEVA FUNCIÓN PÚBLICA
+  // Esta es la que usará PantallaViewer.jsx
+  // No envía authHeader() y llama a la ruta pública
+  //
+  getPantallaPublicaById(id) {
+    return axios.get(`${API_URL}/pantallas/public/${id}`)
+  }
+  //
+  // ----------------------------------------
+  //
+
+  // Crear una nueva pantalla (ADMIN)
+  createPantalla(data) {
+    return axios.post(`${API_URL}/pantallas`, data, {
+      headers: { ...authHeader(), "Content-Type": "application/json" },
+    })
+  }
+
+  // Actualizar una pantalla existente (ADMIN)
+  updatePantalla(id, data) {
+    return axios.put(`${API_URL}/pantallas/${id}`, data, {
+      headers: { ...authHeader(), "Content-Type": "application/json" },
+    })
+  }
+
+  // Eliminar una pantalla (ADMIN)
+  deletePantalla(id) {
+    return axios.delete(`${API_URL}/pantallas/${id}`, {
+      headers: authHeader(),
+    })
+  }
+
+  // Obtener solo las pantallas activas (ADMIN)
   getPantallasActivas() {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/pantallas/activas`, { headers: authHeader() });
-  }
-
-  uploadImagen(plan_cod, imagenBase64) {
-    return axios.post(
-      `${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}/imagen`,
-      { plan_imagen: imagenBase64 },
-      { headers: authHeader() }
-    );
+    return axios.get(`${API_URL}/pantallas/activas`, {
+      headers: authHeader(),
+    })
   }
 }
 
-export default new PantallasService();
+export default new PantallasService()

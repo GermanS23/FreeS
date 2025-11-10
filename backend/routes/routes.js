@@ -156,6 +156,15 @@ catsabRouter.delete(
 catsabRouter.get("/catsabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catsabController.List)
 
 // ==================== RUTAS PARA SABORES DE HELADOS ====================
+
+// --- RUTA PÚBLICA (NUEVA) ---
+// Usada por PantallaSabores.jsx (SaboresMenu)
+sabheladosRouter.get(
+  "/sabs/public/list",
+  sabheladosController.List // Sin authJwt
+)
+
+// --- RUTAS DE ADMIN (Existentes) ---
 sabheladosRouter.get("/sab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), sabheladosController.getSabor)
 sabheladosRouter.get(
   "/sab/:sab_cod",
@@ -275,6 +284,15 @@ plantillaRouter.delete(
 )
 
 // ==================== RUTAS PARA PANTALLAS ====================
+
+// --- RUTA PÚBLICA (NUEVA) ---
+// Usada por PantallaViewer.jsx
+pantallaRouter.get(
+  "/pantallas/public/:pan_cod",
+  pantallaController.getPantallaById // Sin authJwt
+)
+
+// --- RUTAS DE ADMIN (Existentes) ---
 pantallaRouter.get(
   "/pantallas/activas",
   authJwt.verifyToken,

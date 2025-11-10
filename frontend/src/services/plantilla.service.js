@@ -10,55 +10,58 @@ class PlantillasService {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, { headers: authHeader() })
   }
 
-  createPlantilla(data, imagenFile) {
-    const formData = new FormData()
+ // frontend/src/services/plantilla.service.js (fragmento importante)
+createPlantilla(data, imagenFile = null) {
+  let formDataToSend
 
-    // Agregar todos los campos de texto
-    formData.append("plan_nomb", data.plan_nomb)
-    formData.append("plan_tipo", data.plan_tipo || "")
-
-    // Agregar la configuración como JSON string
+  if (data instanceof FormData) {
+    formDataToSend = data
+  } else {
+    formDataToSend = new FormData()
+    formDataToSend.append("plan_nomb", data.plan_nomb || "")
+    formDataToSend.append("plan_tipo", data.plan_tipo || "")
     if (data.plan_config) {
-      formData.append("plan_config", JSON.stringify(data.plan_config))
+      formDataToSend.append("plan_config", JSON.stringify(data.plan_config))
     }
-
-    // Agregar el archivo de imagen si existe
     if (imagenFile) {
-      formData.append("imagen", imagenFile)
+      formDataToSend.append("imagen", imagenFile)
     }
-
-    return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/plantillas`, formData, {
-      headers: {
-        ...authHeader(),
-        "Content-Type": "multipart/form-data",
-      },
-    })
   }
 
-  updatePlantilla(plan_cod, data, imagenFile) {
-    const formData = new FormData()
+  // IMPORTANTE: no forzar Content-Type para que axios ponga boundary correcto
+  return axios.post(`${import.meta.env.VITE_REDIRECT_URI}/plantillas`, formDataToSend, {
+    headers: {
+      ...authHeader()
+      // NO incluir "Content-Type": "multipart/form-data"
+    },
+  })
+}
 
-    // Agregar todos los campos de texto
-    formData.append("plan_nomb", data.plan_nomb)
-    formData.append("plan_tipo", data.plan_tipo || "")
+updatePlantilla(plan_cod, data, imagenFile = null) {
+  let formDataToSend
 
-    // Agregar la configuración como JSON string
+  if (data instanceof FormData) {
+    formDataToSend = data
+  } else {
+    formDataToSend = new FormData()
+    formDataToSend.append("plan_nomb", data.plan_nomb || "")
+    formDataToSend.append("plan_tipo", data.plan_tipo || "")
     if (data.plan_config) {
-      formData.append("plan_config", JSON.stringify(data.plan_config))
+      formDataToSend.append("plan_config", JSON.stringify(data.plan_config))
     }
-
-    // Agregar el archivo de imagen si existe (nueva imagen)
     if (imagenFile) {
-      formData.append("imagen", imagenFile)
+      formDataToSend.append("imagen", imagenFile)
     }
-
-    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, formData, {
-      headers: {
-        ...authHeader(),
-        "Content-Type": "multipart/form-data",
-      },
-    })
   }
+
+  return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, formDataToSend, {
+    headers: {
+      ...authHeader()
+      // NO incluir "Content-Type": "multipart/form-data"
+    },
+  })
+}
+
 
   deletePlantilla(plan_cod) {
     return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/plantillas/${plan_cod}`, { headers: authHeader() })

@@ -18,7 +18,8 @@ import UsuariosSucursales from './usuariosSucursales.js'
 import ProvProducts from './ProvProducts.js'
 import ProductsProm from './ProductsProm.js'
 import SucProms from './SucProms.js'
-
+import CatSabPan from './CatSabPan.js'
+import CatProdPan from './CatProdPan.js'
 
 
 // Relacion entre Usuario y Roles
@@ -67,3 +68,14 @@ Promociones.belongsToMany(Sucursales, {through: SucProms,
 Sucursales.belongsToMany(Promociones, {through: SucProms,
   uniqueKey: 'unique_suc_prom'})
 
+//Relacion muchos a mucho entre Categorias Sabores y Pantallas
+CategoriaSab.belongsToMany(Pantalla, {through: CatSabPan,
+  uniqueKey: 'unique_catsab_pan'})
+Pantalla.belongsToMany(CategoriaSab, {through: CatSabPan,
+  uniqueKey: 'unique_catsab_pan'})
+
+  //Relacion muchos a mucho entre Categorias Productos y Pantallas
+CategoriaProd.belongsToMany(Pantalla, {through: CatProdPan,
+  uniqueKey: 'unique_catprod_pan'})
+Pantalla.belongsToMany(CategoriaProd, {through: CatProdPan,
+  uniqueKey: 'unique_catprod_pan'})

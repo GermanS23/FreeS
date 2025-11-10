@@ -3,6 +3,8 @@ import dotenv from "dotenv"
 import sequelize from "./config/database.js"
 import cors from "cors"
 import bcryp from "bcrypt"
+import path from "path"
+import { fileURLToPath } from "url"
 import {
   rolesRouter,
   catprodRouter,
@@ -16,6 +18,9 @@ import {
   pantallaRouter,
   authRouter,
 } from "./routes/routes.js"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // importar las asociaciones
 import "./models/associations.js"
@@ -38,6 +43,9 @@ app.use(
 
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ limit: "50mb", extended: true }))
+
+app.use("/uploads", express.static(path.join(__dirname, "../frontend/public/uploads")))
+console.log("[v0] Sirviendo archivos estáticos desde:", path.join(__dirname, "../frontend/public/uploads"))
 
 app.use("/api", rolesRouter)
 app.use("/api", catprodRouter)

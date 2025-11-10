@@ -1,3 +1,4 @@
+// frontend/src/components/Pantallas/AdminPantallas.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,8 +7,6 @@ import {
   CCardBody,
   CCardHeader,
   CCardTitle,
-  CRow,
-  CCol,
   CButton,
   CTable,
   CTableHead,
@@ -23,300 +22,184 @@ import {
   CForm,
   CFormInput,
   CFormSelect,
+  CFormTextarea,
   CSpinner,
   CAlert,
-  CInputGroup,
-  CInputGroupText,
   CFormCheck,
+  CBadge,
   CFormLabel,
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
-import { cilPlus, cilPencil, cilTrash, cilImage, cilCloudUpload } from "@coreui/icons"
+import { cilPlus, cilPencil, cilTrash, cilScreenDesktop } from "@coreui/icons"
+import PantallasService from "../../services/pantalla.service"
 import PlantillasService from "../../services/plantilla.service"
-import { getPlantillaDefault } from "./PlantillasDefault"
-import "./AdminPlantilla.css"
+import CategoriaSabService from "../../api/catsab"
+import { getAvailableComponents } from "./Registro"
 
-const TIPOS_PLANTILLA = [
-  { value: "menuSabores", label: "Menú de Sabores" },
-  { value: "menuProductos", label: "Menú de Productos" },
-  { value: "dashboard", label: "Dashboard" },
-  { value: "lista", label: "Lista" },
-]
-
-const AdminPlantillas = () => {
+const AdminPantallas = () => {
+  const [pantallas, setPantallas] = useState([])
   const [plantillas, setPlantillas] = useState([])
+  const [catsabList, setCatsabList] = useState([])
   const [loading, setLoading] = useState(true)
+  const [catsabLoading, setCatsabLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const [currentPlantilla, setCurrentPlantilla] = useState(null)
-  const [imagenPreview, setImagenPreview] = useState(null)
-  const [imagenFile, setImagenFile] = useState(null)
+  const [currentPantalla, setCurrentPantalla] = useState(null)
   const [formData, setFormData] = useState({
-    plan_nomb: "",
-    plan_tipo: "",
-    plan_imagen: "",
-    plan_config: {},
+    pan_nomb: "",
+    pan_desc: "",
+    pan_componente: "SaboresMenu",
+    pan_activa: true,
+    plan_cod: "",
+    pan_config: {},
+    pan_catsab_cod: [], // array de ids de categorias seleccionadas
   })
-  const [configFields, setConfigFields] = useState([
-    { key: "colorFondo", label: "Color de Fondo", type: "color", value: "#ffffff" },
-    { key: "colorTexto", label: "Color de Texto", type: "color", value: "#000000" },
-    {
-      key: "fuenteTitulo",
-      label: "Fuente del Título",
-      type: "select",
-      value: "Arial",
-      options: ["Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana"],
-    },
-    {
-      key: "fuenteTexto",
-      label: "Fuente del Texto",
-      type: "select",
-      value: "Arial",
-      options: ["Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana"],
-    },
-    { key: "tamanoFuenteTitulo", label: "Tamaño de Fuente del Título", type: "text", value: "24px" },
-    { key: "tamanoFuenteTexto", label: "Tamaño de Fuente del Texto", type: "text", value: "16px" },
-    { key: "mostrarLogo", label: "Mostrar Logo", type: "checkbox", value: true },
-    { key: "mostrarFooter", label: "Mostrar Pie de Página", type: "checkbox", value: true },
-  ])
 
   useEffect(() => {
-    fetchPlantillas()
+    fetchData()
+    loadCategorias()
   }, [])
 
-  const fetchPlantillas = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true)
-      const response = await PlantillasService.getPlantillas()
-      setPlantillas(response.data)
+      const [pantallasRes, plantillasRes] = await Promise.all([
+        PantallasService.getPantallas(),
+        PlantillasService.getPlantillas(),
+      ])
+      setPantallas(pantallasRes.data)
+      setPlantillas(plantillasRes.data)
       setLoading(false)
     } catch (err) {
-      console.error("Error al cargar plantillas:", err)
-      setError("Error al cargar las plantillas. Por favor, intente nuevamente.")
+      console.error("[v0] Error al cargar datos:", err)
+      setError("Error al cargar los datos. Por favor, intente nuevamente.")
       setLoading(false)
+    }
+  }
+
+  const loadCategorias = async () => {
+    try {
+      setCatsabLoading(true)
+      setError(null)
+      const res = await CategoriaSabService.getCategoriasSab()
+      // adaptamos respuesta (puede venir como array simple o como paginación)
+      const list = Array.isArray(res.data) ? res.data : (res.data?.items || [])
+      setCatsabList(list)
+    } catch (err) {
+      console.error("[v0] Error al cargar categorias de sabores:", err)
+      setCatsabList([])
+      setError("No se pudieron cargar las categorías. Usar valores por defecto.")
+    } finally {
+      setCatsabLoading(false)
     }
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
+    const { name, value, type, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }))
   }
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        setError("Por favor seleccione un archivo de imagen válido")
-        return
-      }
+  const openModal = (pantalla = null) => {
+    if (pantalla) {
+      // soportar distintos aliases devueltos por el backend
+      const catsFromResponse =
+        (pantalla.Categorias && pantalla.Categorias.map((c) => c.catsab_cod)) ||
+        (pantalla.CategoriaSabs && pantalla.CategoriaSabs.map((c) => c.catsab_cod)) ||
+        (pantalla.Categoria && pantalla.Categoria.catsab_cod ? [pantalla.Categoria.catsab_cod] : []) ||
+        []
 
-      if (file.size > 5 * 1024 * 1024) {
-        setError("La imagen no debe superar los 5MB")
-        return
-      }
-
-      // Guardar el archivo directamente sin convertir a base64
-      setImagenFile(file)
-
-      // Crear preview usando URL.createObjectURL (más eficiente)
-      const previewUrl = URL.createObjectURL(file)
-      setImagenPreview(previewUrl)
-    }
-  }
-
-  const removeImage = () => {
-    // Liberar la URL del preview
-    if (imagenPreview && imagenPreview.startsWith("blob:")) {
-      URL.revokeObjectURL(imagenPreview)
-    }
-    setImagenPreview(null)
-    setImagenFile(null)
-  }
-
-  const handleConfigChange = (key, value) => {
-    setConfigFields((prevFields) => prevFields.map((field) => (field.key === key ? { ...field, value } : field)))
-  }
-
-  const cargarPlantillaDefault = (tipo) => {
-    const plantillaDefault = getPlantillaDefault(tipo)
-
-    if (plantillaDefault) {
+      setCurrentPantalla(pantalla)
       setFormData({
-        ...formData,
-        plan_nomb: plantillaDefault.nombre,
-        plan_tipo: tipo,
+        pan_nomb: pantalla.pan_nomb,
+        pan_desc: pantalla.pan_desc || "",
+        pan_componente: pantalla.pan_componente || "SaboresMenu",
+        pan_activa: pantalla.pan_activa !== undefined ? pantalla.pan_activa : true,
+        plan_cod: pantalla.plan_cod || "",
+        pan_config: pantalla.pan_config || {},
+        pan_catsab_cod: catsFromResponse,
       })
-
-      const newConfigFields = Object.entries(plantillaDefault.config).map(([key, value]) => {
-        const existingField = configFields.find((f) => f.key === key)
-        if (existingField) {
-          return { ...existingField, value }
-        }
-        return {
-          key,
-          label: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-          type: typeof value === "boolean" ? "checkbox" : typeof value === "number" ? "number" : "text",
-          value,
-        }
-      })
-
-      setConfigFields(newConfigFields)
-    }
-  }
-
-  const openModal = (plantilla = null) => {
-    if (plantilla) {
-      setCurrentPlantilla(plantilla)
-      setFormData({
-        plan_nomb: plantilla.plan_nomb,
-        plan_tipo: plantilla.plan_tipo || "",
-        plan_imagen: plantilla.plan_imagen || "",
-        plan_config: plantilla.plan_config || {},
-      })
-
-      if (plantilla.plan_imagen) {
-        setImagenPreview(plantilla.plan_imagen)
-      }
-
-      if (plantilla.plan_config) {
-        setConfigFields((prevFields) =>
-          prevFields.map((field) => ({
-            ...field,
-            value: plantilla.plan_config[field.key] !== undefined ? plantilla.plan_config[field.key] : field.value,
-          })),
-        )
-      }
     } else {
-      setCurrentPlantilla(null)
-      setImagenPreview(null)
-      setImagenFile(null)
+      setCurrentPantalla(null)
       setFormData({
-        plan_nomb: "",
-        plan_tipo: "",
-        plan_imagen: "",
-        plan_config: {},
+        pan_nomb: "",
+        pan_desc: "",
+        pan_componente: "SaboresMenu",
+        pan_activa: true,
+        plan_cod: "",
+        pan_config: {},
+        pan_catsab_cod: [],
       })
-
-      setConfigFields((prevFields) =>
-        prevFields.map((field) => ({
-          ...field,
-          value:
-            field.type === "checkbox"
-              ? true
-              : field.type === "color"
-                ? field.key === "colorFondo"
-                  ? "#ffffff"
-                  : "#000000"
-                : field.type === "select"
-                  ? field.options[0]
-                  : field.key.includes("tamanoFuente")
-                    ? field.key.includes("Titulo")
-                      ? "24px"
-                      : "16px"
-                    : "",
-        })),
-      )
     }
     setShowModal(true)
   }
 
-  const savePlantilla = async () => {
+  const savePantalla = async () => {
     try {
-      const config = {}
-      configFields.forEach((field) => {
-        config[field.key] = field.value
-      })
+      if (!formData.pan_nomb || !formData.pan_componente) {
+        setError("Por favor complete todos los campos requeridos")
+        return
+      }
 
       const dataToSave = {
-        plan_nomb: formData.plan_nomb,
-        plan_tipo: formData.plan_tipo,
-        plan_config: config,
+        pan_nomb: formData.pan_nomb,
+        pan_desc: formData.pan_desc,
+        pan_componente: formData.pan_componente,
+        pan_activa: formData.pan_activa,
+        plan_cod: formData.plan_cod || null,
+        pan_config: formData.pan_config || {},
+        pan_catsab_cod: Array.isArray(formData.pan_catsab_cod)
+          ? formData.pan_catsab_cod
+          : formData.pan_catsab_cod
+          ? [formData.pan_catsab_cod]
+          : [],
       }
 
-      if (currentPlantilla) {
-        // Actualizar: enviar el archivo solo si se seleccionó uno nuevo
-        await PlantillasService.updatePlantilla(currentPlantilla.plan_cod, dataToSave, imagenFile)
+      console.log("[v0] Guardando pantalla - payload:", dataToSave)
+
+      if (currentPantalla) {
+        await PantallasService.updatePantalla(currentPantalla.pan_cod, dataToSave)
       } else {
-        // Crear: enviar el archivo
-        await PlantillasService.createPlantilla(dataToSave, imagenFile)
+        await PantallasService.createPantalla(dataToSave)
       }
+
+      await fetchData()
       setShowModal(false)
-      fetchPlantillas()
+      setError(null)
     } catch (err) {
-      console.error("Error al guardar plantilla:", err)
-      setError("Error al guardar la plantilla. Por favor, intente nuevamente.")
+      console.error("[v0] Error al guardar pantalla:", err)
+      setError(err.response?.data?.message || "Error al guardar la pantalla. Por favor, intente nuevamente.")
     }
   }
 
-  const deletePlantilla = async (plan_cod) => {
-    if (window.confirm("¿Está seguro de eliminar esta plantilla? Esta acción no se puede deshacer.")) {
+  const deletePantalla = async (pan_cod) => {
+    if (window.confirm("¿Está seguro de eliminar esta pantalla? Esta acción no se puede deshacer.")) {
       try {
-        await PlantillasService.deletePlantilla(plan_cod)
-        fetchPlantillas()
+        await PantallasService.deletePantalla(pan_cod)
+        fetchData()
       } catch (err) {
-        console.error("Error al eliminar plantilla:", err)
-        if (err.response && err.response.status === 400) {
-          setError("No se puede eliminar la plantilla porque tiene pantallas asociadas.")
-        } else {
-          setError("Error al eliminar la plantilla. Por favor, intente nuevamente.")
-        }
+        console.error("[v0] Error al eliminar pantalla:", err)
+        setError("Error al eliminar la pantalla. Por favor, intente nuevamente.")
       }
     }
   }
 
-  const renderConfigField = (field) => {
-    switch (field.type) {
-      case "color":
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormInput
-              type="color"
-              value={field.value}
-              onChange={(e) => handleConfigChange(field.key, e.target.value)}
-            />
-          </CInputGroup>
-        )
-      case "select":
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormSelect value={field.value} onChange={(e) => handleConfigChange(field.key, e.target.value)}>
-              {field.options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </CFormSelect>
-          </CInputGroup>
-        )
-      case "checkbox":
-        return (
-          <div className="mb-3" key={field.key}>
-            <CFormCheck
-              id={`check-${field.key}`}
-              label={field.label}
-              checked={field.value}
-              onChange={(e) => handleConfigChange(field.key, e.target.checked)}
-            />
-          </div>
-        )
-      default:
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormInput
-              type="text"
-              value={field.value}
-              onChange={(e) => handleConfigChange(field.key, e.target.value)}
-            />
-          </CInputGroup>
-        )
+  const toggleActiva = async (pantalla) => {
+    try {
+      await PantallasService.updatePantalla(pantalla.pan_cod, {
+        ...pantalla,
+        pan_activa: !pantalla.pan_activa,
+      })
+      fetchData()
+    } catch (err) {
+      console.error("[v0] Error al actualizar estado:", err)
+      setError("Error al actualizar el estado de la pantalla.")
     }
   }
+
+  const availableComponents = getAvailableComponents()
 
   if (loading) {
     return (
@@ -327,10 +210,13 @@ const AdminPlantillas = () => {
   }
 
   return (
-    <div className="admin-plantillas-container">
+    <div className="admin-pantallas-container">
       <CCard className="mb-4">
         <CCardHeader>
-          <CCardTitle>Administración de Plantillas</CCardTitle>
+          <CCardTitle>
+            <CIcon icon={cilScreenDesktop} className="me-2" />
+            Administración de Pantallas
+          </CCardTitle>
         </CCardHeader>
         <CCardBody>
           {error && (
@@ -341,7 +227,7 @@ const AdminPlantillas = () => {
 
           <CButton color="primary" className="mb-3" onClick={() => openModal()}>
             <CIcon icon={cilPlus} className="me-2" />
-            Nueva Plantilla
+            Nueva Pantalla
           </CButton>
 
           <CTable hover responsive>
@@ -349,151 +235,181 @@ const AdminPlantillas = () => {
               <CTableRow>
                 <CTableHeaderCell>Código</CTableHeaderCell>
                 <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Tipo</CTableHeaderCell>
-                <CTableHeaderCell>Imagen</CTableHeaderCell>
-                <CTableHeaderCell>Pantallas Asociadas</CTableHeaderCell>
+                <CTableHeaderCell>Componente</CTableHeaderCell>
+                <CTableHeaderCell>Plantilla</CTableHeaderCell>
+                <CTableHeaderCell>Categorías</CTableHeaderCell>
+                <CTableHeaderCell>Estado</CTableHeaderCell>
                 <CTableHeaderCell>Acciones</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {plantillas.length === 0 ? (
+              {pantallas.length === 0 ? (
                 <CTableRow>
-                  <CTableDataCell colSpan="6" className="text-center">
-                    No hay plantillas disponibles
+                  <CTableDataCell colSpan="7" className="text-center">
+                    No hay pantallas disponibles
                   </CTableDataCell>
                 </CTableRow>
               ) : (
-                plantillas.map((plantilla) => (
-                  <CTableRow key={plantilla.plan_cod}>
-                    <CTableDataCell>{plantilla.plan_cod}</CTableDataCell>
-                    <CTableDataCell>{plantilla.plan_nomb}</CTableDataCell>
-                    <CTableDataCell>
-                      {TIPOS_PLANTILLA.find((t) => t.value === plantilla.plan_tipo)?.label || plantilla.plan_tipo}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {plantilla.plan_imagen ? (
-                        <img
-                          src={plantilla.plan_imagen || "/placeholder.svg"}
-                          alt={plantilla.plan_nomb}
-                          style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "4px" }}
-                          onError={(e) => {
-                            e.target.style.display = "none"
-                            e.target.nextSibling.style.display = "inline"
-                          }}
+                pantallas.map((pantalla) => {
+                  const plantilla = pantalla.Plantilla || pantalla.Plantillum || null
+                  const categorias =
+                    pantalla.Categorias || pantalla.CategoriaSabs || pantalla.Categoria ? (pantalla.Categorias || pantalla.CategoriaSabs || (pantalla.Categoria ? [pantalla.Categoria] : [])) : []
+                  return (
+                    <CTableRow key={pantalla.pan_cod}>
+                      <CTableDataCell>{pantalla.pan_cod}</CTableDataCell>
+                      <CTableDataCell>
+                        <strong>{pantalla.pan_nomb}</strong>
+                        {pantalla.pan_desc && <div className="text-muted small">{pantalla.pan_desc}</div>}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CBadge color="info">
+                          {availableComponents.find((c) => c.id === pantalla.pan_componente)?.name ||
+                            pantalla.pan_componente}
+                        </CBadge>
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        {plantilla ? <CBadge color="secondary">{plantilla.plan_nomb}</CBadge> : <span className="text-muted">Sin plantilla</span>}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        {categorias.length === 0 ? (
+                          <span className="text-muted">—</span>
+                        ) : (
+                          categorias.map((c) => (
+                            <CBadge color="light" key={c.catsab_cod} className="me-1">
+                              {c.catsab_name || c.name || c.cat_name}
+                            </CBadge>
+                          ))
+                        )}
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CFormCheck
+                          type="switch"
+                          id={`switch-${pantalla.pan_cod}`}
+                          checked={pantalla.pan_activa}
+                          onChange={() => toggleActiva(pantalla)}
+                          label={pantalla.pan_activa ? "Activa" : "Inactiva"}
                         />
-                      ) : null}
-                      <CIcon
-                        icon={cilImage}
-                        size="xl"
-                        className="text-muted"
-                        style={{ display: plantilla.plan_imagen ? "none" : "inline" }}
-                      />
-                    </CTableDataCell>
-                    <CTableDataCell>{plantilla.Pantallas ? plantilla.Pantallas.length : 0}</CTableDataCell>
-                    <CTableDataCell>
-                      <CButton color="info" size="sm" className="me-2" onClick={() => openModal(plantilla)}>
-                        <CIcon icon={cilPencil} />
-                      </CButton>
-                      <CButton color="danger" size="sm" onClick={() => deletePlantilla(plantilla.plan_cod)}>
-                        <CIcon icon={cilTrash} />
-                      </CButton>
-                    </CTableDataCell>
-                  </CTableRow>
-                ))
+                      </CTableDataCell>
+                      <CTableDataCell>
+                        <CButton color="info" size="sm" className="me-2" onClick={() => openModal(pantalla)}>
+                          <CIcon icon={cilPencil} />
+                        </CButton>
+                        <CButton color="danger" size="sm" onClick={() => deletePantalla(pantalla.pan_cod)}>
+                          <CIcon icon={cilTrash} />
+                        </CButton>
+                      </CTableDataCell>
+                    </CTableRow>
+                  )
+                })
               )}
             </CTableBody>
           </CTable>
         </CCardBody>
       </CCard>
 
-      <CModal visible={showModal} onClose={() => setShowModal(false)} size="xl">
+      <CModal visible={showModal} onClose={() => setShowModal(false)} size="lg">
         <CModalHeader>
-          <CModalTitle>{currentPlantilla ? "Editar Plantilla" : "Nueva Plantilla"}</CModalTitle>
+          <CModalTitle>{currentPantalla ? "Editar Pantalla" : "Nueva Pantalla"}</CModalTitle>
         </CModalHeader>
         <CModalBody>
           <CForm>
-            <CRow>
-              <CCol md={6}>
-                <h5>Información Básica</h5>
-                <div className="mb-3">
-                  <CFormLabel>Nombre</CFormLabel>
-                  <CFormInput
-                    type="text"
-                    name="plan_nomb"
-                    value={formData.plan_nomb}
-                    onChange={handleInputChange}
-                    placeholder="Nombre de la plantilla"
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <CFormLabel>Tipo</CFormLabel>
-                  <CFormSelect
-                    name="plan_tipo"
-                    value={formData.plan_tipo}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      cargarPlantillaDefault(e.target.value)
-                    }}
-                  >
-                    <option value="">Seleccione un tipo</option>
-                    {TIPOS_PLANTILLA.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                  <small className="text-muted">
-                    Al seleccionar un tipo, se cargarán valores predeterminados que puedes personalizar
-                  </small>
-                </div>
+            <div className="mb-3">
+              <CFormLabel>Nombre *</CFormLabel>
+              <CFormInput
+                type="text"
+                name="pan_nomb"
+                value={formData.pan_nomb}
+                onChange={handleInputChange}
+                placeholder="Nombre de la pantalla"
+                required
+              />
+            </div>
 
-                <div className="mb-3">
-                  <CFormLabel>Imagen de Fondo</CFormLabel>
-                  <div className="border rounded p-3">
-                    {imagenPreview ? (
-                      <div className="text-center">
-                        <img
-                          src={imagenPreview || "/placeholder.svg"}
-                          alt="Preview"
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "200px",
-                            objectFit: "contain",
-                            marginBottom: "10px",
-                          }}
-                        />
-                        <div>
-                          <CButton color="danger" size="sm" onClick={removeImage}>
-                            <CIcon icon={cilTrash} className="me-1" />
-                            Eliminar Imagen
-                          </CButton>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <CIcon icon={cilCloudUpload} size="3xl" className="text-muted mb-2" />
-                        <CFormInput type="file" accept="image/*" onChange={handleImageChange} />
-                        <small className="text-muted">Formatos: JPG, PNG, GIF, WEBP. Máximo 5MB</small>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CCol>
-              <CCol md={6}>
-                <h5>Configuración de Estilo</h5>
-                <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                  {configFields.map((field) => renderConfigField(field))}
-                </div>
-              </CCol>
-            </CRow>
+            <div className="mb-3">
+              <CFormLabel>Descripción</CFormLabel>
+              <CFormTextarea
+                name="pan_desc"
+                value={formData.pan_desc}
+                onChange={handleInputChange}
+                placeholder="Descripción de la pantalla"
+                rows={3}
+              />
+            </div>
+
+            <div className="mb-3">
+              <CFormLabel>Componente *</CFormLabel>
+              <CFormSelect name="pan_componente" value={formData.pan_componente} onChange={handleInputChange} required>
+                <option value="">Seleccione un componente</option>
+                {getAvailableComponents().map((comp) => (
+                  <option key={comp.id} value={comp.id}>
+                    {comp.name} - {comp.description}
+                  </option>
+                ))}
+              </CFormSelect>
+              <small className="text-muted">El componente determina cómo se mostrará el contenido en la pantalla</small>
+            </div>
+
+            <div className="mb-3">
+              <CFormLabel>Plantilla (Fondo)</CFormLabel>
+              <CFormSelect name="plan_cod" value={formData.plan_cod} onChange={handleInputChange}>
+                <option value="">Sin plantilla</option>
+                {plantillas.map((plantilla) => (
+                  <option key={plantilla.plan_cod} value={plantilla.plan_cod}>
+                    {plantilla.plan_nomb} {plantilla.plan_tipo && `(${plantilla.plan_tipo})`}
+                  </option>
+                ))}
+              </CFormSelect>
+              <small className="text-muted">La plantilla define el fondo y estilos visuales de la pantalla</small>
+            </div>
+
+            <div className="mb-3">
+              <CFormLabel>Categorías de Sabores</CFormLabel>
+              {catsabLoading ? (
+                <div>Cargando categorías...</div>
+              ) : (
+                <CFormSelect
+                  name="pan_catsab_cod"
+                  multiple
+                  value={formData.pan_catsab_cod || []}
+                  onChange={(e) => {
+                    const opts = Array.from(e.target.selectedOptions).map((o) => Number(o.value)).filter(Boolean)
+                    setFormData((prev) => ({ ...prev, pan_catsab_cod: opts }))
+                  }}
+                >
+                  {catsabList.length === 0 ? (
+                    <>
+                      <option value="CREMAS">CREMAS</option>
+                      <option value="FRUTALES">FRUTALES</option>
+                      <option value="CAFETERIA">CAFETERIA</option>
+                    </>
+                  ) : (
+                    catsabList.map((c) => (
+                      <option key={c.catsab_cod} value={c.catsab_cod}>
+                        {c.catsab_name}
+                      </option>
+                    ))
+                  )}
+                </CFormSelect>
+              )}
+              <small className="text-muted">Selecciona una o más categorías (Ctrl/Cmd+click).</small>
+            </div>
+
+            <div className="mb-3">
+              <CFormCheck
+                id="pan_activa"
+                name="pan_activa"
+                checked={formData.pan_activa}
+                onChange={handleInputChange}
+                label="Pantalla activa (visible en el display)"
+              />
+            </div>
           </CForm>
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setShowModal(false)}>
             Cancelar
           </CButton>
-          <CButton color="primary" onClick={savePlantilla}>
+          <CButton color="primary" onClick={savePantalla}>
             Guardar
           </CButton>
         </CModalFooter>
@@ -502,4 +418,4 @@ const AdminPlantillas = () => {
   )
 }
 
-export default AdminPlantillas
+export default AdminPantallas

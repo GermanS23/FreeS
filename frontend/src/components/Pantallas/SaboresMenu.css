@@ -1,18 +1,37 @@
+/* 🔹 CAMBIO 1: El contenedor raíz ahora es un flexbox vertical 🔹 */
 .sabores-menu-container {
   min-height: 100vh;
   background: linear-gradient(to right, #e6f7ff 60%, #1890ff 100%);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
+/* 🔹 CAMBIO 2: La tarjeta ahora es un flexbox que crece 🔹 */
 .sabores-card {
   background-color: rgba(255, 255, 255, 0.95);
   border: none;
   border-radius: 0;
   box-shadow: none;
   padding: 2rem;
-  height: 100%;
   min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Esto hace que la tarjeta ocupe el espacio */
 }
+
+/* 🔹 CAMBIO 3: Añadimos reglas para el .card-body 🔹 */
+.sabores-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+/* 🔹 CAMBIO 4: Hacemos que la fila de contenido crezca 🔹 */
+.sabores-card .row {
+  flex-grow: 1;
+}
+
 
 .last-update {
   position: fixed;
@@ -83,11 +102,12 @@
   height: 24px;
 }
 
+/* 🔹 CAMBIO 5: El footer se empuja al fondo con margin-top: auto 🔹 */
 .footer-note {
   font-size: 0.8rem;
   color: #666;
   text-align: center;
-  margin-top: 2rem;
+  margin-top: auto; /* Esto es lo que empuja el footer hacia abajo */
   padding-top: 1rem;
   border-top: 1px solid #eee;
 }

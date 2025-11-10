@@ -15,6 +15,9 @@ import {
   CBadge,
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
+// 🔧 Importación compatible con cualquier versión de @coreui/icons
+import * as icons from "@coreui/icons"
+
 import PantallasService from "../../services/pantalla.service"
 import { getComponent } from "./Registro"
 import "./PantallaDisplay.css"
@@ -85,14 +88,14 @@ const PantallasDisplay = () => {
         <CCard className="mb-4 border-0 shadow-sm">
           <CCardHeader className="bg-white border-bottom">
             <CCardTitle className="display-title d-flex align-items-center mb-0">
-              <CIcon className="me-2" size="lg" />
+              <CIcon icon={icons.cilTv} className="me-2" size="lg" />
               Pantallas Disponibles
             </CCardTitle>
           </CCardHeader>
           <CCardBody>
             {pantallas.length === 0 ? (
               <div className="text-center p-5">
-                <CIcon size="3xl" className="text-muted mb-3" />
+                <CIcon icon={icons.cilScreenDesktop} size="3xl" className="text-muted mb-3" />
                 <p className="text-muted fs-5">No hay pantallas activas disponibles</p>
               </div>
             ) : (
@@ -103,12 +106,13 @@ const PantallasDisplay = () => {
                     <CCol key={pantalla.pan_cod} xs={12} sm={6} lg={4} xl={3}>
                       <div className="pantalla-card h-100" onClick={() => handlePantallaClick(pantalla)}>
                         <div className="pantalla-thumbnail">
-                          {pantalla.Plantillum?.plan_imagen ? (
+                          {pantalla.Plantilla?.plan_imagen ? (
                             <img
-                              src={pantalla.Plantillum.plan_imagen || "/placeholder.svg"}
+                              src={`http://localhost:3000${pantalla.Plantilla.plan_imagen}`}
                               alt={pantalla.pan_nomb}
                               className="thumbnail-image"
                               onError={(e) => {
+                                console.log("[v0] Error al cargar imagen:", e.target.src)
                                 e.target.style.display = "none"
                                 e.target.nextSibling.style.display = "flex"
                               }}
@@ -128,16 +132,16 @@ const PantallasDisplay = () => {
                             className="thumbnail-placeholder"
                             style={{
                               display:
-                                pantalla.Plantillum?.plan_imagen || componentInfo?.previewImage ? "none" : "flex",
+                                pantalla.Plantilla?.plan_imagen || componentInfo?.previewImage ? "none" : "flex",
                             }}
                           >
-                            <CIcon size="xl" />
+                            <CIcon icon={icons.cilScreenDesktop} size="xl" />
                           </div>
                           <div className="play-overlay">
-                            <CIcon  className="play-icon" />
+                            <CIcon icon={icons.cilPlay} className="play-icon" />
                           </div>
                           <div className="duration-badge">
-                            <CIcon className="me-1" size="sm" />
+                            <CIcon icon={icons.cilPlay} className="me-1" size="sm" />
                             En vivo
                           </div>
                         </div>
@@ -150,14 +154,15 @@ const PantallasDisplay = () => {
                               <CBadge color="primary" className="me-2">
                                 {componentInfo?.name || "Componente personalizado"}
                               </CBadge>
-                              {pantalla.Plantillum && (
-                                <CBadge color="secondary">{pantalla.Plantillum.plan_nomb}</CBadge>
+                              {pantalla.Plantilla && (
+                                <CBadge color="secondary">{pantalla.Plantilla
+                                  .plan_nomb}</CBadge>
                               )}
                             </div>
 
                             <div className="pantalla-stats">
                               <span className="stat-item">
-                                <CIcon  className="me-1" size="sm" />
+                                <CIcon icon={icons.cilClock} className="me-1" size="sm" />
                                 {formatLastUpdate(pantalla.updatedAt || pantalla.createdAt)}
                               </span>
                             </div>

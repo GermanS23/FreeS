@@ -7,10 +7,18 @@ import {
   CCol 
 } from '@coreui/react';
 import ProductosService from '../../services/productos.service';
-import CatProdService from '../../services/catprod.service';
 import './MenuProductos.css';
 
-// Configuración de las secciones del menú
+const DEFAULT_CONFIG = {
+  colorFondo: '#ffffff',
+  colorTexto: '#000000',
+  fuenteTexto: 'Arial, sans-serif',
+  fuenteTitulo: 'Arial, sans-serif',
+  tamanoFuenteTitulo: '28px',
+  tamanoFuenteTexto: '16px',
+  mostrarFooter: true,
+};
+
 const SECCIONES_MENU = {
   HELADOS: "Helados",
   ENVASADOS: "Envasados",
@@ -22,21 +30,32 @@ const SECCIONES_MENU = {
   PROMOS: "PROMOS"
 };
 
-const MenuProductos = () => {
+const MenuProductos = ({ plantilla = null }) => {
   const [productos, setProductos] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  // Función para obtener y organizar productos
+  const plantillaConfig = plantilla?.plan_config || {};
+  const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig };
+  const plantillaImageUrl = plantilla?.plan_imagen ? `http://localhost:3000${plantilla.plan_imagen}` : null;
+
+  const rootStyle = {
+    backgroundImage: plantillaImageUrl ? `url(${plantillaImageUrl})` : 'none',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: plantillaImageUrl ? undefined : configFinal.colorFondo,
+    color: configFinal.colorTexto,
+    fontFamily: configFinal.fuenteTexto,
+    fontSize: configFinal.tamanoFuenteTexto,
+  };
+
   const fetchProductos = useCallback(async () => {
     try {
       const response = await ProductosService.listProductos(0, 1000, '');
-      const productosDisponibles = response.data.items.filter(
-        producto => producto.prod_dis === true
-      );
+      const productosDisponibles = response.data.items.filter(producto => producto.prod_dis === true);
 
-      // Organizar productos por categoría
       const productosPorCategoria = {};
       Object.values(SECCIONES_MENU).forEach(seccion => {
         productosPorCategoria[seccion] = productosDisponibles.filter(
@@ -54,7 +73,6 @@ const MenuProductos = () => {
     }
   }, [isLoading]);
 
-  // Efecto inicial y actualización periódica
   useEffect(() => {
     fetchProductos();
     const intervalId = setInterval(fetchProductos, 10000);
@@ -63,7 +81,7 @@ const MenuProductos = () => {
 
   const renderSeccion = (titulo, items, className = '') => (
     <div className={`seccion-menu ${className}`}>
-      <h2 className="seccion-titulo">{titulo}</h2>
+      <h2 className="seccion-titulo" style={{ color: configFinal.colorTitulo, fontFamily: configFinal.fuenteTitulo, fontSize: configFinal.tamanoFuenteTitulo }}>{titulo}</h2>
       <div className="productos-lista">
         {items?.map((producto) => (
           <div key={producto.prod_cod} className="producto-item">
@@ -90,29 +108,26 @@ const MenuProductos = () => {
   }
 
   return (
-    <div className="menu-productos-container">
+    <div className="menu-productos-container" style={rootStyle}>
       <CContainer fluid>
-        <CCard className="menu-card">
+        <CCard className="menu-card" style={{ background: 'transparent', boxShadow: 'none' }}>
           <CCardBody>
-            <div className="last-update">
+            <div className="last-update" style={{ color: configFinal.colorTexto }}>
               Última actualización: {lastUpdate.toLocaleTimeString()}
             </div>
 
             <CRow>
-              {/* Columna izquierda */}
               <CCol md={4}>
                 {renderSeccion(SECCIONES_MENU.HELADOS, productos[SECCIONES_MENU.HELADOS], 'helados-seccion')}
                 {renderSeccion(SECCIONES_MENU.CANDY, productos[SECCIONES_MENU.CANDY], 'candy-seccion')}
               </CCol>
 
-              {/* Columna central */}
               <CCol md={4}>
                 {renderSeccion(SECCIONES_MENU.ENVASADOS, productos[SECCIONES_MENU.ENVASADOS], 'envasados-seccion')}
                 {renderSeccion(SECCIONES_MENU.REPOSTERIA, productos[SECCIONES_MENU.REPOSTERIA], 'reposteria-seccion')}
                 {renderSeccion(SECCIONES_MENU.PROMOS, productos[SECCIONES_MENU.PROMOS], 'promos-seccion')}
               </CCol>
 
-              {/* Columna derecha */}
               <CCol md={4} className="columna-derecha">
                 {renderSeccion(SECCIONES_MENU.CAFETERIA, productos[SECCIONES_MENU.CAFETERIA], 'cafeteria-seccion')}
                 {renderSeccion(SECCIONES_MENU.CAFES_FRIOS, productos[SECCIONES_MENU.CAFES_FRIOS], 'cafes-frios-seccion')}
@@ -121,7 +136,7 @@ const MenuProductos = () => {
             </CRow>
 
             <div className="menu-footer">
-              <img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="footer-logo" />
+              {configFinal.mostrarFooter && <img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="footer-logo" />}
             </div>
           </CCardBody>
         </CCard>
