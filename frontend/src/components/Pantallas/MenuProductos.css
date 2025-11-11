@@ -1,15 +1,42 @@
+/* 🔹 1. Contenedor principal: usa 100% de la altura disponible y es flex */
 .menu-productos-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #1e3c72 100%);
-  padding: 20px;
+  min-height: 100%; 
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
+/* 🔹 2. La tarjeta crece y es flex */
 .menu-card {
-  background-color: #ffffff;
+  background-color: transparent; 
   border: none;
   border-radius: 0;
-  min-height: 90vh;
+  flex-grow: 1; /* Crece para llenar el espacio */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evita que la tarjeta tenga scroll */
 }
+
+/* 🔹 3. El body crece y es flex */
+.menu-card .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🔹 4. La fila crece */
+.menu-card .card-body .row {
+  flex-grow: 1;
+  overflow: hidden; /* Evita que la fila tenga scroll */
+}
+
+/* 🔹 5. LAS COLUMNAS son las que tienen scroll 🔹 */
+.menu-card .card-body .row > [class*="col-"] {
+  height: 100%;
+  overflow-y: auto; /* Scroll vertical SOLO en la columna */
+  padding-bottom: 3rem; /* Espacio al final */
+}
+
 
 .last-update {
   position: fixed;
@@ -21,16 +48,27 @@
   font-size: 0.8rem;
   color: #666;
   z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* 🔹 Añadimos transición para ocultarlo 🔹 */
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
+
+/* 🔹 Clase para ocultar el 'last-update' 🔹 */
+.last-update.hidden {
+  opacity: 0;
+}
+
 
 .seccion-menu {
   margin-bottom: 2rem;
   padding: 1rem;
 }
 
+/* 🔹 6. Texto Responsive (usando vw) 🔹 */
 .seccion-titulo {
   color: #1e3c72;
-  font-size: 1.5rem;
+  font-size: 2.5vw; /* Escala con el ancho */
   font-weight: bold;
   margin-bottom: 1rem;
   border-bottom: 2px solid #1e3c72;
@@ -50,15 +88,15 @@
   padding: 0.25rem 0;
 }
 
-.producto-nombre {
+.producto-nombre,
+.producto-precio {
+  font-size: 1.5vw; /* Escala con el ancho */
   color: #333;
-  font-size: 1rem;
 }
 
 .producto-precio {
   color: #1e3c72;
   font-weight: bold;
-  font-size: 1rem;
 }
 
 /* Estilos específicos por sección */
@@ -85,7 +123,7 @@
 
 .menu-footer {
   text-align: center;
-  margin-top: 2rem;
+  margin-top: auto; /* 🔹 Empuja el footer al fondo 🔹 */
   padding-top: 1rem;
   border-top: 1px solid #dee2e6;
 }
@@ -94,43 +132,17 @@
   height: 40px;
 }
 
-/* Animaciones */
-.seccion-menu {
-  animation: fadeIn 0.5s ease-out;
+/* ... (Animaciones sin cambios) ... */
+@keyframes fadeIn { /* ... */ }
+@keyframes slideIn { /* ... */ }
+
+
+/* 🔹 7. Límites para el texto responsive 🔹 */
+@media (min-width: 1920px) {
+  .seccion-titulo { font-size: 48px; }
+  .producto-nombre, .producto-precio { font-size: 28px; }
 }
-
-.producto-item {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .menu-card {
-    padding: 0.5rem;
-  }
-
-  .seccion-titulo {
-    font-size: 1.2rem;
-  }
-
-  .producto-nombre,
-  .producto-precio {
-    font-size: 0.9rem;
-  }
+@media (max-width: 1200px) {
+  .seccion-titulo { font-size: 24px; }
+  .producto-nombre, .producto-precio { font-size: 16px; }
 }

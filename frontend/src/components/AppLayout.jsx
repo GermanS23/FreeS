@@ -42,4 +42,3 @@ const AppLayout = ({ setIsLoggedIn }) => {
 }
 
 export default AppLayout
-

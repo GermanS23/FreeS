@@ -35,7 +35,7 @@ const Register = (props) => {
 
   const fetchCategorias = async () => {
     try {
-      const response = await CategoriaSabService.listCategoriasSab(0, 50, ''); // Ajusta los parámetros según tu API
+      const response = await CategoriaSabService.List(0, 50, ''); // Ajusta los parámetros según tu API
       setCategorias(response.data.items); // Ajusta según la estructura de la respuesta
     } catch (error) {
       console.error('Error al obtener las categorías', error);

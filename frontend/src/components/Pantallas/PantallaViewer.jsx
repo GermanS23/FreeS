@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { CSpinner, CButton, CAlert } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
 import * as icons from "@coreui/icons"
 import PantallasService from "../../services/pantalla.service"
-import { getComponent } from "./Registro" // Asumo que este es tu Registro.jsx
+import { getComponent } from "./Registro"
 import "./PantallaViewer.css"
 
 const PantallaViewer = () => {
@@ -16,58 +16,96 @@ const PantallaViewer = () => {
   const [pantalla, setPantalla] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  
+  const [isFullScreen, setIsFullScreen] = useState(!!document.fullscreenElement)
+  const [showUI, setShowUI] = useState(false) // Estado para mostrar/ocultar toda la UI
+  
+  // Usamos useRef para el timer
+  const hideUiTimer = useRef(null)
 
-  // 1. Cargar la data de la Pantalla (Plantilla, Categorías, etc.)
+  // --- Carga de Datos (Sin cambios) ---
   useEffect(() => {
     const fetchPantalla = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true); setError(null);
       try {
         const response = await PantallasService.getPantallaPublicaById(pan_cod)
         setPantalla(response.data)
       } catch (err) {
-        console.error("[v0] Error al cargar pantalla:", err)
-        setError("Error al cargar la pantalla.")
+        console.error("[v0] Error al cargar pantalla:", err); setError("Error al cargar la pantalla.")
       } finally {
         setLoading(false)
       }
     }
-
     if (pan_cod) fetchPantalla()
-  }, [pan_cod]) // Se ejecuta solo si el ID de la pantalla cambia
+  }, [pan_cod])
 
-  // 2. Definir qué componente hijo mostrar (basado en la data cargada)
+  // --- Lógica de Pantalla Completa ---
+  useEffect(() => {
+    const onFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement)
+    }
+    document.addEventListener("fullscreenchange", onFullScreenChange)
+
+    // 🔹 ARREGLO BUG "ATRÁS" EN FULLSCREEN:
+    // Esta es la función de limpieza. Se ejecuta cuando el componente "muere" (navegas atrás)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullScreenChange)
+      // Si salimos del componente y seguíamos en pantalla completa, forzamos la salida.
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen()
+      }
+    }
+  }, [])
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      }
+    }
+    setShowUI(false) // Ocultar UI después del clic
+  }
+
+  // Lógica para mostrar/ocultar el botón (Corregida)
+  const handleMouseMove = () => {
+    setShowUI(true) // Muestra UI
+    if (hideUiTimer.current) {
+      clearTimeout(hideUiTimer.current) // Limpia el timer anterior
+    }
+    // Oculta la UI después de 3 segundos
+    hideUiTimer.current = setTimeout(() => {
+      setShowUI(false)
+    }, 3000)
+  }
+
+  // --- Preparación de Props (Sin cambios) ---
   const ComponentToRender = useMemo(() => {
     if (!pantalla) return null
-    const componentInfo = getComponent(pantalla.pan_componente) // ej: "menu-sabores"
+    const componentInfo = getComponent(pantalla.pan_componente)
     return componentInfo ? componentInfo.component : null
   }, [pantalla])
 
-  // 3. Preparar los props para el hijo: Objeto Plantilla
   const plantillaObj = useMemo(() => {
     if (!pantalla || !pantalla.Plantilla) return null
     const raw = pantalla.Plantilla
     const clone = { ...raw }
-    
-    // Arreglar URL de imagen
     if (clone.plan_imagen && !clone.plan_imagen.startsWith("http")) {
       clone.plan_imagen = `http://localhost:3000${clone.plan_imagen}`
     }
-    // Parsear JSON de config
     if (typeof clone.plan_config === "string") {
       try { clone.plan_config = JSON.parse(clone.plan_config || "{}") } catch (e) { clone.plan_config = {} }
     }
     return clone
   }, [pantalla])
 
-  // 4. Preparar los props para el hijo: IDs de Categoría
   const catsIds = useMemo(() => {
-    if (!pantalla || !pantalla.CategoriaSabs) return []
-    const arr = pantalla.CategoriaSabs
-    return arr.map((c) => Number(c.catsab_cod)).filter(Boolean)
+    if (!pantalla) return []
+    const arr = pantalla.CategoriaSabs || pantalla.CategoriaProds || []
+    return arr.map((c) => Number(c.catsab_cod || c.catprod_cod)).filter(Boolean)
   }, [pantalla])
 
-  // 5. Preparar los props para el hijo: Configuración final (merged)
   const config = useMemo(() => {
     const planCfg = plantillaObj?.plan_config || {}
     let panCfg = pantalla?.pan_config || {}
@@ -77,7 +115,8 @@ const PantallaViewer = () => {
     return { ...planCfg, ...panCfg }
   }, [plantillaObj, pantalla])
 
-  // 6. Preparar los estilos de fondo
+  // 🔹 ARREGLO "ESPACIO ARRIBA" / "CANDY CORTADO":
+  // Eliminamos el 'padding' y forzamos 'height: 100vh'
   const plantillaStyles = useMemo(() => ({
     backgroundImage: plantillaObj?.plan_imagen ? `url(${plantillaObj.plan_imagen})` : "none",
     backgroundSize: "cover",
@@ -87,14 +126,17 @@ const PantallaViewer = () => {
     color: config?.colorTexto || "#000000",
     fontFamily: config?.fuenteTexto || "Arial, sans-serif",
     fontSize: config?.tamanoFuenteTexto || "16px",
-    minHeight: "100vh",
-    padding: "12px",
+    height: "100vh", // Ocupa el 100% de la altura de la ventana
+    width: "100vw",  // Ocupa el 100% del ancho de la ventana
+    overflow: "hidden", // La página principal no scrollea
+    display: "flex",
+    flexDirection: "column",
+    padding: 0 // Sin padding
   }), [plantillaObj, config])
 
   
   // --- RENDERIZADO ---
 
-  // Estado 1: Cargando el 'PantallaViewer'
   if (loading) {
     return (
       <div className="pantalla-viewer-loading">
@@ -103,51 +145,40 @@ const PantallaViewer = () => {
       </div>
     )
   }
+  if (error) { return ( <div className="pantalla-error"><CAlert color="danger">{error}</CAlert></div> ) }
+  if (!pantalla || !ComponentToRender) { return ( <div className="pantalla-error"><CAlert color="warning">Componente no encontrado</CAlert></div> ) }
 
-  // Estado 2: Error al cargar el 'PantallaViewer'
-  if (error) {
-    return (
-      <div className="pantalla-error">
-        <CAlert color="danger">{error}</CAlert>
-        <CButton color="primary" onClick={() => navigate("/pantallas")}>
-          <CIcon icon={icons.cilArrowLeft} className="me-2" /> Volver
-        </CButton>
-      </div>
-    )
-  }
-
-  // Estado 3: Error, no se encontró el componente hijo
-  if (!pantalla || !ComponentToRender) {
-    return (
-      <div className="pantalla-error">
-        <CAlert color="warning">
-          {!pantalla 
-            ? "No se pudo cargar la pantalla." 
-            : `Componente '${pantalla.pan_componente}' no encontrado (verif. Registro.jsx)`
-          }
-        </CAlert>
-        <CButton color="primary" onClick={() => navigate("/pantallas")}>
-          <CIcon icon={icons.cilArrowLeft} className="me-2" /> Volver
-        </CButton>
-      </div>
-    )
-  }
-
-  // Estado 4: Éxito. Renderizar el hijo ('PantallaSabores')
   return (
-    <div className="pantalla-viewer" style={plantillaStyles}>
-      <div className="pantalla-viewer-header">
-        <CButton color="light" size="sm" onClick={() => navigate("/pantallas")} className="back-button">
-          <CIcon icon={icons.cilArrowLeft} className="me-2" /> Volver
+    <div 
+      className="pantalla-viewer" 
+      style={plantillaStyles} 
+      onMouseMove={handleMouseMove}
+      tabIndex={-1}
+    >
+      
+      {/* 🔹 GRUPO DE BOTONES (Overlay) 🔹 */}
+      <div 
+        className="ui-overlay" 
+        style={{ opacity: showUI ? 1 : 0 }}
+      >
+        <CButton color="light" size="lg" onClick={() => navigate(-1)}>
+          <CIcon icon={icons.cilArrowLeft} size="xl" />
         </CButton>
-        <h2 className="pantalla-viewer-title">{pantalla.pan_nomb}</h2>
+        <CButton color="light" size="lg" onClick={toggleFullScreen}>
+          <CIcon icon={isFullScreen ? icons.cilCompress : icons.cilFullscreen} size="xl" />
+        </CButton>
       </div>
-
-      <div className="pantalla-viewer-content">
+      
+      {/* 🔹 CONTENIDO (Crece para ocupar el espacio) 🔹 */}
+      <div 
+        className="pantalla-viewer-content" 
+        style={{ flexGrow: 1, overflow: 'hidden'}} // Añadimos padding aquí
+      >
         <ComponentToRender 
           {...config} 
           plantilla={plantillaObj} 
-          categoria={catsIds.length ? catsIds : null} // Le pasamos [2]
+          categoria={catsIds.length ? catsIds : null}
+          showUI={showUI} // Pasamos el estado a los hijos
         />
       </div>
     </div>

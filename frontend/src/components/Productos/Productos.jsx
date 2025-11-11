@@ -158,7 +158,7 @@ const Productos = () => {
                         Precio
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
-                        Despinibilidad
+                        Disponibilidad
                       </CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">
                         Acción

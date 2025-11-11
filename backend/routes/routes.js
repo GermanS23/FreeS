@@ -110,6 +110,15 @@ catprodRouter.delete(
 catprodRouter.get("/catprods/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catprodController.List)
 
 // ==================== RUTAS PARA PRODUCTOS ====================
+
+// 🔹 --- RUTA PÚBLICA NUEVA --- 🔹
+// Esta la usará PantallaProductos.jsx
+productosRouter.get(
+  "/prods/public/list",
+  productosController.List // Sin authJwt
+)
+
+// --- RUTAS DE ADMIN (Existentes) ---
 productosRouter.get("/prod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), productosController.getProducto)
 productosRouter.get(
   "/prod/:prod_cod",

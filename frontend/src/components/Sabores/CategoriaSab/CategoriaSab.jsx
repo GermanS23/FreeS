@@ -65,7 +65,7 @@ const CategoriaSab = () => {
       page: dataPage,
       catsab_name: catsab_name,
     };
-    CategoriaSabService.listCategoriasSab(param.page, param.size, param.catsab_name)
+    CategoriaSabService.List(param.page, param.size, param.catsab_name)
       .then((response) => {
         if (response.data && response.data.items) {
           setCategoriasSab(response.data.items); // Cambia Aitems por items

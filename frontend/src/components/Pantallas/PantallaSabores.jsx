@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react' // 🔹 CORREGIDO (useRef)
 import {
   CCard,
   CCardBody,
@@ -10,7 +10,7 @@ import {
 } from '@coreui/react'
 import { Heart } from 'lucide-react'
 import SaboresService from '../../services/sabores.service'
-import './SaboresMenu.css' // Usamos tu CSS original
+import './SaboresMenu.css' 
 
 const DEFAULT_CONFIG = {
   colorFondo: '#ffffff',
@@ -23,13 +23,13 @@ const DEFAULT_CONFIG = {
   mostrarFooter: true,
 };
 
-const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 30000 }) => {
+// 🔹 ACEPTAMOS 'showUI' y usamos el nombre 'MenuSabores'
+const MenuSabores = ({ plantilla = null, categoria = null, refreshInterval = 30000, showUI = false }) => {
   const [categorias, setCategorias] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
 
-  // La lógica de carga de datos (agrupación) sigue siendo la misma. Esto funciona.
   useEffect(() => {
     let isMounted = true
 
@@ -78,21 +78,17 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
     }
   }, [categoria, refreshInterval])
 
-  // --- 🔹 NUEVA LÓGICA DE COLUMNAS 🔹 ---
-  // Asignamos la primera categoría a la izquierda y la segunda a la derecha.
   const { catIzquierda, catDerecha } = useMemo(() => {
     return {
-      catIzquierda: categorias[0] || null, // Toma la primera categoría
-      catDerecha: categorias[1] || null,  // Toma la segunda categoría
+      catIzquierda: categorias[0] || null, 
+      catDerecha: categorias[1] || null,  
     }
   }, [categorias])
 
-  // --- LÓGICA DE ESTILOS (Limpia) ---
   const plantillaConfig = plantilla?.plan_config || {}
   const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig }
   const plantillaImageUrl = plantilla?.plan_imagen
   
-  // Usamos los estilos de tu CSS (.sabores-menu-container)
   const rootStyle = {
     backgroundImage: plantillaImageUrl ? `url(${plantillaImageUrl})` : 'none',
     backgroundSize: 'cover',
@@ -127,19 +123,20 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
     )
   }
 
-  // --- 🔹 RENDERIZADO FINAL CON 3 COLUMNAS 🔹 ---
   return (
     <div className="sabores-menu-container" style={rootStyle}>
       <CContainer fluid>
         <CCard className="sabores-card" style={{ background: 'transparent', boxShadow: 'none' }}>
           <CCardBody>
-            <div className="last-update" style={{ color: configFinal.colorTexto }}>
-              Última actualización: {lastUpdate ? lastUpdate.toLocaleTimeString() : '-'}
+            {/* 🔹 USAMOS 'showUI' PARA OCULTAR/MOSTRAR ESTO 🔹 */}
+            <div 
+              className={`last-update ${showUI ? '' : 'hidden'}`} 
+              style={{ color: configFinal.colorTexto }}
+            >
+              {lastUpdate ? `Última actualización: ${lastUpdate.toLocaleTimeString()}` : ''}
             </div>
             
-            {/* Volvemos a la estructura de 3 columnas */}
             <CRow>
-              {/* --- Columna Izquierda (Categoría 1) --- */}
               <CCol md={5}>
                 {catIzquierda && (
                   <>
@@ -158,7 +155,6 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
                 )}
               </CCol>
 
-              {/* --- Columna Central (Logo) --- */}
               <CCol md={2} className="d-flex justify-content-center align-items-center">
                 <div className="central-content" style={{textAlign:'center'}}>
                   {configFinal.mostrarLogo && (<img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="brand-logo" />)}
@@ -166,7 +162,6 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
                 </div>
               </CCol>
 
-              {/* --- Columna Derecha (Categoría 2) --- */}
               <CCol md={5}>
                  {catDerecha && (
                   <>
@@ -186,7 +181,6 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
               </CCol>
             </CRow>
 
-            {/* El footer usará tu CSS para 'margin-top: auto' y se irá al fondo */}
             {configFinal.mostrarFooter && (
               <div 
                 className="footer-note" 
@@ -202,4 +196,5 @@ const SaboresMenu = ({ plantilla = null, categoria = null, refreshInterval = 300
   )
 }
 
-export default SaboresMenu
+// 🔹 CORRECCIÓN: Exportamos 'MenuSabores'
+export default MenuSabores

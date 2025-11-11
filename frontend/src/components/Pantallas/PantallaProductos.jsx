@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  CCard, 
-  CCardBody, 
-  CContainer, 
-  CRow, 
-  CCol 
-} from '@coreui/react';
-import ProductosService from '../../services/productos.service';
-import './MenuProductos.css';
+import React, { useState, useEffect, useMemo } from 'react'
+import {
+  CCard,
+  CCardBody,
+  CContainer,
+  CRow,
+  CCol,
+  CSpinner,
+  CAlert,
+} from '@coreui/react'
+import ProductosService from '../../services/productos.service'
+import './MenuProductos.css' 
 
 const DEFAULT_CONFIG = {
   colorFondo: '#ffffff',
@@ -17,29 +19,84 @@ const DEFAULT_CONFIG = {
   tamanoFuenteTitulo: '28px',
   tamanoFuenteTexto: '16px',
   mostrarFooter: true,
+  mostrarLogo: true,
 };
 
-const SECCIONES_MENU = {
-  HELADOS: "Helados",
-  ENVASADOS: "Envasados",
-  CANDY: "Candy",
-  REPOSTERIA: "Reposteria",
-  CAFETERIA: "Cafeteria",
-  CAFES_FRIOS: "Cafés Frios",
-  DESAYUNOS: "Desayunos y Meriendas",
-  PROMOS: "PROMOS"
-};
+// 🔹 ACEPTAMOS EL NUEVO PROP 'showUI' 🔹
+// 🔹 CAMBIADO EL NOMBRE A 'PantallaProductos' para que coincida con el archivo
+const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 30000, showUI = false }) => {
+  const [categoriasProd, setCategoriasProd] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [lastUpdate, setLastUpdate] = useState(null)
 
-const MenuProductos = ({ plantilla = null }) => {
-  const [productos, setProductos] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  // ... (Toda la lógica de useEffect, useMemo, etc., se mantiene idéntica) ...
+  useEffect(() => {
+    let isMounted = true
+    const loadProductos = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const response = await ProductosService.listProductosPublic(categoria)
+        const items = response.data.items || []
+        const disponibles = items.filter(p => p.prod_dis === true)
 
-  const plantillaConfig = plantilla?.plan_config || {};
-  const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig };
-  const plantillaImageUrl = plantilla?.plan_imagen ? `http://localhost:3000${plantilla.plan_imagen}` : null;
+        const groups = {}
+        disponibles.forEach(producto => {
+          const catId = producto.catprod_cod;
+          if (!groups[catId]) {
+            groups[catId] = {
+              cat_cod: catId,
+              cat_name: producto.CategoriaProd?.catprod_name || 'Otros',
+              productos: []
+            };
+          }
+          groups[catId].productos.push(producto);
+        });
 
+        const groupedArray = Object.values(groups);
+
+        if (isMounted) {
+          setCategoriasProd(groupedArray)
+          setLastUpdate(new Date())
+        }
+
+      } catch (err) {
+        console.error("Error en loadProductos:", err)
+        if (isMounted) setError("No se pudieron cargar los productos.")
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+    loadProductos()
+    const interval = setInterval(loadProductos, refreshInterval)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [categoria, refreshInterval])
+
+  const categorias = useMemo(() => {
+    const findCat = (name) => {
+      if (!categoriasProd) return null;
+      const formattedName = name.toUpperCase().trim();
+      return categoriasProd.find(c => c.cat_name.toUpperCase().trim() === formattedName);
+    }
+    return {
+      HELADOS: findCat("Helados"),
+      CANDY: findCat("Candy"),
+      ENVASADOS: findCat("Envasados"),
+      REPOSTERIA: findCat("Reposteria"),
+      CAFETERIA: findCat("Cafeteria"),
+      CAFES_FRIOS: findCat("Cafés Frios"),
+      DESAYUNOS: findCat("Desayunos y Meriendas"),
+    };
+  }, [categoriasProd]);
+
+  const plantillaConfig = plantilla?.plan_config || {}
+  const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig }
+  const plantillaImageUrl = plantilla?.plan_imagen
+  
   const rootStyle = {
     backgroundImage: plantillaImageUrl ? `url(${plantillaImageUrl})` : 'none',
     backgroundSize: 'cover',
@@ -49,62 +106,56 @@ const MenuProductos = ({ plantilla = null }) => {
     color: configFinal.colorTexto,
     fontFamily: configFinal.fuenteTexto,
     fontSize: configFinal.tamanoFuenteTexto,
-  };
+  }
 
-  const fetchProductos = useCallback(async () => {
-    try {
-      const response = await ProductosService.listProductos(0, 1000, '');
-      const productosDisponibles = response.data.items.filter(producto => producto.prod_dis === true);
-
-      const productosPorCategoria = {};
-      Object.values(SECCIONES_MENU).forEach(seccion => {
-        productosPorCategoria[seccion] = productosDisponibles.filter(
-          producto => producto.CategoriaProd?.catprod_name === seccion
-        );
-      });
-
-      setProductos(productosPorCategoria);
-      setLastUpdate(new Date());
-      if (isLoading) setIsLoading(false);
-    } catch (error) {
-      console.error('Error al cargar productos:', error);
-      setError('Error al cargar los productos. Por favor, intente nuevamente.');
-      setIsLoading(false);
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
-    fetchProductos();
-    const intervalId = setInterval(fetchProductos, 10000);
-    return () => clearInterval(intervalId);
-  }, [fetchProductos]);
-
-  const renderSeccion = (titulo, items, className = '') => (
-    <div className={`seccion-menu ${className}`}>
-      <h2 className="seccion-titulo" style={{ color: configFinal.colorTitulo, fontFamily: configFinal.fuenteTitulo, fontSize: configFinal.tamanoFuenteTitulo }}>{titulo}</h2>
-      <div className="productos-lista">
-        {items?.map((producto) => (
-          <div key={producto.prod_cod} className="producto-item">
-            <span className="producto-nombre">{producto.prod_nom}</span>
-            <span className="producto-precio">${Number(producto.prod_pre).toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  // --- RENDERIZADO ---
 
   if (isLoading) {
     return (
-      <div className="text-center p-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="text-center p-5 d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+        <CSpinner color="warning" />
+        <p className="ms-3">Cargando Productos...</p> 
       </div>
-    );
+    )
   }
 
   if (error) {
-    return <div className="alert alert-danger m-5">{error}</div>;
+    return ( <CAlert color="danger" className="m-5 text-center">{error}</CAlert> )
+  }
+
+  if (categoriasProd.length === 0) {
+    return (
+      <CAlert color="info" className="m-5 text-center">
+        No se encontraron productos disponibles para estas categorías.
+      </CAlert>
+    )
+  }
+  
+  // 🔹 CORRECCIÓN: 'renderSeccion' está AHORA DENTRO del componente
+  // para que tenga acceso a 'configFinal'
+  const renderSeccion = (categoria, className = '') => {
+    if (!categoria || !categoria.productos || categoria.productos.length === 0) {
+      return null;
+    }
+    return (
+      <div className={`seccion-menu ${className}`}>
+        <h2 className="seccion-titulo" style={{ 
+          color: configFinal.colorTitulo || configFinal.colorTexto, 
+          fontFamily: configFinal.fuenteTitulo || configFinal.fuenteTexto, 
+          fontSize: configFinal.tamanoFuenteTitulo 
+        }}>
+          {categoria.cat_name.toUpperCase()}
+        </h2>
+        <div className="productos-lista">
+          {categoria.productos.map(p => (
+            <div key={p.prod_cod} className="producto-item">
+              <span className="producto-nombre" style={{ color: configFinal.colorTexto }}>{p.prod_nom}</span>
+              <span className="producto-precio" style={{ color: configFinal.colorTexto }}>${Number(p.prod_pre).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -112,37 +163,54 @@ const MenuProductos = ({ plantilla = null }) => {
       <CContainer fluid>
         <CCard className="menu-card" style={{ background: 'transparent', boxShadow: 'none' }}>
           <CCardBody>
-            <div className="last-update" style={{ color: configFinal.colorTexto }}>
-              Última actualización: {lastUpdate.toLocaleTimeString()}
+            {/* 🔹 USAMOS 'showUI' PARA OCULTAR/MOSTRAR ESTO 🔹 */}
+            <div 
+              className={`last-update ${showUI ? '' : 'hidden'}`} 
+              style={{ color: configFinal.colorTexto }}
+            >
+              {lastUpdate ? `Última actualización: ${lastUpdate.toLocaleTimeString()}` : ''}
             </div>
-
+            
             <CRow>
               <CCol md={4}>
-                {renderSeccion(SECCIONES_MENU.HELADOS, productos[SECCIONES_MENU.HELADOS], 'helados-seccion')}
-                {renderSeccion(SECCIONES_MENU.CANDY, productos[SECCIONES_MENU.CANDY], 'candy-seccion')}
+                {renderSeccion(categorias.HELADOS, 'helados-seccion')}
+                {renderSeccion(categorias.CANDY, 'candy-seccion')}
               </CCol>
-
               <CCol md={4}>
-                {renderSeccion(SECCIONES_MENU.ENVASADOS, productos[SECCIONES_MENU.ENVASADOS], 'envasados-seccion')}
-                {renderSeccion(SECCIONES_MENU.REPOSTERIA, productos[SECCIONES_MENU.REPOSTERIA], 'reposteria-seccion')}
-                {renderSeccion(SECCIONES_MENU.PROMOS, productos[SECCIONES_MENU.PROMOS], 'promos-seccion')}
+                 {renderSeccion(categorias.ENVASADOS, 'envasados-seccion')}
+                 {renderSeccion(categorias.REPOSTERIA, 'reposteria-seccion')}
+                 <div className="seccion-menu promos-seccion">
+                    <h2 className="seccion-titulo" style={{ 
+                      color: configFinal.colorTitulo || configFinal.colorTexto, 
+                      fontFamily: configFinal.fuenteTitulo || configFinal.fuenteTexto, 
+                      fontSize: configFinal.tamanoFuenteTitulo 
+                    }}>
+                      PROMOS
+                    </h2>
+                    <div className="productos-lista">
+                      <p style={{color: configFinal.colorTexto, padding: '10px'}}>
+                        ¡Próximamente nuevas promociones!
+                      </p>
+                    </div>
+                 </div>
               </CCol>
-
               <CCol md={4} className="columna-derecha">
-                {renderSeccion(SECCIONES_MENU.CAFETERIA, productos[SECCIONES_MENU.CAFETERIA], 'cafeteria-seccion')}
-                {renderSeccion(SECCIONES_MENU.CAFES_FRIOS, productos[SECCIONES_MENU.CAFES_FRIOS], 'cafes-frios-seccion')}
-                {renderSeccion(SECCIONES_MENU.DESAYUNOS, productos[SECCIONES_MENU.DESAYUNOS], 'desayunos-seccion')}
+                 {renderSeccion(categorias.CAFETERIA, 'cafeteria-seccion')}
+                 {renderSeccion(categorias.CAFES_FRIOS, 'cafes-frios-seccion')}
+                 {renderSeccion(categorias.DESAYUNOS, 'desayunos-seccion')}
               </CCol>
             </CRow>
 
-            <div className="menu-footer">
-              {configFinal.mostrarFooter && <img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="footer-logo" />}
-            </div>
+            {configFinal.mostrarFooter && (
+              <div className="menu-footer">
+                 <img src="../src/assets/Logo.svg" alt="Free Shop Logo" className="footer-logo" />
+              </div>
+            )}
           </CCardBody>
         </CCard>
       </CContainer>
     </div>
-  );
-};
+  )
+}
 
-export default MenuProductos;
+export default MenuProductos

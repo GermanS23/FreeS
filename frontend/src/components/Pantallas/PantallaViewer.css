@@ -39,7 +39,6 @@
 .pantalla-viewer-content {
   width: 100%;
   min-height: 100vh;
-  padding-top: 4rem;
 }
 
 /* Agregando estilos para loading */
@@ -80,4 +79,28 @@
   .pantalla-viewer-content {
     padding-top: 3.5rem;
   }
+}
+
+/* 🔹 NUEVO: Overlay para los botones 🔹 */
+.ui-overlay {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  transition: opacity 0.3s ease;
+  display: flex;
+  gap: 1rem;
+  /* Hacemos que los botones no bloqueen el mouse */
+  pointer-events: none; 
+}
+
+/* Hacemos que SÍ se pueda hacer clic en los botones */
+.ui-overlay .btn {
+  pointer-events: all;
+}
+
+/* Le da a los hijos el 100% de la altura */
+.pantalla-viewer-content {
+  height: 100%;
 }

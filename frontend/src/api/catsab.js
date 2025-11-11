@@ -31,6 +31,12 @@ class CategoriaSabService {
     }
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/sabores`, { params, headers: authHeader() })
   }
+  List(page, size, title) {
+    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/catsabs/list`, {
+      params: { page, size, title },
+      headers: authHeader(),
+    });
+  }
 }
 
 export default new CategoriaSabService();
