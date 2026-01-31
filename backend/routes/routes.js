@@ -11,6 +11,9 @@ import productosController from "../controllers/productosController.js"
 import plantillaController from "../controllers/plantillaController.js"
 import pantallaController from "../controllers/pantallaController.js"
 import authController from "../controllers/authController.js"
+import promocionesController from "../controllers/promocionesController.js"
+import VentasController from "../controllers/ventaController.js"
+import DescuentoVentasController from "../controllers/descuentoventasController.js"
 
 import authJwt from "../middleware/authjwt.js"
 import upload from "../config/multer.config.js"
@@ -26,7 +29,9 @@ const productosRouter = express.Router()
 const plantillaRouter = express.Router()
 const pantallaRouter = express.Router()
 const authRouter = express.Router()
-
+const promocionesRouter = express.Router()
+const ventasRouter = express.Router()
+const descuentoventasRouter = express.Router()
 // Middleware para headers
 const headerMiddleware = (req, res, next) => {
   res.header("Access-Control-Allow-Headers", "x-access-token, Origin, Content-Type, Accept")
@@ -45,6 +50,9 @@ productosRouter.use(headerMiddleware)
 plantillaRouter.use(headerMiddleware)
 pantallaRouter.use(headerMiddleware)
 authRouter.use(headerMiddleware)
+promocionesRouter.use(headerMiddleware)
+ventasRouter.use(headerMiddleware)
+descuentoventasRouter.use(headerMiddleware)
 
 // ==================== RUTAS PARA ROLES ====================
 rolesRouter.get("/rol", rolesController.getRoles)
@@ -345,6 +353,168 @@ pantallaRouter.delete(
   authJwt.permit("ADMIN", "DUEÑO"),
   pantallaController.deletePantalla,
 )
+// ==================== RUTAS PARA PROMOCIONES ====================
+// --- Ruta Pública ---
+promocionesRouter.get(
+  "/promos/public/list",
+  promocionesController.ListPublica
+)
+// --- 🔹 Rutas de Admin (NUEVAS) 🔹 ---
+promocionesRouter.get(
+  "/promociones/list",
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  promocionesController.List
+)
+promocionesRouter.get(
+  "/promociones/:id",
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  promocionesController.getPromoById
+)
+promocionesRouter.post(
+  "/promociones",
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  promocionesController.createPromo
+)
+promocionesRouter.put(
+  "/promociones/:id",
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  promocionesController.updatePromo
+)
+promocionesRouter.delete(
+  "/promociones/:id",
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  promocionesController.deletePromo
+)
+
+// ====================
+// POS – VENTA ACTUAL
+// ====================
+
+// Obtener o crear venta actual por sucursal (POS)
+ventasRouter.get(
+  '/ventas/actual/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const { suc_cod } = req.params
+      const venta = await VentasController.getVentaActualPorSucursal(suc_cod)
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// ====================
+// ITEMS DE VENTA
+// ====================
+
+// Agregar producto a la venta
+ventasRouter.post(
+  '/ventas/:venta_id/items',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const { venta_id } = req.params
+      const { prod_cod, cantidad } = req.body
+
+      const venta = await VentasController.agregarProducto({
+        venta_id,
+        prod_cod,
+        cantidad,
+      })
+
+      // siempre devolver la venta completa actualizada
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// ====================
+// CIERRE DE VENTA
+// ====================
+
+// Cerrar venta (snapshot final)
+ventasRouter.post(
+  '/ventas/cerrar/:venta_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const { venta_id } = req.params
+      const venta = await VentasController.cerrarVenta(venta_id)
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// ====================
+// HISTÓRICO
+// ====================
+
+// Obtener todas las ventas de una sucursal
+ventasRouter.get(
+  '/sucursal/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const ventas = await VentasController.getVentasPorSucursal(
+        req.params.suc_cod
+      )
+      res.json(ventas)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// =========================
+// DESCUENTOS DE VENTA
+// =========================
+
+// Aplicar descuento (FIJO o PORCENTAJE)
+descuentoventasRouter.post(
+  '/:venta_id/descuento',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await DescuentoVentasController.aplicarDescuento({
+        venta_id: req.params.venta_id,
+        ...req.body,
+      })
+
+      res.json(venta) // devolver venta actualizada
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Quitar descuento
+descuentoventasRouter.delete(
+  '/:venta_id/descuento',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await DescuentoVentasController.quitarDescuento(
+        req.params.venta_id
+      )
+
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
 
 export {
   rolesRouter,
@@ -358,4 +528,7 @@ export {
   plantillaRouter,
   pantallaRouter,
   authRouter,
+  promocionesRouter,
+  ventasRouter,
+  descuentoventasRouter,
 }

@@ -9,10 +9,10 @@ import {
   CAlert,
 } from '@coreui/react'
 import ProductosService from '../../services/productos.service'
+import PromocionesService from '../../services/promociones.service' // 🔹 1. IMPORTAMOS EL NUEVO SERVICIO
 import './MenuProductos.css' 
 
 const DEFAULT_CONFIG = {
-  colorFondo: '#ffffff',
   colorTexto: '#000000',
   fuenteTexto: 'Arial, sans-serif',
   fuenteTitulo: 'Arial, sans-serif',
@@ -22,25 +22,26 @@ const DEFAULT_CONFIG = {
   mostrarLogo: true,
 };
 
-// 🔹 ACEPTAMOS EL NUEVO PROP 'showUI' 🔹
-// 🔹 CAMBIADO EL NOMBRE A 'PantallaProductos' para que coincida con el archivo
+// 🔹 Usamos el nombre 'MenuProductos' para que coincida con tu 'Registro.jsx'
 const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 30000, showUI = false }) => {
   const [categoriasProd, setCategoriasProd] = useState([])
+  const [promociones, setPromociones] = useState([]) // 🔹 2. AÑADIMOS ESTADO PARA PROMOS
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
 
-  // ... (Toda la lógica de useEffect, useMemo, etc., se mantiene idéntica) ...
+  // Lógica de carga de datos (Ahora carga Productos Y Promociones)
   useEffect(() => {
     let isMounted = true
-    const loadProductos = async () => {
+
+    const loadData = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        const response = await ProductosService.listProductosPublic(categoria)
-        const items = response.data.items || []
-        const disponibles = items.filter(p => p.prod_dis === true)
-
+        // --- Cargar Productos (como antes) ---
+        const responseProd = await ProductosService.listProductosPublic(categoria)
+        const itemsProd = responseProd.data.items || []
+        const disponibles = itemsProd.filter(p => p.prod_dis === true)
         const groups = {}
         disponibles.forEach(producto => {
           const catId = producto.catprod_cod;
@@ -53,35 +54,42 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
           }
           groups[catId].productos.push(producto);
         });
-
         const groupedArray = Object.values(groups);
+
+        // --- Cargar Promociones (nuevo) ---
+        const responsePromo = await PromocionesService.listPromosPublic()
+        const promosActivas = responsePromo.data.items || []
 
         if (isMounted) {
           setCategoriasProd(groupedArray)
+          setPromociones(promosActivas) // 🔹 3. GUARDAMOS LAS PROMOS EN EL ESTADO
           setLastUpdate(new Date())
         }
 
       } catch (err) {
-        console.error("Error en loadProductos:", err)
-        if (isMounted) setError("No se pudieron cargar los productos.")
+        console.error("Error en loadData:", err)
+        if (isMounted) setError("No se pudieron cargar los datos.")
       } finally {
         if (isMounted) setIsLoading(false)
       }
     }
-    loadProductos()
-    const interval = setInterval(loadProductos, refreshInterval)
+    
+    loadData()
+    const interval = setInterval(loadData, refreshInterval) 
     return () => {
       isMounted = false
       clearInterval(interval)
     }
   }, [categoria, refreshInterval])
 
+  // Lógica de mapeo para el layout (basado en tu imagen)
   const categorias = useMemo(() => {
     const findCat = (name) => {
       if (!categoriasProd) return null;
       const formattedName = name.toUpperCase().trim();
       return categoriasProd.find(c => c.cat_name.toUpperCase().trim() === formattedName);
     }
+    
     return {
       HELADOS: findCat("Helados"),
       CANDY: findCat("Candy"),
@@ -93,6 +101,7 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
     };
   }, [categoriasProd]);
 
+  // Lógica de Estilos
   const plantillaConfig = plantilla?.plan_config || {}
   const configFinal = { ...DEFAULT_CONFIG, ...plantillaConfig }
   const plantillaImageUrl = plantilla?.plan_imagen
@@ -123,16 +132,16 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
     return ( <CAlert color="danger" className="m-5 text-center">{error}</CAlert> )
   }
 
-  if (categoriasProd.length === 0) {
+  // 🔹 Modificamos la condición de "no encontrado"
+  if (categoriasProd.length === 0 && promociones.length === 0) {
     return (
       <CAlert color="info" className="m-5 text-center">
-        No se encontraron productos disponibles para estas categorías.
+        No se encontraron productos ni promociones disponibles.
       </CAlert>
     )
   }
   
-  // 🔹 CORRECCIÓN: 'renderSeccion' está AHORA DENTRO del componente
-  // para que tenga acceso a 'configFinal'
+  // 'renderSeccion' está DENTRO del componente
   const renderSeccion = (categoria, className = '') => {
     if (!categoria || !categoria.productos || categoria.productos.length === 0) {
       return null;
@@ -163,7 +172,7 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
       <CContainer fluid>
         <CCard className="menu-card" style={{ background: 'transparent', boxShadow: 'none' }}>
           <CCardBody>
-            {/* 🔹 USAMOS 'showUI' PARA OCULTAR/MOSTRAR ESTO 🔹 */}
+            {/* Usamos el prop 'showUI' para ocultar/mostrar esto */}
             <div 
               className={`last-update ${showUI ? '' : 'hidden'}`} 
               style={{ color: configFinal.colorTexto }}
@@ -179,6 +188,13 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
               <CCol md={4}>
                  {renderSeccion(categorias.ENVASADOS, 'envasados-seccion')}
                  {renderSeccion(categorias.REPOSTERIA, 'reposteria-seccion')}
+                 
+              </CCol>
+              <CCol md={4} className="columna-derecha">
+                 {renderSeccion(categorias.CAFETERIA, 'cafeteria-seccion')}
+                 {renderSeccion(categorias.CAFES_FRIOS, 'cafes-frios-seccion')}
+                 {renderSeccion(categorias.DESAYUNOS, 'desayunos-seccion')}
+                 {/* 🔹 4. SECCIÓN DE PROMOCIONES DINÁMICA 🔹 */}
                  <div className="seccion-menu promos-seccion">
                     <h2 className="seccion-titulo" style={{ 
                       color: configFinal.colorTitulo || configFinal.colorTexto, 
@@ -188,16 +204,21 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
                       PROMOS
                     </h2>
                     <div className="productos-lista">
-                      <p style={{color: configFinal.colorTexto, padding: '10px'}}>
-                        ¡Próximamente nuevas promociones!
-                      </p>
+                      {promociones.length > 0 ? (
+                        promociones.map(promo => (
+                          // Usamos las mismas clases CSS que los productos
+                          <div key={promo.prom_cod} className="producto-item">
+                            <span className="producto-nombre" style={{ color: configFinal.colorTexto }}>{promo.prom_nom}</span>
+                            <span className="producto-precio" style={{ color: configFinal.colorTexto }}>${Number(promo.prom_importe).toLocaleString()}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p style={{color: configFinal.colorTexto, padding: '10px'}}>
+                          No hay promociones disponibles.
+                        </p>
+                      )}
                     </div>
                  </div>
-              </CCol>
-              <CCol md={4} className="columna-derecha">
-                 {renderSeccion(categorias.CAFETERIA, 'cafeteria-seccion')}
-                 {renderSeccion(categorias.CAFES_FRIOS, 'cafes-frios-seccion')}
-                 {renderSeccion(categorias.DESAYUNOS, 'desayunos-seccion')}
               </CCol>
             </CRow>
 
@@ -213,4 +234,5 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
   )
 }
 
+// 🔹 Exportamos con el nombre 'MenuProductos'
 export default MenuProductos

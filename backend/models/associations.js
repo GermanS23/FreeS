@@ -20,6 +20,10 @@ import ProductsProm from './ProductsProm.js'
 import SucProms from './SucProms.js'
 import CatSabPan from './CatSabPan.js'
 import CatProdPan from './CatProdPan.js'
+import Ventas from './ventas.js'
+import VentasItems from './ventas_items.js'
+import DescuentoVentas from './descuentoventas.js'
+// Definir las asociaciones entre los modelos 
 
 
 // Relacion entre Usuario y Roles
@@ -79,3 +83,30 @@ CategoriaProd.belongsToMany(Pantalla, {through: CatProdPan,
   uniqueKey: 'unique_catprod_pan'})
 Pantalla.belongsToMany(CategoriaProd, {through: CatProdPan,
   uniqueKey: 'unique_catprod_pan'})
+
+// ===============================
+// VENTAS
+// ===============================
+Ventas.hasMany(VentasItems, {
+  foreignKey: 'venta_id',
+  as: 'Items'
+})
+VentasItems.belongsTo(Ventas, {
+  foreignKey: 'venta_id',
+  as: 'Venta'
+})
+
+Productos.hasMany(VentasItems, { foreignKey: 'prod_cod' })
+VentasItems.belongsTo(Productos, { foreignKey: 'prod_cod' })
+
+
+// 🔹 Venta -> DescuentoVentas 
+Ventas.hasMany(DescuentoVentas, {
+  foreignKey: 'venta_id',
+  as: 'Descuentos'
+})
+
+DescuentoVentas.belongsTo(Ventas, {
+  foreignKey: 'venta_id',
+  as: 'Venta'
+})

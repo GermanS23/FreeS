@@ -17,6 +17,9 @@ import {
   plantillaRouter,
   pantallaRouter,
   authRouter,
+  promocionesRouter,
+  ventasRouter,
+  descuentoventasRouter
 } from "./routes/routes.js"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -58,7 +61,9 @@ app.use("/api", productosRouter)
 app.use("/api", plantillaRouter)
 app.use("/api", pantallaRouter)
 app.use("/api", authRouter)
-
+app.use("/api", promocionesRouter)
+app.use("/api", ventasRouter) 
+app.use("/api", descuentoventasRouter) 
 //initial(); //Comando para inicializar la base de datos y crear el usuario admin
 
 const PORT = process.env.PORT ?? 3000

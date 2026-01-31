@@ -1,106 +1,68 @@
 .pantalla-viewer {
-  width: 100%;
-  min-height: 100vh;
-  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
-/* Agregando estilos para el header */
-.pantalla-viewer-header {
+/* Overlay blanco */
+.pantalla-viewer::before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  inset: 0;
+  z-index: 0;
 }
 
-.pantalla-viewer-title {
-  color: white;
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.back-button {
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
-}
-
-.back-button:hover {
-  opacity: 1;
-}
-
-.pantalla-viewer-content {
-  width: 100%;
-  min-height: 100vh;
-}
-
-/* Agregando estilos para loading */
-.pantalla-viewer-loading {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-}
-
-.pantalla-viewer-loading p {
-  color: #666;
-  font-size: 1.1rem;
-}
-
-.pantalla-error {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: 20px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .pantalla-viewer-header {
-    padding: 0.75rem;
-  }
-
-  .pantalla-viewer-title {
-    font-size: 1.2rem;
-  }
-
-  .pantalla-viewer-content {
-    padding-top: 3.5rem;
-  }
-}
-
-/* 🔹 NUEVO: Overlay para los botones 🔹 */
+/* Overlay UI */
 .ui-overlay {
-  position: fixed;
+  position: absolute;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10000;
-  transition: opacity 0.3s ease;
+  z-index: 10;
   display: flex;
   gap: 1rem;
-  /* Hacemos que los botones no bloqueen el mouse */
-  pointer-events: none; 
+  pointer-events: none;
 }
 
-/* Hacemos que SÍ se pueda hacer clic en los botones */
-.ui-overlay .btn {
+.ui-overlay button {
   pointer-events: all;
 }
 
-/* Le da a los hijos el 100% de la altura */
-.pantalla-viewer-content {
+/* CONTENEDOR CENTRAL */
+.pantalla-scaler {
+  position: relative;
+  z-index: 1;
+  width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+/* CONTENIDO REAL */
+.pantalla-scaled-content {
+  transform-origin: top center;
+  width: 100%;
+}
+
+/* Loading */
+.pantalla-viewer-loading {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Error */
+.pantalla-error {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.pantalla-error p {
+  color: red;
+  font-weight: bold;
 }

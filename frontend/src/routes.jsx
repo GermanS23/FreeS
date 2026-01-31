@@ -14,6 +14,7 @@ import PantallaViewer from "./components/Pantallas/PantallaViewer"
 import PantallasDisplay from "./components/Pantallas/PantallaDisplay"
 import Users from "./components/Usuarios/index"
 import Sucursales from "./components/Sucursales/Sucursales"
+import Promociones from "./components/Promociones/Promociones"
 
 // 🔹 COMPONENTE 1: Rutas Protegidas (Tu AppLayout)
 // Si el usuario está logueado, muestra el layout de admin. Si no, lo manda al login.
@@ -62,6 +63,7 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
         // 🔹 'pantalla-viewer' YA NO ESTÁ AQUÍ 🔹
         { path: "config/usuarios", element: <Users /> },
         { path: "sucursales", element: <Sucursales /> },
+        { path: "promociones", element: <Promociones /> },
       ],
     },
     {

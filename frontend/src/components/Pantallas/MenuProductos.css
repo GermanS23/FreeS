@@ -99,24 +99,12 @@
   font-weight: bold;
 }
 
-/* Estilos específicos por sección */
-.columna-derecha {
-  background-color: #1e3c72;
-  color: white;
-}
 
-.columna-derecha .seccion-titulo {
-  color: white;
-  border-bottom-color: white;
-}
 
-.columna-derecha .producto-nombre,
-.columna-derecha .producto-precio {
-  color: white;
-}
+
 
 .promos-seccion {
-  background-color: #f8f9fa;
+  background-color: transparent;
   border-radius: 8px;
   margin-top: 2rem;
 }

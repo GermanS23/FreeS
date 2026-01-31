@@ -13,7 +13,6 @@ import SaboresService from '../../services/sabores.service'
 import './SaboresMenu.css' 
 
 const DEFAULT_CONFIG = {
-  colorFondo: '#ffffff',
   colorTexto: '#000000',
   fuenteTexto: 'Arial, sans-serif',
   fuenteTitulo: 'Arial, sans-serif',
