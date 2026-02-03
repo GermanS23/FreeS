@@ -19,7 +19,8 @@ import {
   authRouter,
   promocionesRouter,
   ventasRouter,
-  descuentoventasRouter
+  descuentoventasRouter,
+  metodospagoRouter
 } from "./routes/routes.js"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -30,19 +31,24 @@ import "./models/associations.js"
 import Usuarios from "./models/usuarios.js"
 import Rol from "./models/roles.js"
 
+//Importar modelo para la inicialización
+import { seedMetodosPago } from "./utils/seedMetodosPago.js"
 dotenv.config() // Cargamos variables de entorno al inicio de la aplicación
 
 const app = express()
 
-// Mover el middleware cors al principio
+// CORS configurado correctamente - DEBE IR PRIMERO
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"], // Asegúrate de que tu frontend esté aquí
-    methods: "GET, POST, PUT, DELETE, OPTIONS", // Asegúrate de que OPTIONS esté incluido
-    allowedHeaders: ["Content-Type", "Authorization", "x-access-token"], //Agrega x-access-token.
-    preflightContinue: true,
-  }),
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-access-token"],
+    credentials: true,
+  })
 )
+
+// Manejar explícitamente las peticiones OPTIONS (preflight)
+app.options('*', cors())
 
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ limit: "50mb", extended: true }))
@@ -64,9 +70,12 @@ app.use("/api", authRouter)
 app.use("/api", promocionesRouter)
 app.use("/api", ventasRouter) 
 app.use("/api", descuentoventasRouter) 
+app.use("/api", metodospagoRouter)
+
 //initial(); //Comando para inicializar la base de datos y crear el usuario admin
 
 const PORT = process.env.PORT ?? 3000
+
 ;(async () => {
   try {
     await sequelize.authenticate()
@@ -74,6 +83,7 @@ const PORT = process.env.PORT ?? 3000
     // Sincroniza todos los modelos con la base de datos
     await sequelize.sync()
     console.log("Modelos sincronizados con exito")
+    await seedMetodosPago() // Sembrar métodos de pago iniciales
   } catch (error) {
     console.error("No se pudo conectar a la base de datos:", error)
   }
@@ -83,7 +93,9 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
 
+
 async function initial() {
+  
   try {
     await Rol.create({
       rol_cod: 4,
@@ -102,4 +114,5 @@ async function initial() {
   } catch (error) {
     console.error("Error al crear el usuario admin", error)
   }
+  
 }

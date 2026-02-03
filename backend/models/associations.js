@@ -8,7 +8,6 @@ import SaboresHelados from './saboreshelados.js'
 import CategoriaSab from './categoria_sab.js'
 import CategoriaProd from './categoria_prod.js'
 import Productos from './productos.js'
-import TipoDescuento from './tipodescuento.js'
 import Promociones from './promociones.js'
 import Plantilla from './plantilla.js'
 import Pantalla from './pantalla.js'
@@ -23,6 +22,8 @@ import CatProdPan from './CatProdPan.js'
 import Ventas from './ventas.js'
 import VentasItems from './ventas_items.js'
 import DescuentoVentas from './descuentoventas.js'
+import VentaPagos from './ventapagos.js'
+import MetodosPago from './metodospago.js'
 // Definir las asociaciones entre los modelos 
 
 
@@ -42,8 +43,6 @@ SaboresHelados.belongsTo(CategoriaSab, { foreignKey: 'catsab_cod'})
 CategoriaProd.hasMany(Productos, {foreignKey:'catprod_cod'})
 Productos.belongsTo(CategoriaProd, {foreignKey:'catprod_cod'})
 
-TipoDescuento.hasMany(Promociones, {foreignKey:'td_cod'})
-Promociones.belongsTo(TipoDescuento, {foreignKey:'td_cod'})
 
 Plantilla.hasMany(Pantalla,{foreignKey:'plan_cod'})
 Pantalla.belongsTo(Plantilla,{foreignKey:'plan_cod'})
@@ -107,6 +106,31 @@ Ventas.hasMany(DescuentoVentas, {
 })
 
 DescuentoVentas.belongsTo(Ventas, {
+  foreignKey: 'venta_id',
+  as: 'Venta'
+})
+
+
+// ===============================
+// MÉTODOS DE PAGO
+// ===============================
+
+// MetodosPago → VentaPagos (1:N)
+MetodosPago.hasMany(VentaPagos, {
+  foreignKey: 'mp_cod',
+  as: 'Pagos'
+})
+VentaPagos.belongsTo(MetodosPago, {
+  foreignKey: 'mp_cod',
+  as: 'MetodoPago'
+})
+
+// Venta → VentaPagos (1:N)
+Ventas.hasMany(VentaPagos, {
+  foreignKey: 'venta_id',
+  as: 'Pagos'
+})
+VentaPagos.belongsTo(Ventas, {
   foreignKey: 'venta_id',
   as: 'Venta'
 })

@@ -14,6 +14,7 @@ import authController from "../controllers/authController.js"
 import promocionesController from "../controllers/promocionesController.js"
 import VentasController from "../controllers/ventaController.js"
 import DescuentoVentasController from "../controllers/descuentoventasController.js"
+import MetodosPagoController from '../controllers/metodospagoController.js'
 
 import authJwt from "../middleware/authjwt.js"
 import upload from "../config/multer.config.js"
@@ -32,6 +33,7 @@ const authRouter = express.Router()
 const promocionesRouter = express.Router()
 const ventasRouter = express.Router()
 const descuentoventasRouter = express.Router()
+const metodospagoRouter = express.Router()
 // Middleware para headers
 const headerMiddleware = (req, res, next) => {
   res.header("Access-Control-Allow-Headers", "x-access-token, Origin, Content-Type, Accept")
@@ -53,6 +55,7 @@ authRouter.use(headerMiddleware)
 promocionesRouter.use(headerMiddleware)
 ventasRouter.use(headerMiddleware)
 descuentoventasRouter.use(headerMiddleware)
+metodospagoRouter.use(headerMiddleware)
 
 // ==================== RUTAS PARA ROLES ====================
 rolesRouter.get("/rol", rolesController.getRoles)
@@ -390,43 +393,51 @@ promocionesRouter.delete(
 // POS – VENTA ACTUAL
 // ====================
 
-// Obtener o crear venta actual por sucursal (POS)
+// Ver si hay venta abierta
 ventasRouter.get(
-  '/ventas/actual/:suc_cod',
+  '/ventas/abierta/:suc_cod',
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
     try {
-      const { suc_cod } = req.params
-      const venta = await VentasController.getVentaActualPorSucursal(suc_cod)
-      res.json(venta)
+      const venta = await VentasController.getVentaAbiertaPorSucursal(
+        req.params.suc_cod
+      )
+      res.json(venta) // puede ser null
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
   }
 )
 
+/// Crear nueva venta
+ventasRouter.post(
+  '/ventas/nueva',  
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.crearVenta(req.body)
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
 // ====================
-// ITEMS DE VENTA
+// ITEMS
 // ====================
 
-// Agregar producto a la venta
 ventasRouter.post(
   '/ventas/:venta_id/items',
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
     try {
-      const { venta_id } = req.params
-      const { prod_cod, cantidad } = req.body
-
       const venta = await VentasController.agregarProducto({
-        venta_id,
-        prod_cod,
-        cantidad,
+        venta_id: req.params.venta_id,
+        ...req.body,
       })
-
-      // siempre devolver la venta completa actualizada
       res.json(venta)
     } catch (error) {
       res.status(400).json({ error: error.message })
@@ -435,18 +446,20 @@ ventasRouter.post(
 )
 
 // ====================
-// CIERRE DE VENTA
+// MODIFICAR RUTA DE CIERRE
 // ====================
 
-// Cerrar venta (snapshot final)
+// Cerrar venta (MODIFICADO)
 ventasRouter.post(
   '/ventas/cerrar/:venta_id',
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
     try {
-      const { venta_id } = req.params
-      const venta = await VentasController.cerrarVenta(venta_id)
+      const venta = await VentasController.cerrarVenta(
+        req.params.venta_id,
+        req.body.pagos // 🔹 Ahora recibe array de pagos
+      )
       res.json(venta)
     } catch (error) {
       res.status(400).json({ error: error.message })
@@ -460,7 +473,7 @@ ventasRouter.post(
 
 // Obtener todas las ventas de una sucursal
 ventasRouter.get(
-  '/sucursal/:suc_cod',
+  '/ventas/sucursal/:suc_cod',  // ✅ Agregado prefijo /ventas
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
@@ -481,7 +494,7 @@ ventasRouter.get(
 
 // Aplicar descuento (FIJO o PORCENTAJE)
 descuentoventasRouter.post(
-  '/:venta_id/descuento',
+  '/descuentoventas/:venta_id/descuento',  // ✅ Agregado prefijo
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
@@ -491,7 +504,7 @@ descuentoventasRouter.post(
         ...req.body,
       })
 
-      res.json(venta) // devolver venta actualizada
+      res.json(venta)
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
@@ -500,7 +513,7 @@ descuentoventasRouter.post(
 
 // Quitar descuento
 descuentoventasRouter.delete(
-  '/:venta_id/descuento',
+  '/descuentoventas/:venta_id/descuento',  // ✅ Agregado prefijo
   authJwt.verifyToken,
   authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
   async (req, res) => {
@@ -510,6 +523,175 @@ descuentoventasRouter.delete(
       )
 
       res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+// Agregar producto (ya existe)
+ventasRouter.post(
+  '/ventas/:venta_id/items',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.agregarProducto({
+        venta_id: req.params.venta_id,
+        ...req.body,
+      })
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// 🔹 NUEVO: Eliminar item
+ventasRouter.delete(
+  '/ventas/items/:venta_items_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.eliminarItem(
+        req.params.venta_items_id
+      )
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// 🔹 NUEVO: Modificar cantidad de item
+ventasRouter.put(
+  '/ventas/items/:venta_items_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.modificarCantidadItem({
+        venta_items_id: req.params.venta_items_id,
+        cantidad: req.body.cantidad,
+      })
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// ====================
+// CANCELAR VENTA
+// ====================
+
+// 🔹 NUEVO: Cancelar venta
+ventasRouter.post(
+  '/ventas/cancelar/:venta_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.cancelarVenta(req.params.venta_id)
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+
+// ====================
+// MÉTODOS DE PAGO
+// ====================
+
+// Listar métodos activos (para POS)
+metodospagoRouter.get(
+  '/metodospago/activos',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const metodos = await MetodosPagoController.getMetodosActivos()
+      res.json(metodos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Listar todos (ADMIN)
+metodospagoRouter.get(
+  '/metodospago',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const metodos = await MetodosPagoController.getAll()
+      res.json(metodos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener por ID
+metodospagoRouter.get(
+  '/metodospago/:mp_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const metodo = await MetodosPagoController.getById(req.params.mp_cod)
+      res.json(metodo)
+    } catch (error) {
+      res.status(404).json({ error: error.message })
+    }
+  }
+)
+
+// Crear método
+metodospagoRouter.post(
+  '/metodospago',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const metodo = await MetodosPagoController.create(req.body)
+      res.json(metodo)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Actualizar método
+metodospagoRouter.put(
+  '/metodospago/:mp_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const metodo = await MetodosPagoController.update(
+        req.params.mp_cod,
+        req.body
+      )
+      res.json(metodo)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Eliminar (desactivar) método
+metodospagoRouter.delete(
+  '/metodospago/:mp_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const result = await MetodosPagoController.delete(req.params.mp_cod)
+      res.json(result)
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
@@ -531,4 +713,5 @@ export {
   promocionesRouter,
   ventasRouter,
   descuentoventasRouter,
+  metodospagoRouter
 }

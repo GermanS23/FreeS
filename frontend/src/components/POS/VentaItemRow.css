@@ -1,0 +1,146 @@
+.venta-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+  transition: all 0.2s;
+  gap: 12px;
+}
+
+.venta-item-row:hover {
+  background: #edf2f7;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-nombre {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-detalle {
+  font-size: 0.85rem;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-editar-cantidad {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-editar-cantidad:hover {
+  background: #e2e8f0;
+}
+
+/* Editor de cantidad */
+.cantidad-editor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-cantidad {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #cbd5e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cantidad:hover {
+  background: #edf2f7;
+}
+
+.input-cantidad {
+  width: 50px;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.btn-guardar {
+  background: #48bb78;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-guardar:hover {
+  background: #38a169;
+}
+
+.btn-cancelar {
+  background: #fc8181;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cancelar:hover {
+  background: #f56565;
+}
+
+.item-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-subtotal {
+  font-weight: 700;
+  color: #667eea;
+  font-size: 1rem;
+  min-width: 80px;
+  text-align: right;
+}
+
+.btn-eliminar-item {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+
+.btn-eliminar-item:hover {
+  opacity: 1;
+  background: #fed7d7;
+  transform: scale(1.1);
+}

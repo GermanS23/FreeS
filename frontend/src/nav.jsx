@@ -35,6 +35,13 @@ const _nav = [
     icon: <CIcon icon={cilTv} customClassName="nav-icon" />,
   },
   {
+  component: CNavItem,
+  name: "POS",
+  to: "/pos",
+  icon: <ChartNoAxesCombined className="nav-icon" />,
+},
+
+  {
     component: CNavGroup,
     name: "Administración",
     to: "/admin",

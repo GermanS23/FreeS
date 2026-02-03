@@ -1,0 +1,45 @@
+.venta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+}
+
+.venta-info {
+  flex: 1;
+}
+
+.venta-titulo {
+  margin: 0 0 8px 0;
+  color: #2d3748;
+  font-size: 1.4rem;
+}
+
+.venta-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.venta-sucursal,
+.venta-fecha {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.venta-estado {
+  margin-left: 12px;
+}
+
+.badge-abierta {
+  display: inline-block;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}

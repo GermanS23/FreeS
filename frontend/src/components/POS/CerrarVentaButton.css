@@ -1,0 +1,28 @@
+.btn-cerrar-venta {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.btn-cerrar-venta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.btn-cerrar-venta:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-cerrar-venta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

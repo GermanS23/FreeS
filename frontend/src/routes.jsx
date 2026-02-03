@@ -15,6 +15,7 @@ import PantallasDisplay from "./components/Pantallas/PantallaDisplay"
 import Users from "./components/Usuarios/index"
 import Sucursales from "./components/Sucursales/Sucursales"
 import Promociones from "./components/Promociones/Promociones"
+import PosPage from "./components/POS/PosPage"
 
 // 🔹 COMPONENTE 1: Rutas Protegidas (Tu AppLayout)
 // Si el usuario está logueado, muestra el layout de admin. Si no, lo manda al login.
@@ -64,6 +65,7 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
         { path: "config/usuarios", element: <Users /> },
         { path: "sucursales", element: <Sucursales /> },
         { path: "promociones", element: <Promociones /> },
+        {path: "pos", element: <PosPage sucCod={1} />},
       ],
     },
     {

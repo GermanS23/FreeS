@@ -1,0 +1,22 @@
+.btn-cancelar-venta {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(252, 129, 129, 0.3);
+}
+
+.btn-cancelar-venta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(252, 129, 129, 0.4);
+}
+
+.btn-cancelar-venta:active {
+  transform: translateY(0);
+}

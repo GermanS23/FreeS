@@ -1,0 +1,57 @@
+.descuento-modal {
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 12px;
+}
+
+.descuento-titulo {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.descuento-botones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-descuento {
+  padding: 12px;
+  background: linear-gradient(135deg, #ffd93d 0%, #ffb347 100%);
+  color: #2d3748;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-descuento:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 217, 61, 0.4);
+}
+
+.btn-descuento:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-quitar-descuento {
+  width: 100%;
+  padding: 10px;
+  background: #fc8181;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.btn-quitar-descuento:hover {
+  background: #f56565;
+}

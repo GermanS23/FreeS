@@ -1,0 +1,40 @@
+.venta-pagos {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+}
+
+.venta-pagos-titulo {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.venta-pagos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.venta-pago-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+}
+
+.pago-metodo {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.pago-monto {
+  font-weight: 700;
+  color: #48bb78;
+  font-size: 1rem;
+}
