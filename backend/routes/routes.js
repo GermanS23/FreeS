@@ -15,6 +15,8 @@ import promocionesController from "../controllers/promocionesController.js"
 import VentasController from "../controllers/ventaController.js"
 import DescuentoVentasController from "../controllers/descuentoventasController.js"
 import MetodosPagoController from '../controllers/metodospagoController.js'
+import CajasController from "../controllers/cajasController.js"
+import EstadisticasController from "../controllers/estadisticasController.js"
 
 import authJwt from "../middleware/authjwt.js"
 import upload from "../config/multer.config.js"
@@ -34,6 +36,9 @@ const promocionesRouter = express.Router()
 const ventasRouter = express.Router()
 const descuentoventasRouter = express.Router()
 const metodospagoRouter = express.Router()
+const cajasRouter = express.Router()
+const estadisticasRouter = express.Router()
+
 // Middleware para headers
 const headerMiddleware = (req, res, next) => {
   res.header("Access-Control-Allow-Headers", "x-access-token, Origin, Content-Type, Accept")
@@ -56,6 +61,8 @@ promocionesRouter.use(headerMiddleware)
 ventasRouter.use(headerMiddleware)
 descuentoventasRouter.use(headerMiddleware)
 metodospagoRouter.use(headerMiddleware)
+cajasRouter.use(headerMiddleware)
+estadisticasRouter.use(headerMiddleware)
 
 // ==================== RUTAS PARA ROLES ====================
 rolesRouter.get("/rol", rolesController.getRoles)
@@ -487,7 +494,23 @@ ventasRouter.get(
     }
   }
 )
-
+// Obtener venta por ID (para detalle)
+ventasRouter.get(
+  '/ventas/:venta_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const venta = await VentasController.getVentaById(req.params.venta_id)
+      if (!venta) {
+        return res.status(404).json({ error: 'Venta no encontrada' })
+      }
+      res.json(venta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
 // =========================
 // DESCUENTOS DE VENTA
 // =========================
@@ -698,6 +721,236 @@ metodospagoRouter.delete(
   }
 )
 
+
+// ====================
+// CAJAS / TURNOS
+// ====================
+
+// Obtener caja abierta por sucursal
+cajasRouter.get(
+  '/cajas/abierta/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const caja = await CajasController.getCajaAbiertaPorSucursal(
+        req.params.suc_cod
+      )
+      res.json(caja) // puede ser null
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Abrir caja
+cajasRouter.post(
+  '/cajas/abrir',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const caja = await CajasController.abrirCaja(req.body)
+      res.json(caja)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener resumen de caja abierta
+cajasRouter.get(
+  '/cajas/:caja_id/resumen',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const resumen = await CajasController.getResumenCajaAbierta(
+        req.params.caja_id
+      )
+      res.json(resumen)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Cerrar caja (arqueo)
+cajasRouter.post(
+  '/cajas/cerrar/:caja_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const caja = await CajasController.cerrarCaja({
+        caja_id: req.params.caja_id,
+        ...req.body
+      })
+      res.json(caja)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Historial de cajas por sucursal
+cajasRouter.get(
+  '/cajas/sucursal/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const { page, size } = req.query
+      const cajas = await CajasController.getCajasPorSucursal(
+        req.params.suc_cod,
+        { page: parseInt(page) || 0, size: parseInt(size) || 20 }
+      )
+      res.json(cajas)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener caja por ID
+cajasRouter.get(
+  '/cajas/:caja_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const caja = await CajasController.getCajaById(req.params.caja_id)
+      res.json(caja)
+    } catch (error) {
+      res.status(404).json({ error: error.message })
+    }
+  }
+)
+
+// Eliminar caja (solo si no tiene ventas)
+cajasRouter.delete(
+  '/cajas/:caja_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const result = await CajasController.eliminarCaja(req.params.caja_id)
+      res.json(result)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Resumen del día
+estadisticasRouter.get(
+  '/estadisticas/resumen-hoy/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const resumen = await EstadisticasController.getResumenHoy(req.params.suc_cod)
+      res.json(resumen)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Ventas por hora (hoy)
+estadisticasRouter.get(
+  '/estadisticas/ventas-por-hora/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const datos = await EstadisticasController.getVentasPorHora(req.params.suc_cod)
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Productos más vendidos
+estadisticasRouter.get(
+  '/estadisticas/productos-top/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const limit = req.query.limit || 10
+      const datos = await EstadisticasController.getProductosMasVendidos(
+        req.params.suc_cod,
+        Number(limit)
+      )
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Métodos de pago
+estadisticasRouter.get(
+  '/estadisticas/metodos-pago/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const datos = await EstadisticasController.getMetodosPagoStats(req.params.suc_cod)
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Ventas semanales
+estadisticasRouter.get(
+  '/estadisticas/ventas-semanales/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const datos = await EstadisticasController.getVentasSemanales(req.params.suc_cod)
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Estadísticas de cajeros
+estadisticasRouter.get(
+  '/estadisticas/cajeros/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const datos = await EstadisticasController.getEstadisticasCajeros(req.params.suc_cod)
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Comparativa mensual
+estadisticasRouter.get(
+  '/estadisticas/comparativa-mensual/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const datos = await EstadisticasController.getComparativaMensual(req.params.suc_cod)
+      res.json(datos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
 export {
   rolesRouter,
   catprodRouter,
@@ -713,5 +966,7 @@ export {
   promocionesRouter,
   ventasRouter,
   descuentoventasRouter,
-  metodospagoRouter
+  metodospagoRouter,
+  cajasRouter,
+  estadisticasRouter
 }

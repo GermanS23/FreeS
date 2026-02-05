@@ -168,4 +168,13 @@ export const posApi = {
       throw error
     }
   },
+  
+  // 🔹 NUEVO: Obtener venta por ID
+  async getVentaById(venta_id) {
+    const response = await axios.get(
+      `${API_URL}/ventas/${venta_id}`,
+      { headers: authHeader() }
+    )
+    return response.data
+  }
 }

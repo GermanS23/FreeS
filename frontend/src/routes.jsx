@@ -1,4 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom"
+import authService from "./services/auth.service"
+
 import AppLayout from "./components/AppLayout"
 import Login from "./components/login/Login"
 import Dashboard from "./components/Dashboard"
@@ -16,7 +18,9 @@ import Users from "./components/Usuarios/index"
 import Sucursales from "./components/Sucursales/Sucursales"
 import Promociones from "./components/Promociones/Promociones"
 import PosPage from "./components/POS/PosPage"
-
+import HistorialCajas from "./components/Cajas/HistorialCajas"
+import DetalleCaja from "./components/Cajas/DetalleCaja"
+import DetalleVenta from "./components/Cajas/DetalleVenta"
 // 🔹 COMPONENTE 1: Rutas Protegidas (Tu AppLayout)
 // Si el usuario está logueado, muestra el layout de admin. Si no, lo manda al login.
 const ProtectedRoute = ({ isLoggedIn, setIsLoggedIn }) => {
@@ -43,6 +47,19 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
       },
     ]
   }
+  
+  // 🔹 Obtener usuario de forma segura
+  const getCurrentUser = () => {
+    const userStr = localStorage.getItem('user')
+    if (!userStr) return null
+    try {
+      return JSON.parse(userStr)
+    } catch (e) {
+      return null
+    }
+  }
+
+  const currentUser = getCurrentUser()  // ✅ Usar la función segura
 
   return [
     {
@@ -61,12 +78,20 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
         { path: "admin/plantillas", element: <AdminPlantillas /> },
         { path: "admin/pantallas", element: <AdminPantallas /> },
         { path: "pantallas", element: <PantallasDisplay /> },
-        // 🔹 'pantalla-viewer' YA NO ESTÁ AQUÍ 🔹
         { path: "config/usuarios", element: <Users /> },
         { path: "sucursales", element: <Sucursales /> },
         { path: "promociones", element: <Promociones /> },
-        {path: "pos", element: <PosPage sucCod={1} />},
-      ],
+        { 
+          path: "pos", 
+          element: <PosPage 
+            sucCod={1}  // ✅ Hardcodeado por ahora
+            usCod={currentUser?.us_cod}  // ✅ Seguro, usa optional chaining
+          /> 
+        },
+        { path: "cajas/historial", element: <HistorialCajas sucCod={1} /> },
+        { path: "cajas/detalle/:cajaId", element: <DetalleCaja /> },
+        { path: "ventas/detalle/:ventaId", element: <DetalleVenta /> },
+              ],
     },
     {
       // --- RUTA DE LOGIN ---
@@ -75,16 +100,13 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
     },
     {
       // 🔹 --- NUEVA RUTA PÚBLICA PARA EL VISOR --- 🔹
-      // Esta ruta NO tiene el AppLayout (Sidebar/Header)
       path: "/pantalla-viewer",
-      element: <PublicScreenLayout />, // Usa el layout limpio
+      element: <PublicScreenLayout />,
       children: [
-        // La ruta es '/pantalla-viewer/:pan_cod'
         { path: ":pan_cod", element: <PantallaViewer /> }
       ]
     },
     {
-      // Ruta de fallback por si algo sale mal
       path: "*",
       element: <Navigate to={isLoggedIn ? "/" : "/login"} replace />
     }

@@ -7,7 +7,7 @@ import Productos from '../models/productos.js'
 import DescuentoVentas from '../models/descuentoventas.js'
 import VentaPagos from '../models/ventapagos.js'
 import MetodosPago from '../models/metodospago.js'
-
+import Cajas from '../models/cajas.js'
 class VentasController {
 
   // =========================
@@ -28,7 +28,7 @@ class VentasController {
   }
 
   // =========================
-  // CREAR NUEVA VENTA
+  // CREAR NUEVA VENTA (MODIFICADO)
   // =========================
   static async crearVenta({ suc_cod }) {
 
@@ -43,8 +43,22 @@ class VentasController {
       throw new Error('Ya existe una venta abierta')
     }
 
+    // 🔹 BUSCAR CAJA ABIERTA
+    const cajaAbierta = await Cajas.findOne({
+      where: {
+        suc_cod,
+        caja_estado: 'ABIERTA'
+      }
+    })
+
+    if (!cajaAbierta) {
+      throw new Error('No hay una caja abierta en esta sucursal. Debe abrir caja primero.')
+    }
+
+    // 🔹 CREAR VENTA VINCULADA A LA CAJA
     const venta = await Ventas.create({
       suc_cod,
+      caja_id: cajaAbierta.caja_id,  // ✅ Vincular a caja
       venta_estado: 'ABIERTA',
       venta_subtotal: 0,
       descuento: 0,

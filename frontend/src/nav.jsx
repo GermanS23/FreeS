@@ -40,6 +40,12 @@ const _nav = [
   to: "/pos",
   icon: <ChartNoAxesCombined className="nav-icon" />,
 },
+{
+  component: CNavItem,
+  name: "Cajas",
+  to: "/cajas/historial",
+  icon: <History className="nav-icon" />,
+},
 
   {
     component: CNavGroup,

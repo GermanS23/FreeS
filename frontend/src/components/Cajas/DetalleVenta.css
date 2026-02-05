@@ -1,0 +1,448 @@
+/* =========================
+   CONTAINER PRINCIPAL
+   ========================= */
+.detalle-venta-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* =========================
+   LOADING & ERROR
+   ========================= */
+.detalle-venta-loading,
+.detalle-venta-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.detalle-venta-header {
+  margin-bottom: 32px;
+}
+
+.btn-back {
+  padding: 10px 20px;
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.btn-back:hover {
+  background: #cbd5e0;
+  transform: translateX(-4px);
+}
+
+.btn-volver {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-info h1 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 2rem;
+}
+
+.estado-badge {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.estado-badge.cerrada {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.estado-badge.abierta {
+  background: #feebc8;
+  color: #7c2d12;
+}
+
+.estado-badge.cancelada {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+/* =========================
+   GRID DE CARDS
+   ========================= */
+.detalle-venta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.detalle-venta-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.detalle-venta-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.detalle-venta-card h3 {
+  margin: 0 0 20px 0;
+  color: #2d3748;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+/* =========================
+   INFO GRID
+   ========================= */
+.info-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.info-item .label {
+  color: #718096;
+  font-weight: 500;
+}
+
+.info-item strong {
+  color: #2d3748;
+}
+
+/* =========================
+   RESUMEN DE MONTOS
+   ========================= */
+.resumen-montos {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.monto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 12px;
+  border-left: 4px solid #cbd5e0;
+}
+
+.monto-item .label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+.monto-item .monto {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.monto-item.descuento {
+  background: #fff5f5;
+  border-left: 4px solid #fc8181;
+}
+
+.monto-item.descuento .label,
+.monto-item.descuento .monto {
+  color: #c53030;
+}
+
+.monto-item.total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-left: 4px solid #764ba2;
+  padding: 20px;
+}
+
+.monto-item.total .label {
+  color: white;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.monto-item.total .monto {
+  color: white;
+  font-size: 2rem;
+}
+
+/* =========================
+   DESCUENTO
+   ========================= */
+.descuento-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.descuento-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.descuento-item .label {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge-descuento {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+.monto-descuento {
+  color: #c53030;
+  font-size: 1.3rem;
+}
+
+/* =========================
+   TABLA DE ITEMS
+   ========================= */
+.no-items {
+  text-align: center;
+  padding: 40px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+.items-tabla-container {
+  overflow-x: auto;
+}
+
+.items-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.items-tabla thead {
+  background: #f7fafc;
+}
+
+.items-tabla th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.items-tabla tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.items-tabla tbody tr:hover {
+  background: #f7fafc;
+}
+
+.items-tabla td {
+  padding: 16px 12px;
+  color: #4a5568;
+}
+
+.item-id {
+  font-weight: 700;
+  color: #667eea;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.cantidad-badge {
+  padding: 4px 10px;
+  background: #e2e8f0;
+  color: #2d3748;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.subtotal-item {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1.05rem;
+}
+
+.items-tabla tfoot {
+  background: #f7fafc;
+  border-top: 2px solid #cbd5e0;
+}
+
+.items-tabla tfoot td {
+  padding: 16px 12px;
+  font-weight: 600;
+}
+
+.total-footer {
+  font-size: 1.2rem;
+  color: #667eea;
+  font-weight: 700;
+}
+
+/* =========================
+   MÉTODOS DE PAGO
+   ========================= */
+.pagos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pago-card {
+  background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #667eea;
+  transition: all 0.2s;
+}
+
+.pago-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pago-metodo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.metodo-icon {
+  font-size: 2.5rem;
+}
+
+.metodo-nombre {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.metodo-monto {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.pagos-resumen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 1.2rem;
+}
+
+.total-pagado {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1024px) {
+  .detalle-venta-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .descuento-info {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .detalle-venta-container {
+    padding: 16px;
+  }
+
+  .header-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-info h1 {
+    font-size: 1.5rem;
+  }
+
+  .monto-item .monto {
+    font-size: 1.1rem;
+  }
+
+  .monto-item.total .monto {
+    font-size: 1.5rem;
+  }
+
+  .pagos-grid {
+    grid-template-columns: 1fr;
+  }
+}

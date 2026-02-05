@@ -230,10 +230,11 @@ const login = async (req, res) => {
 
     const token = jwt.sign({ id: user.us_cod }, config.secretkey, {
       expiresIn: config.tokenExpiration,
-    }); // tiempo para que el token expire (9 horas)
+    });
 
     res.status(200).send({
-      id: user.us_cod,
+      id: user.us_cod, 
+      us_cod: user.us_cod,  
       us_user: user.us_user,
       us_email: user.us_email,
       rol: user.roles_rol_cod,

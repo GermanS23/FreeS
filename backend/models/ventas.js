@@ -1,5 +1,5 @@
-import { Model,DataTypes } from 'sequelize'
-import sequelize from '../config/database.js';
+import { Model, DataTypes } from 'sequelize'
+import sequelize from '../config/database.js'
 
 class Ventas extends Model {}
 
@@ -10,8 +10,12 @@ Ventas.init({
     autoIncrement: true,
   },
   suc_cod: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.TINYINT, 
     allowNull: false,
+  },
+  caja_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   venta_fecha: {
     type: DataTypes.DATE,
@@ -42,6 +46,5 @@ Ventas.init({
   tableName: 'ventas',
   timestamps: false,
 })
-
 
 export default Ventas

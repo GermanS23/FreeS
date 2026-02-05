@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, useRoutes, useLocation } from "react-router-dom";
 import routes from "./routes";
+import authService from "./services/auth.service";
 
 const AppWrapper = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -14,7 +15,8 @@ const AppWrapper = () => {
     // Efecto para sincronizar el estado de autenticación
     useEffect(() => {
         const token = localStorage.getItem("token");
-        setIsLoggedIn(!!token); // Actualiza el estado de autenticación
+         const user = authService.getCurrentUser()
+       setIsLoggedIn(!!user && !!user.accessToken) // Actualiza el estado de autenticación
         setIsLoading(false); // Finaliza la carga
         console.log("Login status:", !!token);
     }, []);

@@ -24,6 +24,7 @@ import VentasItems from './ventas_items.js'
 import DescuentoVentas from './descuentoventas.js'
 import VentaPagos from './ventapagos.js'
 import MetodosPago from './metodospago.js'
+import Cajas from './cajas.js'
 // Definir las asociaciones entre los modelos 
 
 
@@ -133,4 +134,39 @@ Ventas.hasMany(VentaPagos, {
 VentaPagos.belongsTo(Ventas, {
   foreignKey: 'venta_id',
   as: 'Venta'
+})
+
+
+// ===============================
+// CAJAS
+// ===============================
+
+// Caja → Usuario (cajero)
+Usuarios.hasMany(Cajas, {
+  foreignKey: 'us_cod',
+  as: 'Cajas'
+})
+Cajas.belongsTo(Usuarios, {
+  foreignKey: 'us_cod',
+  as: 'Usuario'
+})
+
+// Caja → Sucursal
+Sucursales.hasMany(Cajas, {
+  foreignKey: 'suc_cod',
+  as: 'Cajas'
+})
+Cajas.belongsTo(Sucursales, {
+  foreignKey: 'suc_cod',
+  as: 'Sucursal'
+})
+
+// Venta → Caja (vincular ventas a la caja del turno)
+Cajas.hasMany(Ventas, {
+  foreignKey: 'caja_id',
+  as: 'Ventas'
+})
+Ventas.belongsTo(Cajas, {
+  foreignKey: 'caja_id',
+  as: 'Caja'
 })

@@ -8,12 +8,14 @@ class AuthService {
       .post(`${import.meta.env.VITE_REDIRECT_URI}/login`,data)
     if (response.data.accessToken) {
       localStorage.setItem('token', JSON.stringify(response.data.accessToken))
+      localStorage.setItem('user', JSON.stringify(response.data))
     }
     return response.data
   }
 
   logout() {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
   }
 
   getCurrentUser() {
