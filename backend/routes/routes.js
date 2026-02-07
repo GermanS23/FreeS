@@ -1002,7 +1002,7 @@ insumosRouter.post(
     try {
       const insumo = await InsumosController.createInsumo(
         req.body,
-        req.user.id
+        req.user.cod
       )
       res.json(insumo)
     } catch (error) {
@@ -1045,7 +1045,7 @@ insumosRouter.post(
       const insumo = await InsumosController.ajustarStock(
         req.params.insumo_id,
         cantidad_nueva,
-        req.user.id,
+        req.user.cod,
         observaciones
       )
       res.json(insumo)

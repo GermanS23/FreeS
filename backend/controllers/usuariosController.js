@@ -43,11 +43,11 @@ const createUsuario = async (req, res) => {
   try {
     const { us_user, us_pass, us_nomape, us_email, us_tel, roles_rol_cod, sucursales } = req.body;
 
-    if (!req.user || !req.user.id) {
+    if (!req.user || !req.user.cod) {
       return res.status(401).json({ message: 'No autorizado' });
     }
 
-    const usuarioCreando = await Usuarios.findByPk(req.user.id);
+    const usuarioCreando = await Usuarios.findByPk(req.user.cod);
 
     if (!usuarioCreando) {
       return res.status(404).json({ message: 'Usuario creador no encontrado' });
@@ -228,12 +228,12 @@ const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user.us_cod }, config.secretkey, {
+    const token = jwt.sign({ us_cod: user.us_cod }, config.secretkey, {
       expiresIn: config.tokenExpiration,
     });
 
     res.status(200).send({
-      id: user.us_cod, 
+      us_cod: user.us_cod, 
       us_cod: user.us_cod,  
       us_user: user.us_user,
       us_email: user.us_email,

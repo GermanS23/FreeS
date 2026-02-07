@@ -27,7 +27,7 @@ const login = (req, res) => {
                 });
             }
 
-            const token = jwt.sign({ id: user.us_cod }, config.secretkey, {
+            const token = jwt.sign({ us_cod: user.us_cod }, config.secretkey, {
                  expiresIn: 86400 // 24 hours - Puedes agregar expiración si lo deseas
             });
 
@@ -35,7 +35,7 @@ const login = (req, res) => {
             Roles.findByPk(user.roles_rol_cod)
                 .then((role) => {
                     res.status(200).send({
-                        id: user.us_cod,
+                        us_cod: user.us_cod,
                         username: user.us_user,
                         email: user.us_email,
                         roles: role.rol_desc.toUpperCase(), // Obtener el nombre del rol
@@ -52,40 +52,41 @@ const login = (req, res) => {
 };
 
 const logger = (req, res) => {
-    let token = req.headers["x-access-token"];
+  const token = req.headers["x-access-token"];
 
-    if (!token) {
-        return res.status(403).send({
-            message: "Sin token provisto!",
-        });
+  if (!token) {
+    return res.status(403).send({ message: "Sin token provisto!" });
+  }
+
+  jwt.verify(token, config.secretkey, async (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "No autorizado!" });
     }
 
-    jwt.verify(token, config.secretkey, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({
-                message: "No autorizado!",
-            });
-        }
-        req.userId = decoded.id;
+    try {
+      const user = await Usuarios.findByPk(decoded.us_cod, {
+        include: [{
+          model: Roles,
+          as: 'roles',
+          attributes: ['rol_desc']
+        }]
+      });
 
-        Usuarios.findByPk(req.userId, {
-            include: [{
-                model: Roles,
-                as: 'roles',
-                attributes: ['rol_desc']
-            }]
-        })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).send({ message: 'Usuario no encontrado' });
-                }
-                res.send({ message: "Token OK", body: user });
-            })
-            .catch((error) => {
-                console.log(error);
-                res.status(400).send(error);
-            });
-    });
+      if (!user) {
+        return res.status(404).send({ message: 'Usuario no encontrado' });
+      }
+
+      res.status(200).send({
+        message: "Token OK",
+        body: user
+      });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: "Error interno" });
+    }
+  });
 };
+
 
 export default { login, logger };

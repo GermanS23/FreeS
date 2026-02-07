@@ -14,7 +14,8 @@ const verifyToken = (req, res, next) => {
     if (err) {
       return res.status(401).send({ message: 'Acceso denegado' });
     }
-    req.user = { id: decoded.id }; // Establecer req.user
+     console.log('JWT DECODED =>', decoded);
+    req.user = {us_cod: decoded.us_cod }; // Establecer req.user
     next();
   });
 };
@@ -30,7 +31,7 @@ const getUserLogger = (req, res, next) => {
     if (err) {
       return res.status(401).send({ message: 'Acceso denegado por Token Invalido' });
     }
-    req.user = { id: decoded.id }; // Establecer req.user
+    req.user = { us_cod: decoded.us_cod }; // Establecer req.user
     next();
   });
 };
@@ -41,7 +42,7 @@ const permit = (...permittedRoles) => {
       return next(); // Permite solicitudes OPTIONS
     }
     try {
-      const user = await Usuarios.findByPk(req.user.id, { // Usar req.user.id
+      const user = await Usuarios.findByPk(req.user.us_cod, { // Usar req.user.us_cod
         include: [
           {
             model: Roles,

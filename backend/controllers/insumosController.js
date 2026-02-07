@@ -60,44 +60,34 @@ class InsumosController {
   // CREAR INSUMO
   // =========================
   static async createInsumo(data, us_cod) {
-      console.log("ENTRÓ A CREATE INSUMO")
-    return await sequelize.transaction(async (t) => {
-      const {
-        insumo_nombre,
-        insumo_descripcion,
-        unidad_medida,
-        suc_cod,
-        stock_actual,
-        stock_minimo
-      } = data
+  return await sequelize.transaction(async (t) => {
 
-      // Crear insumo
-      const insumo = await Insumos.create({
-        insumo_nombre,
-        insumo_descripcion,
-        unidad_medida,
-        suc_cod,
-        stock_actual: stock_actual || 0,
-        stock_minimo: stock_minimo || 0,
-        insumo_activo: true
+    const insumo = await Insumos.create({
+      insumo_nombre: data.insumo_nombre,
+      insumo_descripcion: data.insumo_descripcion,
+      unidad_medida: data.unidad_medida,
+      suc_cod: data.suc_cod,
+      stock_actual: data.stock_actual || 0,
+      stock_minimo: data.stock_minimo || 0,
+      insumo_activo: true
+    }, { transaction: t })
+
+    if (Number(data.stock_actual) > 0) {
+      await HistorialStock.create({
+        insumo_id: insumo.insumo_id,
+        tipo_movimiento: 'INVENTARIO_INICIAL',
+        cantidad_anterior: 0,
+        cantidad_movimiento: Number(data.stock_actual),
+        cantidad_nueva: Number(data.stock_actual),
+        us_cod,
+        observaciones: 'Stock inicial al crear insumo'
       }, { transaction: t })
+    }
 
-      // Registrar en historial si hay stock inicial
-      if (Number(stock_actual) > 0) {
-        await HistorialStock.create({
-          insumo_id: insumo.insumo_id,
-          tipo_movimiento: 'INVENTARIO_INICIAL',
-          cantidad_anterior: 0,
-          cantidad_movimiento: Number(stock_actual),
-          cantidad_nueva: Number(stock_actual),
-          us_cod,
-          observaciones: 'Stock inicial al crear insumo'
-        }, { transaction: t })
-      }
+    return insumo
+  })
+}
 
-      return await this.getInsumoById(insumo.insumo_id)
-    })
-  }
 
   // =========================
   // ACTUALIZAR INSUMO
@@ -167,75 +157,6 @@ class InsumosController {
     })
   }
 
-  // =========================
-  // DESCONTAR STOCK POR VENTA
-  // =========================
-  static async descontarStockPorVenta(venta_id, ventaItems, transaction = null) {
-    const t = transaction || await sequelize.transaction()
-
-    try {
-      const movimientos = []
-
-      for (const item of ventaItems) {
-        // Obtener receta del producto
-        const recetas = await ProductoInsumos.findAll({
-          where: { prod_cod: item.prod_cod },
-          transaction: t
-        })
-
-        // Si no tiene receta, continuar (productos sin insumos)
-        if (recetas.length === 0) continue
-
-        // Descontar cada insumo
-        for (const receta of recetas) {
-          const insumo = await Insumos.findByPk(receta.insumo_id, { transaction: t })
-          
-          if (!insumo) continue
-
-          const cantidadADescontar = Number(receta.cantidad_requerida) * item.cantidad
-          const stockAnterior = Number(insumo.stock_actual)
-          const stockNuevo = stockAnterior - cantidadADescontar
-
-          // Actualizar stock (permite negativos para no bloquear venta)
-          await insumo.update({
-            stock_actual: stockNuevo,
-            fecha_modificacion: new Date()
-          }, { transaction: t })
-
-          // Registrar movimiento
-          await HistorialStock.create({
-            insumo_id: insumo.insumo_id,
-            tipo_movimiento: 'VENTA',
-            cantidad_anterior: stockAnterior,
-            cantidad_movimiento: -cantidadADescontar,
-            cantidad_nueva: stockNuevo,
-            venta_id,
-            observaciones: `Venta de ${item.cantidad}x ${item.nombre}`
-          }, { transaction: t })
-
-          movimientos.push({
-            insumo_id: insumo.insumo_id,
-            insumo_nombre: insumo.insumo_nombre,
-            stock_anterior: stockAnterior,
-            stock_nuevo: stockNuevo,
-            descontado: cantidadADescontar
-          })
-        }
-      }
-
-      if (!transaction) {
-        await t.commit()
-      }
-
-      return movimientos
-
-    } catch (error) {
-      if (!transaction) {
-        await t.rollback()
-      }
-      throw error
-    }
-  }
 
   // =========================
   // OBTENER INSUMOS CRÍTICOS
@@ -262,6 +183,123 @@ class InsumosController {
     })
   }
 
+static async validarStockPorVenta(ventaItems, transaction) {
+  const faltantes = []
+
+  for (const item of ventaItems) {
+    const recetas = await ProductoInsumos.findAll({
+      where: { prod_cod: item.prod_cod },
+      include: [{
+        model: Insumos,
+        as: 'Insumo'
+      }],
+      transaction
+    })
+
+    for (const receta of recetas) {
+      const necesario = Number(receta.cantidad_requerida) * item.cantidad
+      const disponible = Number(receta.Insumo.stock_actual)
+
+      if (disponible < necesario) {
+        faltantes.push({
+          producto: item.nombre,
+          insumo: receta.Insumo.insumo_nombre,
+          necesario,
+          disponible,
+          faltante: necesario - disponible,
+          unidad: receta.Insumo.unidad_medida
+        })
+      }
+    }
+  }
+
+  return faltantes
+}
+
+
+// =========================
+  // DESCONTAR STOCK POR VENTA
+  // =========================
+  static async descontarStockPorVenta(venta_id, ventaItems, transaction = null) {
+    const t = transaction || await sequelize.transaction()
+
+    try {
+      const movimientos = []
+
+      console.log(`🔄 Procesando descuento de stock para venta ${venta_id}...`)
+
+      for (const item of ventaItems) {
+        // Obtener receta del producto
+        const recetas = await ProductoInsumos.findAll({
+          where: { prod_cod: item.prod_cod },
+          transaction: t
+        })
+
+        // Si no tiene receta, continuar (productos sin insumos)
+        if (recetas.length === 0) {
+          console.log(`⚠️ Producto ${item.nombre} (${item.prod_cod}) no tiene receta definida`)
+          continue
+        }
+
+        console.log(`📋 Producto ${item.nombre}: ${recetas.length} insumo(s) en receta`)
+
+        // Descontar cada insumo
+        for (const receta of recetas) {
+          const insumo = await Insumos.findByPk(receta.insumo_id, { transaction: t })
+          
+          if (!insumo) {
+            console.warn(`⚠️ Insumo ${receta.insumo_id} no encontrado`)
+            continue
+          }
+
+          const cantidadADescontar = Number(receta.cantidad_requerida) * item.cantidad
+          const stockAnterior = Number(insumo.stock_actual)
+          const stockNuevo = stockAnterior - cantidadADescontar
+
+          // Actualizar stock (permite negativos para no bloquear venta)
+          await insumo.update({
+            stock_actual: stockNuevo,
+            fecha_modificacion: new Date()
+          }, { transaction: t })
+
+          // Registrar movimiento
+          await HistorialStock.create({
+            insumo_id: insumo.insumo_id,
+            tipo_movimiento: 'VENTA',
+            cantidad_anterior: stockAnterior,
+            cantidad_movimiento: -cantidadADescontar,
+            cantidad_nueva: stockNuevo,
+            venta_id,
+            observaciones: `Venta de ${item.cantidad}x ${item.nombre}`
+          }, { transaction: t })
+
+          console.log(`✅ ${insumo.insumo_nombre}: ${stockAnterior} → ${stockNuevo} (${-cantidadADescontar})`)
+
+          movimientos.push({
+            insumo_id: insumo.insumo_id,
+            insumo_nombre: insumo.insumo_nombre,
+            stock_anterior: stockAnterior,
+            stock_nuevo: stockNuevo,
+            descontado: cantidadADescontar
+          })
+        }
+      }
+
+      if (!transaction) {
+        await t.commit()
+      }
+
+      console.log(`✅ Stock descontado exitosamente para venta ${venta_id}`)
+      return movimientos
+
+    } catch (error) {
+      if (!transaction) {
+        await t.rollback()
+      }
+      console.error(`❌ Error descontando stock:`, error)
+      throw error
+    }
+  }
   // =========================
   // HISTORIAL DE MOVIMIENTOS
   // =========================
