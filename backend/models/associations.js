@@ -25,6 +25,9 @@ import DescuentoVentas from './descuentoventas.js'
 import VentaPagos from './ventapagos.js'
 import MetodosPago from './metodospago.js'
 import Cajas from './cajas.js'
+import Insumos from './insumos.js'
+import ProductoInsumos from './productoinsumos.js'
+import HistorialStock from './historialstock.js'
 // Definir las asociaciones entre los modelos 
 
 
@@ -169,4 +172,83 @@ Cajas.hasMany(Ventas, {
 Ventas.belongsTo(Cajas, {
   foreignKey: 'caja_id',
   as: 'Caja'
+})
+
+// ===============================
+// STOCK E INSUMOS
+// ===============================
+
+// Sucursal → Insumos (1:N)
+Sucursales.hasMany(Insumos, {
+  foreignKey: 'suc_cod',
+  as: 'Insumos'
+})
+Insumos.belongsTo(Sucursales, {
+  foreignKey: 'suc_cod',
+  as: 'Sucursal'
+})
+
+// Producto ↔ Insumos (N:M a través de ProductoInsumos / Recetas)
+Productos.belongsToMany(Insumos, {
+  through: ProductoInsumos,
+  foreignKey: 'prod_cod',
+  otherKey: 'insumo_id',
+  as: 'Insumos'
+})
+
+Insumos.belongsToMany(Productos, {
+  through: ProductoInsumos,
+  foreignKey: 'insumo_id',
+  otherKey: 'prod_cod',
+  as: 'Productos'
+})
+
+// Acceso directo a ProductoInsumos desde Producto
+Productos.hasMany(ProductoInsumos, {
+  foreignKey: 'prod_cod',
+  as: 'Receta'
+})
+ProductoInsumos.belongsTo(Productos, {
+  foreignKey: 'prod_cod',
+  as: 'Producto'
+})
+
+// Acceso directo a ProductoInsumos desde Insumo
+Insumos.hasMany(ProductoInsumos, {
+  foreignKey: 'insumo_id',
+  as: 'Recetas'
+})
+ProductoInsumos.belongsTo(Insumos, {
+  foreignKey: 'insumo_id',
+  as: 'Insumo'
+})
+
+// Historial de Stock → Insumo (N:1)
+Insumos.hasMany(HistorialStock, {
+  foreignKey: 'insumo_id',
+  as: 'Historial'
+})
+HistorialStock.belongsTo(Insumos, {
+  foreignKey: 'insumo_id',
+  as: 'Insumo'
+})
+
+// Historial de Stock → Usuario (N:1)
+Usuarios.hasMany(HistorialStock, {
+  foreignKey: 'us_cod',
+  as: 'MovimientosStock'
+})
+HistorialStock.belongsTo(Usuarios, {
+  foreignKey: 'us_cod',
+  as: 'Usuario'
+})
+
+// Historial de Stock → Venta (N:1) - opcional
+Ventas.hasMany(HistorialStock, {
+  foreignKey: 'venta_id',
+  as: 'MovimientosStock'
+})
+HistorialStock.belongsTo(Ventas, {
+  foreignKey: 'venta_id',
+  as: 'Venta'
 })

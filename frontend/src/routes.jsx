@@ -21,6 +21,14 @@ import PosPage from "./components/POS/PosPage"
 import HistorialCajas from "./components/Cajas/HistorialCajas"
 import DetalleCaja from "./components/Cajas/DetalleCaja"
 import DetalleVenta from "./components/Cajas/DetalleVenta"
+import Insumos from "./components/Insumos/Insumos"
+import InsumosCriticos from "./components/Insumos/insumosCriticos"
+import GestionRecetas from "./components/Insumos/GestionRecetas"
+
+
+
+
+
 // 🔹 COMPONENTE 1: Rutas Protegidas (Tu AppLayout)
 // Si el usuario está logueado, muestra el layout de admin. Si no, lo manda al login.
 const ProtectedRoute = ({ isLoggedIn, setIsLoggedIn }) => {
@@ -91,6 +99,9 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
         { path: "cajas/historial", element: <HistorialCajas sucCod={1} /> },
         { path: "cajas/detalle/:cajaId", element: <DetalleCaja /> },
         { path: "ventas/detalle/:ventaId", element: <DetalleVenta /> },
+        { path: "insumos", element: <Insumos sucCod={1} /> },
+        { path: "insumos-criticos", element: <InsumosCriticos sucCod={1} /> },
+        { path: "recetas", element: <GestionRecetas sucCod={1} /> },
               ],
     },
     {

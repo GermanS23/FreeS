@@ -8,6 +8,8 @@ import DescuentoVentas from '../models/descuentoventas.js'
 import VentaPagos from '../models/ventapagos.js'
 import MetodosPago from '../models/metodospago.js'
 import Cajas from '../models/cajas.js'
+import InsumosController from './insumosController.js'
+
 class VentasController {
 
   // =========================
@@ -254,77 +256,80 @@ static async cancelarVenta(venta_id) {
   // =========================
   // CERRAR VENTA (MODIFICADO)
   // =========================
-  static async cerrarVenta(venta_id, pagos) {
-    return await sequelize.transaction(async (t) => {
+ static async cerrarVenta(venta_id, pagos) {
+  return await sequelize.transaction(async (t) => {
 
-      const venta = await Ventas.findByPk(venta_id, { transaction: t })
-      if (!venta || venta.venta_estado !== 'ABIERTA') {
-        throw new Error('No se puede cerrar la venta')
-      }
+    const venta = await Ventas.findByPk(venta_id, { transaction: t })
+    if (!venta || venta.venta_estado !== 'ABIERTA') {
+      throw new Error('No se puede cerrar la venta')
+    }
 
-      // 🔹 VALIDAR QUE HAYA ITEMS
-      const items = await VentasItems.findAll({
-        where: { venta_id },
+    // 🔹 VALIDAR QUE HAYA ITEMS
+    const items = await VentasItems.findAll({
+      where: { venta_id },
+      transaction: t
+    })
+
+    if (items.length === 0) {
+      throw new Error('No se puede cerrar una venta sin productos')
+    }
+
+    // 🔹 VALIDAR PAGOS
+    if (!pagos || !Array.isArray(pagos) || pagos.length === 0) {
+      throw new Error('Debe especificar al menos un método de pago')
+    }
+
+    const totalPagos = pagos.reduce((sum, p) => sum + Number(p.monto), 0)
+    const totalVenta = Number(venta.venta_total)
+
+    if (Math.abs(totalPagos - totalVenta) > 0.01) {
+      throw new Error(
+        `El total de pagos ($${totalPagos.toFixed(2)}) no coincide con el total de la venta ($${totalVenta.toFixed(2)})`
+      )
+    }
+
+    // 🔹 REGISTRAR PAGOS
+    for (const pago of pagos) {
+      const metodo = await MetodosPago.findOne({
+        where: { mp_cod: pago.mp_cod, mp_activo: true },
         transaction: t
       })
 
-      if (items.length === 0) {
-        throw new Error('No se puede cerrar una venta sin productos')
+      if (!metodo) {
+        throw new Error(`Método de pago inválido: ${pago.mp_cod}`)
       }
 
-      // 🔹 VALIDAR PAGOS
-      if (!pagos || !Array.isArray(pagos) || pagos.length === 0) {
-        throw new Error('Debe especificar al menos un método de pago')
+      if (Number(pago.monto) <= 0) {
+        throw new Error('El monto de pago debe ser mayor a 0')
       }
 
-      // Calcular suma de pagos
-      const totalPagos = pagos.reduce((sum, p) => sum + Number(p.monto), 0)
-      const totalVenta = Number(venta.venta_total)
+      await VentaPagos.create({
+        venta_id,
+        mp_cod: pago.mp_cod,
+        vp_monto: pago.monto
+      }, { transaction: t })
+    }
 
-      // Validar que coincidan (con tolerancia de 0.01 por redondeos)
-      if (Math.abs(totalPagos - totalVenta) > 0.01) {
-        throw new Error(
-          `El total de pagos ($${totalPagos.toFixed(2)}) no coincide con el total de la venta ($${totalVenta.toFixed(2)})`
-        )
-      }
+    // ✅ NUEVO: DESCONTAR STOCK AUTOMÁTICAMENTE
+    try {
+      await InsumosController.descontarStockPorVenta(venta_id, items, t)
+    } catch (stockError) {
+      console.warn('Advertencia al descontar stock:', stockError.message)
+      // NO bloquear la venta, solo registrar la advertencia
+    }
 
-      // 🔹 REGISTRAR PAGOS
-      for (const pago of pagos) {
-        // Validar que el método de pago exista y esté activo
-        const metodo = await MetodosPago.findOne({
-          where: { mp_cod: pago.mp_cod, mp_activo: true },
-          transaction: t
-        })
-
-        if (!metodo) {
-          throw new Error(`Método de pago inválido: ${pago.mp_cod}`)
-        }
-
-        if (Number(pago.monto) <= 0) {
-          throw new Error('El monto de pago debe ser mayor a 0')
-        }
-
-        await VentaPagos.create({
-          venta_id,
-          mp_cod: pago.mp_cod,
-          vp_monto: pago.monto
-        }, { transaction: t })
-      }
-
-      // 🔹 CERRAR VENTA
-      await Ventas.update({
-        venta_estado: 'CERRADA',
-        venta_fecha_cierre: new Date(),
-      }, {
-        where: { venta_id },
-        transaction: t,
-      })
-
-      // Retornar venta completa con pagos
-      return await this.getVentaById(venta_id, t)
+    // 🔹 CERRAR VENTA
+    await Ventas.update({
+      venta_estado: 'CERRADA',
+      venta_fecha_cierre: new Date(),
+    }, {
+      where: { venta_id },
+      transaction: t,
     })
-  }
 
+    return await this.getVentaById(venta_id, t)
+  })
+}
 
   // =========================
   // HISTÓRICO

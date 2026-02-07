@@ -17,6 +17,9 @@ import DescuentoVentasController from "../controllers/descuentoventasController.
 import MetodosPagoController from '../controllers/metodospagoController.js'
 import CajasController from "../controllers/cajasController.js"
 import EstadisticasController from "../controllers/estadisticasController.js"
+import InsumosController from "../controllers/insumosController.js"
+import RecetasController from "../controllers/recetasController.js"
+
 
 import authJwt from "../middleware/authjwt.js"
 import upload from "../config/multer.config.js"
@@ -38,6 +41,9 @@ const descuentoventasRouter = express.Router()
 const metodospagoRouter = express.Router()
 const cajasRouter = express.Router()
 const estadisticasRouter = express.Router()
+const insumosRouter = express.Router()
+const recetasRouter = express.Router()
+
 
 // Middleware para headers
 const headerMiddleware = (req, res, next) => {
@@ -63,6 +69,9 @@ descuentoventasRouter.use(headerMiddleware)
 metodospagoRouter.use(headerMiddleware)
 cajasRouter.use(headerMiddleware)
 estadisticasRouter.use(headerMiddleware)
+insumosRouter.use(headerMiddleware)
+recetasRouter.use(headerMiddleware)
+
 
 // ==================== RUTAS PARA ROLES ====================
 rolesRouter.get("/rol", rolesController.getRoles)
@@ -950,7 +959,300 @@ estadisticasRouter.get(
     }
   }
 )
+// Listar insumos de una sucursal
+insumosRouter.get(
+  '/insumos/sucursal/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const incluirInactivos = req.query.incluirInactivos === 'true'
+      const insumos = await InsumosController.getInsumos(
+        req.params.suc_cod,
+        { incluirInactivos }
+      )
+      res.json(insumos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
 
+// Obtener insumo por ID
+insumosRouter.get(
+  '/insumos/:insumo_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const insumo = await InsumosController.getInsumoById(req.params.insumo_id)
+      res.json(insumo)
+    } catch (error) {
+      res.status(404).json({ error: error.message })
+    }
+  }
+)
+
+// Crear insumo
+insumosRouter.post(
+  '/insumos',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const insumo = await InsumosController.createInsumo(
+        req.body,
+        req.user.id
+      )
+      res.json(insumo)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Actualizar insumo
+insumosRouter.put(
+  '/insumos/:insumo_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const insumo = await InsumosController.updateInsumo(
+        req.params.insumo_id,
+        req.body
+      )
+      res.json(insumo)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Ajustar stock manualmente
+insumosRouter.post(
+  '/insumos/:insumo_id/ajustar-stock',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const { cantidad_nueva, observaciones } = req.body
+      
+      if (cantidad_nueva === undefined || cantidad_nueva === null) {
+        return res.status(400).json({ error: 'Debe especificar cantidad_nueva' })
+      }
+
+      const insumo = await InsumosController.ajustarStock(
+        req.params.insumo_id,
+        cantidad_nueva,
+        req.user.id,
+        observaciones
+      )
+      res.json(insumo)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener insumos críticos
+insumosRouter.get(
+  '/insumos/criticos/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const criticos = await InsumosController.getInsumosCriticos(req.params.suc_cod)
+      res.json(criticos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener historial de movimientos de un insumo
+insumosRouter.get(
+  '/insumos/:insumo_id/historial',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const limit = req.query.limit ? Number(req.query.limit) : 50
+      const historial = await InsumosController.getHistorialStock(
+        req.params.insumo_id,
+        { limit }
+      )
+      res.json(historial)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Eliminar (desactivar) insumo
+insumosRouter.delete(
+  '/insumos/:insumo_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const result = await InsumosController.deleteInsumo(req.params.insumo_id)
+      res.json(result)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Obtener receta de un producto
+recetasRouter.get(
+  '/recetas/producto/:prod_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const receta = await RecetasController.getRecetaProducto(req.params.prod_cod)
+      res.json(receta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Asignar/Actualizar receta completa de un producto
+recetasRouter.post(
+  '/recetas/producto/:prod_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const { insumos } = req.body
+      
+      if (!insumos || !Array.isArray(insumos)) {
+        return res.status(400).json({ 
+          error: 'Debe enviar un array de insumos: [{ insumo_id, cantidad_requerida }]' 
+        })
+      }
+
+      const receta = await RecetasController.asignarReceta(
+        req.params.prod_cod,
+        insumos
+      )
+      res.json(receta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Agregar un insumo a la receta
+recetasRouter.post(
+  '/recetas/agregar',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const { prod_cod, insumo_id, cantidad_requerida } = req.body
+      
+      if (!prod_cod || !insumo_id || !cantidad_requerida) {
+        return res.status(400).json({ 
+          error: 'Debe especificar prod_cod, insumo_id y cantidad_requerida' 
+        })
+      }
+
+      const receta = await RecetasController.agregarInsumoAReceta(
+        prod_cod,
+        insumo_id,
+        cantidad_requerida
+      )
+      res.json(receta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Modificar cantidad de un insumo en la receta
+recetasRouter.put(
+  '/recetas/:producto_insumo_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const { cantidad_requerida } = req.body
+      
+      if (!cantidad_requerida) {
+        return res.status(400).json({ error: 'Debe especificar cantidad_requerida' })
+      }
+
+      const receta = await RecetasController.modificarCantidadInsumo(
+        req.params.producto_insumo_id,
+        cantidad_requerida
+      )
+      res.json(receta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Eliminar un insumo de la receta
+recetasRouter.delete(
+  '/recetas/:producto_insumo_id',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const receta = await RecetasController.eliminarInsumoDeReceta(
+        req.params.producto_insumo_id
+      )
+      res.json(receta)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Listar todos los productos con sus recetas
+recetasRouter.get(
+  '/recetas/productos/sucursal/:suc_cod',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO'),
+  async (req, res) => {
+    try {
+      const productos = await RecetasController.getProductosConRecetas(
+        req.params.suc_cod
+      )
+      res.json(productos)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
+
+// Verificar disponibilidad de stock para un producto
+recetasRouter.post(
+  '/recetas/verificar-disponibilidad',
+  authJwt.verifyToken,
+  authJwt.permit('ADMIN', 'DUEÑO', 'ENCARGADO'),
+  async (req, res) => {
+    try {
+      const { prod_cod, cantidad } = req.body
+      
+      if (!prod_cod) {
+        return res.status(400).json({ error: 'Debe especificar prod_cod' })
+      }
+
+      const disponibilidad = await RecetasController.verificarDisponibilidad(
+        prod_cod,
+        cantidad || 1
+      )
+      res.json(disponibilidad)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  }
+)
 export {
   rolesRouter,
   catprodRouter,
@@ -968,5 +1270,7 @@ export {
   descuentoventasRouter,
   metodospagoRouter,
   cajasRouter,
-  estadisticasRouter
+  estadisticasRouter,
+  insumosRouter,
+  recetasRouter
 }

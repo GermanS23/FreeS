@@ -46,7 +46,12 @@ const _nav = [
   to: "/cajas/historial",
   icon: <History className="nav-icon" />,
 },
-
+{
+  component: CNavItem,
+  name: "Insumos",
+  to: "/insumos",
+  icon: <History className="nav-icon" />,
+},
   {
     component: CNavGroup,
     name: "Administración",

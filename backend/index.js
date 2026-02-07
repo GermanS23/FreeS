@@ -22,7 +22,9 @@ import {
   descuentoventasRouter,
   metodospagoRouter,
   cajasRouter,
-  estadisticasRouter
+  estadisticasRouter,
+  insumosRouter,
+  recetasRouter,
 } from "./routes/routes.js"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -75,6 +77,8 @@ app.use("/api", descuentoventasRouter)
 app.use("/api", metodospagoRouter)
 app.use("/api", cajasRouter)
 app.use("/api", estadisticasRouter)
+app.use("/api", insumosRouter)
+app.use("/api", recetasRouter)
 //initial(); //Comando para inicializar la base de datos y crear el usuario admin
 
 const PORT = process.env.PORT ?? 3000

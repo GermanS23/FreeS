@@ -1,0 +1,363 @@
+/* =========================
+   MODAL BASE
+   ========================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content.historial-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #d6bcfa 0%, #b794f4 100%);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #2d3748;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: #f7fafc;
+}
+
+/* =========================
+   INFORMACIÓN DEL INSUMO
+   ========================= */
+.insumo-info {
+  background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border-left: 4px solid #9f7aea;
+}
+
+.insumo-info h4 {
+  margin: 0 0 8px 0;
+  color: #2d3748;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.insumo-info p {
+  margin: 0;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.insumo-info strong {
+  color: #2d3748;
+  font-size: 1.1rem;
+}
+
+/* =========================
+   LOADING
+   ========================= */
+.historial-loading {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(159, 122, 234, 0.2);
+  border-top: 5px solid #9f7aea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.historial-loading p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+/* =========================
+   EMPTY STATE
+   ========================= */
+.historial-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: #a0aec0;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+/* =========================
+   TABLA DE HISTORIAL
+   ========================= */
+.historial-tabla-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.historial-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.historial-tabla thead {
+  background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.historial-tabla th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #cbd5e0;
+}
+
+.historial-tabla tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s;
+}
+
+.historial-tabla tbody tr:hover {
+  background: #f7fafc;
+}
+
+.historial-tabla tbody tr:last-child {
+  border-bottom: none;
+}
+
+.historial-tabla td {
+  padding: 14px 12px;
+  color: #4a5568;
+  vertical-align: middle;
+}
+
+/* =========================
+   BADGES Y ESTADOS
+   ========================= */
+.tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tipo-badge.venta {
+  background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
+  color: #7c2d12;
+  border: 2px solid #f6ad55;
+}
+
+.tipo-badge.ajuste {
+  background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+  color: #2c5282;
+  border: 2px solid #4299e1;
+}
+
+.tipo-badge.inicial {
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #22543d;
+  border: 2px solid #48bb78;
+}
+
+.tipo-badge.otro {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: 2px solid #cbd5e0;
+}
+
+.movimiento {
+  display: inline-block;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.movimiento.positivo {
+  color: #22543d;
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  border: 2px solid #48bb78;
+}
+
+.movimiento.negativo {
+  color: #742a2a;
+  background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+  border: 2px solid #f56565;
+}
+
+.observaciones {
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+  display: block;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================
+   BOTONES
+   ========================= */
+.btn-secondary {
+  padding: 12px 24px;
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   SCROLLBAR PERSONALIZADO
+   ========================= */
+.historial-tabla-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.historial-tabla-container::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.historial-tabla-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.historial-tabla-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1200px) {
+  .modal-content.historial-modal {
+    max-width: 95vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content.historial-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .historial-tabla-container {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .historial-tabla {
+    min-width: 900px;
+  }
+
+  .historial-tabla th,
+  .historial-tabla td {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  .tipo-badge {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+
+  .movimiento {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+  }
+
+  .observaciones {
+    max-width: 150px;
+  }
+}
