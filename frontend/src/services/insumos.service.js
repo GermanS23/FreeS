@@ -19,7 +19,12 @@ class InsumosService {
       headers: authHeader()
     })
   }
-
+getHistorialGlobal(suc_cod, limit = 100) {
+    return axios.get(`${API_URL}/insumos/historial/global`, {
+      params: { suc_cod, limit },
+      headers: authHeader()
+    })
+  }
   // Crear insumo
   createInsumo(data) {
     return axios.post(`${API_URL}/insumos`, data, {

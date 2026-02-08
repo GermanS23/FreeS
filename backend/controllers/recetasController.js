@@ -136,23 +136,30 @@ class RecetasController {
   // =========================
   // LISTAR PRODUCTOS CON SUS RECETAS
   // =========================
-  static async getProductosConRecetas(suc_cod) {
-    const productos = await Productos.findAll({
-      where: { prod_activo: true },
-      include: [{
-        model: ProductoInsumos,
-        as: 'Receta',
-        include: [{
-          model: Insumos,
-          as: 'Insumo',
-          where: { suc_cod },
-          required: false
-        }]
-      }]
-    })
+  // controllers/recetasController.js
 
-    return productos
-  }
+static async getProductosConRecetas(suc_cod) {
+  const productos = await Productos.findAll({
+    where: { 
+      prod_dis: true 
+      // ❌ QUITAMOS el filtro de sucursal acá
+    },
+    include: [{
+      model: ProductoInsumos,
+      as: 'Receta',
+      required: false, // ✅ IMPORTANTE: permite productos SIN receta
+      include: [{
+        model: Insumos,
+        as: 'Insumo',
+        where: { suc_cod }, // ✅ Filtro de sucursal SOLO en insumos
+        required: false // ✅ IMPORTANTE: permite recetas sin insumos de esta sucursal
+      }]
+    }],
+    order: [['prod_nom', 'ASC']] // ✅ Ordenar alfabéticamente
+  })
+
+  return productos
+}
 
   // =========================
   // VERIFICAR DISPONIBILIDAD DE STOCK

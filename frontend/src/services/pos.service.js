@@ -122,21 +122,6 @@ export const posApi = {
   // CIERRE (MODIFICADO)
   // =========================
 
-  cerrarVenta: async (ventaId, pagos) => {
-    try {
-      const { data } = await axios.post(
-        `${API_URL}/ventas/cerrar/${ventaId}`,
-        { pagos }, // 🔹 Ahora envía array de pagos
-        { headers: authHeader() }
-      )
-      return data
-    } catch (error) {
-      console.error("Error en cerrarVenta:", error)
-      throw error
-    }
-  },
-
-
   // 🔹 NUEVO: Cancelar venta
   cancelarVenta: async (ventaId) => {
     try {
@@ -168,13 +153,52 @@ export const posApi = {
       throw error
     }
   },
-  
-  // 🔹 NUEVO: Obtener venta por ID
-  async getVentaById(venta_id) {
-    const response = await axios.get(
-      `${API_URL}/ventas/${venta_id}`,
-      { headers: authHeader() }
-    )
-    return response.data
+ 
+   async cerrarVenta(venta_id, pagos) {
+    const token = localStorage.getItem('token')
+    
+    try {
+      return await axios.post(
+        `${API_URL}/ventas/cerrar/${venta_id}`,
+        { pagos },
+        {
+          headers: {
+            'x-access-token': token
+          }
+        }
+      )
+    } catch (error) {
+      // 🔹 Parsear el error del backend para extraer faltantes
+      if (error.response?.data?.error) {
+        const errorMsg = error.response.data.error
+        
+        // Si el error contiene información de stock
+        if (errorMsg.includes('Stock insuficiente')) {
+          // Extraer los faltantes del mensaje de error
+          const faltantesMatch = errorMsg.match(/- (.+?): faltan (.+?) (.+)/g)
+          
+          if (faltantesMatch) {
+            const faltantes = faltantesMatch.map(line => {
+              const match = line.match(/- (.+?): faltan (.+?) (.+)/)
+              return {
+                insumo: match[1],
+                faltante: parseFloat(match[2]),
+                unidad: match[3]
+              }
+            })
+            
+            // Lanzar error estructurado
+            const customError = new Error('Stock insuficiente')
+            customError.faltantes = faltantes
+            throw customError
+          }
+        }
+      }
+      
+      // Si no es un error de stock, lanzar el error normal
+      throw error
+    }
   }
 }
+
+

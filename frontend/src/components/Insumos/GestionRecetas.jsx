@@ -13,6 +13,10 @@ export default function GestionRecetas({ sucCod }) {
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState(false)
 
+  // ESTADOS PARA FILTROS
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroReceta, setFiltroReceta] = useState('TODOS') // TODOS | CON_RECETA | SIN_RECETA
+
   // Formulario para agregar insumo
   const [nuevoInsumo, setNuevoInsumo] = useState({
     insumo_id: '',
@@ -30,7 +34,6 @@ export default function GestionRecetas({ sucCod }) {
         recetasService.getProductosConRecetas(sucCod),
         insumosService.getInsumos(sucCod)
       ])
-
       setProductos(productosRes.data)
       setInsumos(insumosRes.data.filter(i => i.insumo_activo))
     } catch (err) {
@@ -49,288 +52,248 @@ export default function GestionRecetas({ sucCod }) {
       setEditando(false)
       setNuevoInsumo({ insumo_id: '', cantidad_requerida: '' })
     } catch (err) {
-      console.error("Error cargando receta:", err)
       notifyError("Error al cargar la receta")
     }
   }
 
   const handleAgregarInsumo = async (e) => {
     e.preventDefault()
-
     if (!nuevoInsumo.insumo_id || !nuevoInsumo.cantidad_requerida) {
       notifyError("Completá todos los campos")
       return
     }
-
-    if (Number(nuevoInsumo.cantidad_requerida) <= 0) {
-      notifyError("La cantidad debe ser mayor a 0")
-      return
-    }
-
-    // Verificar si ya existe
-    if (recetaActual.some(r => r.insumo_id === Number(nuevoInsumo.insumo_id))) {
-      notifyError("Este insumo ya está en la receta")
-      return
-    }
-
     try {
       await recetasService.agregarInsumo(
         productoSeleccionado.prod_cod,
         Number(nuevoInsumo.insumo_id),
         Number(nuevoInsumo.cantidad_requerida)
       )
-
-      notifySuccess("Insumo agregado a la receta")
-      handleSeleccionarProducto(productoSeleccionado)
+      notifySuccess("Insumo agregado")
+      await cargarDatos()
+      // Refrescar vista actual
+      const res = await recetasService.getRecetaProducto(productoSeleccionado.prod_cod)
+      setRecetaActual(res.data)
+      setNuevoInsumo({ insumo_id: '', cantidad_requerida: '' })
     } catch (err) {
-      console.error("Error agregando insumo:", err)
-      notifyError(err.response?.data?.error || "Error al agregar insumo")
+      notifyError("Error al agregar insumo")
     }
   }
 
   const handleEliminarInsumo = async (producto_insumo_id, nombreInsumo) => {
-    if (!window.confirm(`¿Eliminar "${nombreInsumo}" de la receta?`)) return
-
+    if (!window.confirm(`¿Eliminar "${nombreInsumo}"?`)) return
     try {
       await recetasService.eliminarInsumo(producto_insumo_id)
-      notifySuccess("Insumo eliminado de la receta")
-      handleSeleccionarProducto(productoSeleccionado)
+      notifySuccess("Eliminado")
+      await cargarDatos()
+      const res = await recetasService.getRecetaProducto(productoSeleccionado.prod_cod)
+      setRecetaActual(res.data)
     } catch (err) {
-      console.error("Error eliminando insumo:", err)
-      notifyError("Error al eliminar insumo")
+      notifyError("Error al eliminar")
     }
   }
 
   const handleModificarCantidad = async (producto_insumo_id, cantidadActual, nombreInsumo) => {
-    const nuevaCantidad = prompt(
-      `Modificar cantidad de "${nombreInsumo}"\n\nCantidad actual: ${cantidadActual}\nNueva cantidad:`,
-      cantidadActual
-    )
-
-    if (nuevaCantidad === null) return
-
-    const cantidad = Number(nuevaCantidad)
-
-    if (isNaN(cantidad) || cantidad <= 0) {
-      notifyError("Ingresá una cantidad válida mayor a 0")
-      return
-    }
-
+    const nuevaCantidad = prompt(`Nueva cantidad para ${nombreInsumo}:`, cantidadActual)
+    if (!nuevaCantidad || isNaN(nuevaCantidad)) return
     try {
-      await recetasService.modificarCantidad(producto_insumo_id, cantidad)
-      notifySuccess("Cantidad actualizada")
-      handleSeleccionarProducto(productoSeleccionado)
+      await recetasService.modificarCantidad(producto_insumo_id, Number(nuevaCantidad))
+      notifySuccess("Actualizado")
+      await cargarDatos()
+      const res = await recetasService.getRecetaProducto(productoSeleccionado.prod_cod)
+      setRecetaActual(res.data)
     } catch (err) {
-      console.error("Error modificando cantidad:", err)
-      notifyError("Error al modificar cantidad")
+      notifyError("Error al actualizar")
     }
   }
 
-  if (loading) {
-    return (
-      <div className="recetas-loading">
-        <div className="spinner"></div>
-        <p>Cargando...</p>
-      </div>
-    )
-  }
+  // LÓGICA DE FILTRADO
+  const productosFiltrados = productos.filter(producto => {
+    const tieneReceta = producto.Receta && producto.Receta.length > 0
+    const coincideBusqueda = producto.prod_nom.toLowerCase().includes(busqueda.toLowerCase())
+    let coincideFiltro = true
+    if (filtroReceta === 'CON_RECETA') coincideFiltro = tieneReceta
+    if (filtroReceta === 'SIN_RECETA') coincideFiltro = !tieneReceta
+    return coincideBusqueda && coincideFiltro
+  })
 
+  // ESTADÍSTICAS
+  const totalProductos = productos.length
+  const conReceta = productos.filter(p => p.Receta && p.Receta.length > 0).length
+  const sinReceta = totalProductos - conReceta
+
+  if (loading) return <div className="recetas-loading"><div className="spinner"></div></div>
+
+  const insumoSeleccionadoInfo = insumos.find(
+    (i) => i.insumo_id === Number(nuevoInsumo.insumo_id)
+  );
   return (
-    <>
-      <div className="recetas-container">
-        
-        {/* Header */}
-        <div className="recetas-header">
-          <div>
-            <h1>🧾 Gestión de Recetas</h1>
-            <p className="recetas-subtitle">
-              Asociá insumos a cada producto vendible
-            </p>
+    <div className="recetas-container">
+      <div className="recetas-header">
+        <h1>🧾 Gestión de Recetas</h1>
+        <p className="recetas-subtitle">Configuración de insumos por producto</p>
+      </div>
+
+      <div className="recetas-stats">
+        <div className="stat-card total">
+          <div className="stat-icon">📦</div>
+          <div className="stat-info">
+            <span className="stat-valor">{totalProductos}</span>
+            <span className="stat-label">Total</span>
           </div>
         </div>
+        <div className="stat-card con-receta">
+          <div className="stat-icon">✅</div>
+          <div className="stat-info">
+            <span className="stat-valor">{conReceta}</span>
+            <span className="stat-label">Con Receta</span>
+          </div>
+        </div>
+        <div className="stat-card sin-receta">
+          <div className="stat-icon">❌</div>
+          <div className="stat-info">
+            <span className="stat-valor">{sinReceta}</span>
+            <span className="stat-label">Sin Receta</span>
+          </div>
+        </div>
+      </div>
 
-        <div className="recetas-grid">
-          
-          {/* Panel de Productos */}
-          <div className="recetas-panel productos-panel">
-            <h3>📦 Productos</h3>
-            <div className="productos-lista">
-              {productos.length === 0 ? (
-                <p className="lista-vacia">No hay productos disponibles</p>
-              ) : (
-                productos.map((producto) => {
-                  const tieneReceta = producto.Receta && producto.Receta.length > 0
-                  const estaSeleccionado = productoSeleccionado?.prod_cod === producto.prod_cod
-
-                  return (
-                    <div
-                      key={producto.prod_cod}
-                      className={`producto-item ${estaSeleccionado ? 'seleccionado' : ''}`}
-                      onClick={() => handleSeleccionarProducto(producto)}
-                    >
-                      <div className="producto-info">
-                        <strong>{producto.prod_nom}</strong>
-                        <span className="producto-precio">${Number(producto.prod_pre).toFixed(2)}</span>
-                      </div>
-                      <div className="producto-estado">
-                        {tieneReceta ? (
-                          <span className="badge-tiene-receta">
-                            ✅ {producto.Receta.length} insumos
-                          </span>
-                        ) : (
-                          <span className="badge-sin-receta">
-                            ❌ Sin receta
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })
-              )}
+      <div className="recetas-grid">
+        {/* Panel Izquierdo: Productos */}
+        <div className="recetas-panel productos-panel">
+          <div className="productos-panel-header">
+            <h3>Lista de Productos</h3>
+            <input
+              type="text"
+              className="input-busqueda"
+              placeholder="🔍 Buscar por nombre..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            <div className="productos-filtros">
+              <button 
+                className={`filtro-btn ${filtroReceta === 'TODOS' ? 'activo' : ''}`}
+                onClick={() => setFiltroReceta('TODOS')}
+              >Todos</button>
+              <button 
+                className={`filtro-btn ${filtroReceta === 'CON_RECETA' ? 'activo' : ''}`}
+                onClick={() => setFiltroReceta('CON_RECETA')}
+              >Con Receta</button>
+              <button 
+                className={`filtro-btn ${filtroReceta === 'SIN_RECETA' ? 'activo' : ''}`}
+                onClick={() => setFiltroReceta('SIN_RECETA')}
+              >Sin</button>
             </div>
           </div>
 
-          {/* Panel de Receta */}
-          <div className="recetas-panel receta-panel">
-            {!productoSeleccionado ? (
-              <div className="receta-empty">
-                <div className="empty-icon">👈</div>
-                <p>Seleccioná un producto para ver o editar su receta</p>
-              </div>
-            ) : (
-              <>
-                <div className="receta-header">
-                  <h3>🧾 Receta: {productoSeleccionado.prod_nom}</h3>
-                  <button
-                    className="btn-editar"
-                    onClick={() => setEditando(!editando)}
-                  >
-                    {editando ? '❌ Cancelar' : '✏️ Editar'}
-                  </button>
+          <div className="productos-lista">
+            {productosFiltrados.map(producto => (
+              <div 
+                key={producto.prod_cod}
+                className={`producto-item ${productoSeleccionado?.prod_cod === producto.prod_cod ? 'seleccionado' : ''}`}
+                onClick={() => handleSeleccionarProducto(producto)}
+              >
+                <div className="producto-info">
+                  <strong>{producto.prod_nom}</strong>
+                  <span className="producto-precio">${Number(producto.prod_pre).toFixed(2)}</span>
                 </div>
-
-                {/* Receta Actual */}
-                {recetaActual.length === 0 ? (
-                  <div className="sin-receta-info">
-                    <p>Este producto no tiene receta asignada</p>
-                    <small>Agregá insumos para crear la receta</small>
-                  </div>
-                ) : (
-                  <div className="receta-tabla-container">
-                    <table className="receta-tabla">
-                      <thead>
-                        <tr>
-                          <th>Insumo</th>
-                          <th>Cantidad</th>
-                          <th>Unidad</th>
-                          <th>Stock Actual</th>
-                          {editando && <th>Acciones</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recetaActual.map((item) => (
-                          <tr key={item.producto_insumo_id}>
-                            <td><strong>{item.Insumo.insumo_nombre}</strong></td>
-                            <td>{Number(item.cantidad_requerida).toFixed(2)}</td>
-                            <td>{item.Insumo.unidad_medida}</td>
-                            <td>
-                              <span className={`stock-badge ${
-                                Number(item.Insumo.stock_actual) <= Number(item.Insumo.stock_minimo) 
-                                  ? 'critico' 
-                                  : 'normal'
-                              }`}>
-                                {Number(item.Insumo.stock_actual).toFixed(2)}
-                              </span>
-                            </td>
-                            {editando && (
-                              <td>
-                                <div className="acciones-receta">
-                                  <button
-                                    className="btn-accion-mini editar"
-                                    onClick={() => handleModificarCantidad(
-                                      item.producto_insumo_id,
-                                      item.cantidad_requerida,
-                                      item.Insumo.insumo_nombre
-                                    )}
-                                    title="Modificar cantidad"
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button
-                                    className="btn-accion-mini eliminar"
-                                    onClick={() => handleEliminarInsumo(
-                                      item.producto_insumo_id,
-                                      item.Insumo.insumo_nombre
-                                    )}
-                                    title="Eliminar"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* Formulario para Agregar Insumo */}
-                {editando && (
-                  <form onSubmit={handleAgregarInsumo} className="agregar-insumo-form">
-                    <h4>➕ Agregar Insumo</h4>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Insumo</label>
-                        <select
-                          value={nuevoInsumo.insumo_id}
-                          onChange={(e) => setNuevoInsumo({
-                            ...nuevoInsumo,
-                            insumo_id: e.target.value
-                          })}
-                          className="form-select"
-                        >
-                          <option value="">Seleccioná un insumo</option>
-                          {insumos.map((insumo) => (
-                            <option key={insumo.insumo_id} value={insumo.insumo_id}>
-                              {insumo.insumo_nombre} ({insumo.unidad_medida})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Cantidad Requerida</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={nuevoInsumo.cantidad_requerida}
-                          onChange={(e) => setNuevoInsumo({
-                            ...nuevoInsumo,
-                            cantidad_requerida: e.target.value
-                          })}
-                          className="form-input"
-                          placeholder="0.00"
-                        />
-                      </div>
-
-                      <button type="submit" className="btn-agregar">
-                        ➕ Agregar
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </>
-            )}
+                <div className="producto-estado">
+                  {producto.Receta?.length > 0 ? (
+                    <span className="badge-tiene-receta">✅ {producto.Receta.length} insumos</span>
+                  ) : (
+                    <span className="badge-sin-receta">❌ Sin receta</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-
         </div>
 
-      </div>
+        {/* Panel Derecho: Detalle de Receta */}
+        <div className="recetas-panel receta-panel">
+          {!productoSeleccionado ? (
+            <div className="receta-empty">
+              <div className="empty-icon">👈</div>
+              <p>Seleccioná un producto para gestionar su receta</p>
+            </div>
+          ) : (
+            <>
+              <div className="receta-header">
+                <h3>Receta: {productoSeleccionado.prod_nom}</h3>
+                <button className="btn-editar" onClick={() => setEditando(!editando)}>
+                  {editando ? '❌ Cerrar' : '✏️ Editar Receta'}
+                </button>
+              </div>
 
+              {recetaActual.length === 0 ? (
+                <div className="sin-receta-info"><p>No hay insumos cargados.</p></div>
+              ) : (
+                <div className="receta-tabla-container">
+                  <table className="receta-tabla">
+                    <thead>
+                      <tr>
+                        <th>Insumo</th>
+                        <th>Cant.</th>
+                        <th>Unidad</th>
+                        {editando && <th>Acciones</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recetaActual.map(item => (
+                        <tr key={item.producto_insumo_id}>
+                          <td>{item.Insumo?.insumo_nombre}</td>
+                          <td>{Number(item.cantidad_requerida).toFixed(2)}</td>
+                          <td>{item.Insumo?.unidad_medida}</td>
+                          {editando && (
+                            <td>
+                              <div className="acciones-receta">
+                                <button className="btn-accion-mini editar" onClick={() => handleModificarCantidad(item.producto_insumo_id, item.cantidad_requerida, item.Insumo.insumo_nombre)}>✏️</button>
+                                <button className="btn-accion-mini eliminar" onClick={() => handleEliminarInsumo(item.producto_insumo_id, item.Insumo.insumo_nombre)}>🗑️</button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {editando && (
+                <form onSubmit={handleAgregarInsumo} className="agregar-insumo-form">
+                  <h4>➕ Añadir Insumo</h4>
+                  <div className="form-row">
+                    <select 
+                      className="form-select"
+                      value={nuevoInsumo.insumo_id}
+                      onChange={(e) => setNuevoInsumo({...nuevoInsumo, insumo_id: e.target.value})}
+                    >
+                      <option value="">Seleccionar...</option>
+                      {insumos.map(i => <option key={i.insumo_id} value={i.insumo_id}>{i.insumo_nombre}</option>)}
+                    </select>
+                    {/* MEDIDA (Dinamica) */}
+                    <div className="form-field-group unit">
+                      <label> <b>Medida</b></label>
+                      <div className="unit-badge">
+                        {insumoSeleccionadoInfo ? insumoSeleccionadoInfo.unidad_medida : '--'}
+                      </div>
+                    </div>
+                    <input 
+                      type="number" 
+                      className="form-input"
+                      placeholder="Cant."
+                      value={nuevoInsumo.cantidad_requerida}
+                      onChange={(e) => setNuevoInsumo({...nuevoInsumo, cantidad_requerida: e.target.value})}
+                    />
+                    
+                    <button type="submit" className="btn-agregar">Añadir</button>
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </div>
+      </div>
       <ToastContainer />
-    </>
+    </div>
   )
 }

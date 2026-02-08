@@ -61,6 +61,7 @@ class RecetasService {
       { headers: authHeader() }
     )
   }
+  
 }
 
 export default new RecetasService()

@@ -1088,7 +1088,19 @@ insumosRouter.get(
     }
   }
 )
-
+insumosRouter.get('/insumos/historial/global', async (req, res) => {
+  try {
+    const { suc_cod, limit } = req.query
+    if (!suc_cod) {
+      return res.status(400).json({ error: 'suc_cod es requerido' })
+    }
+    
+    const historial = await InsumosController.getHistorialGlobal(suc_cod, parseInt(limit) || 100)
+    res.json(historial)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
 // Eliminar (desactivar) insumo
 insumosRouter.delete(
   '/insumos/:insumo_id',
