@@ -1,197 +1,142 @@
-import CIcon from "@coreui/icons-react"
-import {
-  cilSettings,
-  cilList,
-  cilPizza,
-  cilOptions,
-  cilPuzzle,
-  cilScreenDesktop,
-  cilTv,
-  cilMonitor,
-} from "@coreui/icons"
+import React from "react"
 import { CNavGroup, CNavItem, CNavTitle } from "@coreui/react"
-import {
-  IceCreamBowl,
-  IceCreamCone,
-  Settings,
-  TicketPercent,
-  UserCog,
-  History,
-  ArrowUpFromLine as ChartNoAxesCombined,
-  Truck,
-  LogIn as Logs,
-  Rat,
+import { 
+  IceCreamBowl, IceCreamCone, Settings, TicketPercent, 
+  History, LayoutDashboard, Truck, Store, Package, ShoppingCart,
+  Monitor, Tv, ListTree, Users, ReceiptText
 } from "lucide-react"
+
+// Mapeo según tu LocalStorage (rol: 4 es admin)
+const ROLES = {
+  ADMIN: 4,
+  DUENO: 1, 
+  ENCARGADO: 2
+}
 
 const _nav = [
   {
     component: CNavTitle,
-    name: "PANTALLAS",
+    name: "OPERACIONES",
   },
   {
     component: CNavItem,
-    name: "Ver Pantallas",
-    to: "/pantallas",
-    icon: <CIcon icon={cilTv} customClassName="nav-icon" />,
+    name: "Punto de Venta (POS)",
+    to: "/pos",
+    icon: <ShoppingCart className="nav-icon" />,
+    roles: [ROLES.ADMIN, ROLES.DUENO, ROLES.ENCARGADO]
   },
   {
-  component: CNavItem,
-  name: "POS",
-  to: "/pos",
-  icon: <ChartNoAxesCombined className="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: "Cajas",
-  to: "/cajas/historial",
-  icon: <History className="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: "Insumos",
-  to: "/insumos",
-  icon: <History className="nav-icon" />,
-},
-{
-  component: CNavItem,
-  name: "Recetas",
-  to: "/recetas",
-  icon: <History className="nav-icon" />,
-},
+    component: CNavItem,
+    name: "Control de Stock",
+    to: "/insumos",
+    icon: <Package className="nav-icon" />,
+    roles: [ROLES.ADMIN, ROLES.DUENO]
+  },
+  
+  {
+    component: CNavTitle,
+    name: "GESTIÓN DE CONTENIDO",
+  },
   {
     component: CNavGroup,
-    name: "Administración",
+    name: "Pantallas & Menús",
     to: "/admin",
-    icon: <CIcon icon={cilOptions} customClassName="nav-icon" />,
+    icon: <Monitor className="nav-icon" />,
     items: [
       {
         component: CNavItem,
-        name: "Plantillas",
+        name: "Ver Pantallas",
+        to: "/pantallas",
+        icon: <Tv className="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: "Configurar Plantillas",
         to: "/admin/plantillas",
-        icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
       },
       {
         component: CNavItem,
-        name: "Pantallas",
+        name: "Administrar Pantallas",
         to: "/admin/pantallas",
-        icon: <CIcon icon={cilScreenDesktop} customClassName="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
       },
     ],
   },
   {
-    component: CNavTitle,
-    name: "ACCESO DIRECTO",
-  },
-  {
-    component: CNavItem,
-    name: "Menú de Productos",
-    to: "/pantalla/productos",
-    icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: "Menú de Sabores",
-    to: "/pantalla/cremas-heladas",
-    icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
-  },
-  {
     component: CNavGroup,
-    name: "Sabores",
-    to: "/sabores",
-    meta: { role: ["ADMIN"] },
-    icon: <IceCreamBowl icon={cilList} customclassname="nav-icon" />,
+    name: "Cremas Heladas",
+    icon: <IceCreamBowl className="nav-icon" />,
     items: [
       {
         component: CNavItem,
-        name: "Sabores",
+        name: "Gestionar Sabores",
         to: "/sabores",
-        meta: { role: ["ADMIN"] },
-        icon: <IceCreamCone customclassname="nav-icon" />,
+        icon: <IceCreamCone className="nav-icon" />,
       },
       {
         component: CNavItem,
-        name: "Categorias",
+        name: "Categorías de Sabores",
         to: "/categorias/sabores",
-        meta: { role: ["ADMIN"] },
-        icon: <IceCreamBowl customclassname="nav-icon" />,
+        icon: <ListTree className="nav-icon" />,
       },
     ],
   },
   {
     component: CNavGroup,
-    name: "Productos",
-    meta: { role: ["ADMIN"] },
-    icon: <Logs customclassname="nav-icon" />,
+    name: "Productos & Ventas",
+    icon: <ReceiptText className="nav-icon" />,
     items: [
       {
         component: CNavItem,
-        name: "Productos",
+        name: "Lista de Productos",
         to: "/productos",
-        meta: { role: ["ADMIN"] },
-        icon: <CIcon icon={cilPizza} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
-        name: "Categorias",
+        name: "Categorías Prod.",
         to: "/categorias/productos",
-        meta: { role: ["ADMIN"] },
-        icon: <CIcon icon={cilSettings} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: "Promociones",
+        to: "/promociones",
+        icon: <TicketPercent className="nav-icon" />,
       },
     ],
   },
-  {
-    component: CNavItem,
-    name: "Promociones",
-    to: "/promociones",
-    meta: { role: ["ADMIN"] },
-    icon: <TicketPercent customclassname="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: "Ventas",
-    to: "/ventas",
-    meta: { role: ["ADMIN"] },
-    icon: <ChartNoAxesCombined customclassname="nav-icon" />,
-  },
+
   {
     component: CNavTitle,
-    name: "CONFIGURACIONES",
+    name: "REPORTES & SISTEMA",
+    roles: [ROLES.ADMIN, ROLES.DUENO]
+  },
+  {
+    component: CNavItem,
+    name: "Ventas & Estadísticas",
+    to: "/ventas",
+    icon: <LayoutDashboard className="nav-icon" />,
+    roles: [ROLES.ADMIN, ROLES.DUENO]
   },
   {
     component: CNavGroup,
-    name: "Configuraciones",
-    to: "/configuraciones",
-    meta: { role: ["ADMIN"] },
-    icon: <Settings customclassname="nav-icon" />,
+    name: "Configuración",
+    icon: <Settings className="nav-icon" />,
+    roles: [ROLES.ADMIN, ROLES.DUENO],
     items: [
       {
         component: CNavItem,
         name: "Usuarios",
         to: "/config/usuarios",
-        meta: { role: ["ADMIN"] },
-        icon: <UserCog customclassname="nav-icon" />,
-      },
-      {
-        component: CNavItem,
-        name: "Historial",
-        to: "/historial",
-        meta: { role: ["ADMIN"] },
-        icon: <History customclassname="nav-icon" />,
-      },
-      {
-        component: CNavItem,
-        name: "Proveedores",
-        to: "/proveedores",
-        meta: { role: ["ADMIN"] },
-        icon: <Truck customclassname="nav-icon" />,
+        icon: <Users className="nav-icon" />,
       },
       {
         component: CNavItem,
         name: "Sucursales",
         to: "/sucursales",
-        meta: { role: ["ADMIN"] },
-        icon: <Rat customclassname="nav-icon" />,
+        icon: <Store className="nav-icon" />,
       },
+      
     ],
   },
 ]

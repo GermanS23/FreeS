@@ -138,12 +138,7 @@ catprodRouter.get("/catprods/list", authJwt.verifyToken, authJwt.permit("ADMIN",
 
 // ==================== RUTAS PARA PRODUCTOS ====================
 
-// 🔹 --- RUTA PÚBLICA NUEVA --- 🔹
-// Esta la usará PantallaProductos.jsx
-productosRouter.get(
-  "/prods/public/list",
-  productosController.List // Sin authJwt
-)
+
 
 // --- RUTAS DE ADMIN (Existentes) ---
 productosRouter.get("/prod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), productosController.getProducto)
@@ -167,7 +162,7 @@ productosRouter.delete(
   productosController.deleteProd,
 )
 productosRouter.get("/prods/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), productosController.List)
-
+productosRouter.get("/prods/public/list", productosController.List)
 // ==================== RUTAS PARA CATEGORÍAS DE SABORES ====================
 catsabRouter.get("/catsab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catsabController.getCatSab)
 catsabRouter.get(
@@ -193,12 +188,7 @@ catsabRouter.get("/catsabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "
 
 // ==================== RUTAS PARA SABORES DE HELADOS ====================
 
-// --- RUTA PÚBLICA (NUEVA) ---
-// Usada por PantallaSabores.jsx (SaboresMenu)
-sabheladosRouter.get(
-  "/sabs/public/list",
-  sabheladosController.List // Sin authJwt
-)
+
 
 // --- RUTAS DE ADMIN (Existentes) ---
 sabheladosRouter.get("/sab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), sabheladosController.getSabor)
@@ -222,7 +212,7 @@ sabheladosRouter.delete(
   sabheladosController.deleteSab,
 )
 sabheladosRouter.get("/sabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), sabheladosController.List)
-
+sabheladosRouter.get("/sabs/public/list", sabheladosController.List)
 // ==================== RUTAS PARA TIPO DE DESCUENTO ====================
 tdRouter.get("/td", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), tdController.getTD)
 tdRouter.get("/td/:td_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), tdController.getTDbyId)
@@ -320,58 +310,22 @@ plantillaRouter.delete(
 )
 
 // ==================== RUTAS PARA PANTALLAS ====================
+// ==================== RUTAS PARA PANTALLAS (CORREGIDO ORDEN) ====================
 
-// --- RUTA PÚBLICA (NUEVA) ---
-// Usada por PantallaViewer.jsx
-pantallaRouter.get(
-  "/pantallas/public/:pan_cod",
-  pantallaController.getPantallaById // Sin authJwt
-)
+// 1. RUTAS PÚBLICAS ESTÁTICAS (Sin parámetros : )
+pantallaRouter.get("/pantallas/public/activas", pantallaController.getPantallasActivas)
 
-// --- RUTAS DE ADMIN (Existentes) ---
-pantallaRouter.get(
-  "/pantallas/activas",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.getPantallasActivas,
-)
+// 2. RUTAS PÚBLICAS DINÁMICAS (Con parámetros : )
+pantallaRouter.get("/pantallas/public/:pan_cod", pantallaController.getPantallaById)
 
-pantallaRouter.get(
-  "/pantallas/list",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.listPantallas,
-)
-
+// 3. RUTAS DE ADMIN
+pantallaRouter.get("/pantallas/activas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallasActivas)
+pantallaRouter.get("/pantallas/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.listPantallas)
 pantallaRouter.get("/pantallas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallas)
-
-pantallaRouter.post(
-  "/pantallas",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.createPantalla,
-)
-
-pantallaRouter.get(
-  "/pantallas/:pan_cod",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.getPantallaById,
-)
-
-pantallaRouter.put(
-  "/pantallas/:pan_cod",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.updatePantalla,
-)
-
-pantallaRouter.delete(
-  "/pantallas/:pan_cod",
-  authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
-  pantallaController.deletePantalla,
-)
+pantallaRouter.post("/pantallas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.createPantalla)
+pantallaRouter.get("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallaById)
+pantallaRouter.put("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.updatePantalla)
+pantallaRouter.delete("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.deletePantalla)
 // ==================== RUTAS PARA PROMOCIONES ====================
 // --- Ruta Pública ---
 promocionesRouter.get(
@@ -934,7 +888,7 @@ estadisticasRouter.get(
 estadisticasRouter.get(
   '/estadisticas/cajeros/:suc_cod',
   authJwt.verifyToken,
-  authJwt.permit('ADMIN', 'DUEÑO'),
+  authJwt.permit('ADMIN', 'DUEÑO','ENCARGADO'),
   async (req, res) => {
     try {
       const datos = await EstadisticasController.getEstadisticasCajeros(req.params.suc_cod)
@@ -949,7 +903,7 @@ estadisticasRouter.get(
 estadisticasRouter.get(
   '/estadisticas/comparativa-mensual/:suc_cod',
   authJwt.verifyToken,
-  authJwt.permit('ADMIN', 'DUEÑO'),
+  authJwt.permit('ADMIN', 'DUEÑO','ENCARGADO'),
   async (req, res) => {
     try {
       const datos = await EstadisticasController.getComparativaMensual(req.params.suc_cod)

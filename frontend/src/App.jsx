@@ -4,34 +4,61 @@ import routes from "./routes";
 import authService from "./services/auth.service";
 
 const AppWrapper = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(() => {
-        // Inicializa isLoggedIn directamente desde localStorage
-        const token = localStorage.getItem("token");
-        return !!token;
-    });
-    const [isLoading, setIsLoading] = useState(true); // Estado de carga
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); 
     const location = useLocation();
 
-    // Efecto para sincronizar el estado de autenticación
     useEffect(() => {
-        const token = localStorage.getItem("token");
-         const user = authService.getCurrentUser()
-       setIsLoggedIn(!!user && !!user.accessToken) // Actualiza el estado de autenticación
-        setIsLoading(false); // Finaliza la carga
-        console.log("Login status:", !!token);
+        const checkAuth = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                
+                if (token) {
+                    // Intentamos validar el token con el servidor
+                    const user = await authService.getCurrentUser();
+                    // Si el servidor responde OK, estamos logueados
+                    setIsLoggedIn(!!user);
+                } else {
+                    // No hay token, es un invitado
+                    setIsLoggedIn(false);
+                }
+            } catch (error) {
+                // Si el token expiró o el servidor dio 403/500
+                console.error("Error de autenticación, procediendo como invitado:", error);
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                setIsLoggedIn(false);
+            } finally {
+                // IMPORTANTÍSIMO: Finalizar la carga pase lo que pase
+                setIsLoading(false);
+            }
+        };
+
+        checkAuth();
     }, []);
 
-    // Efecto para rastrear cambios en la ubicación
+    // Efecto para rastrear cambios en la ubicación (útil para debug)
     useEffect(() => {
-        console.log("Current location:", location.pathname);
+        console.log("📍 Ruta actual:", location.pathname);
     }, [location]);
 
-    // Obtiene el elemento de ruta (siempre se llama, sin importar isLoading)
+    // Generamos las rutas pasando los estados actuales
     const element = useRoutes(routes(isLoggedIn, setIsLoggedIn, isLoading));
 
-    // Si está cargando, muestra un mensaje de carga
     if (isLoading) {
-        return <div>Cargando...</div>;
+        return (
+            <div style={{ 
+                height: '100vh', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                flexDirection: 'column',
+                fontFamily: 'sans-serif'
+            }}>
+                <div className="spinner"></div> {/* Podés usar el CSS que ya tenés */}
+                <p>Verificando credenciales...</p>
+            </div>
+        );
     }
 
     return element;

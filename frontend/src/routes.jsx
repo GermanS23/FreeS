@@ -14,6 +14,7 @@ import AdminPlantillas from "./components/Plantillas/AdminPlantillas"
 import AdminPantallas from "./components/Pantallas/AdminPantallas"
 import PantallaViewer from "./components/Pantallas/PantallaViewer"
 import PantallasDisplay from "./components/Pantallas/PantallaDisplay"
+import PantallasPublicas from "./components/Pantallas/PantallasPublicas"
 import Users from "./components/Usuarios/index"
 import Sucursales from "./components/Sucursales/Sucursales"
 import Promociones from "./components/Promociones/Promociones"
@@ -41,7 +42,7 @@ const ProtectedRoute = ({ isLoggedIn, setIsLoggedIn }) => {
 // 🔹 COMPONENTE 2: Rutas Públicas Limpias
 // Un layout simple que solo renderiza el componente hijo (PantallaViewer)
 // sin Sidebar, Header ni Footer.
-const PublicScreenLayout = () => {
+const PublicLayout = () => {
   return <Outlet /> 
 }
 
@@ -110,11 +111,18 @@ const routes = (isLoggedIn, setIsLoggedIn, isLoading) => {
       element: !isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" replace />,
     },
     {
-      // 🔹 --- NUEVA RUTA PÚBLICA PARA EL VISOR --- 🔹
-      path: "/pantalla-viewer",
-      element: <PublicScreenLayout />,
+      // 🔹 NUEVAS RUTAS PÚBLICAS
+      path: "/",
+      element: <PublicLayout />,
       children: [
-        { path: ":pan_cod", element: <PantallaViewer /> }
+        {
+          path: "pantallas-publicas",
+          element: <PantallasPublicas />
+        },
+        {
+          path: "pantalla-viewer/:pan_cod",
+          element: <PantallaViewer />
+        }
       ]
     },
     {

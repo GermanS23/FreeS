@@ -94,6 +94,45 @@
   background-color: #4338ca;
 }
 
+/* =========================
+   SECCIÓN INVITADO
+   ========================= */
+
+.guest-access {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guest-access span {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.guest-button {
+  background-color: transparent;
+  border: 1px solid #4f46e5;
+  color: #4f46e5;
+  padding: 0.6rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guest-button:hover {
+  background-color: #eef2ff;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
 @media (max-width: 640px) {
   .login-form-container {
     padding: 1.5rem;
@@ -118,5 +157,8 @@
   .login-button {
     font-size: 0.9rem;
   }
-}
 
+  .guest-button {
+    font-size: 0.85rem;
+  }
+}

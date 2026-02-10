@@ -33,20 +33,25 @@
 .pantalla-scaler {
   position: relative;
   z-index: 1;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center; /* Centra el contenido escalado */
   overflow: hidden;
+  background: transparent;
 }
 
 /* CONTENIDO REAL */
 .pantalla-scaled-content {
-  transform-origin: top center;
-  width: 100%;
+  /* Forzamos un tamaño base de diseño para que el cálculo sea constante */
+  width: 1920px; 
+  min-height: 1080px;
+  transform-origin: center center; /* Escala desde el centro */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-out; /* Suaviza el cambio */
 }
-
 /* Loading */
 .pantalla-viewer-loading {
   height: 100vh;

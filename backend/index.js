@@ -79,7 +79,7 @@ app.use("/api", cajasRouter)
 app.use("/api", estadisticasRouter)
 app.use("/api", insumosRouter)
 app.use("/api", recetasRouter)
-//initial(); //Comando para inicializar la base de datos y crear el usuario admin
+initial(); //Comando para inicializar la base de datos y crear el usuario admin
 
 const PORT = process.env.PORT ?? 3000
 
@@ -104,11 +104,19 @@ app.listen(PORT, () => {
 async function initial() {
   
   try {
-    await Rol.create({
+    /*await Rol.create({
       rol_cod: 4,
       rol_desc: "ADMIN",
+    })*/
+    await Rol.create({
+      rol_cod: 2,
+      rol_desc: "ENCARGADO",
     })
-    await Usuarios.create({
+    await Rol.create({
+      rol_cod: 1,
+      rol_desc: "DUEÑO",
+    })
+   /* await Usuarios.create({
       us_cod: 1,
       us_user: "admin",
       us_pass: bcryp.hashSync("123456", 10),
@@ -117,9 +125,9 @@ async function initial() {
       us_tel: "3482297539",
       roles_rol_cod: 4,
     })
-    console.log("Usuario creado correctamente")
+    console.log("Usuario creado correctamente") */
   } catch (error) {
     console.error("Error al crear el usuario admin", error)
+ 
   }
-  
 }

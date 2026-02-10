@@ -1,3 +1,5 @@
+// components/login/Login.jsx
+
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import authService from '../../services/auth.service';
@@ -40,6 +42,12 @@ function Login({ setIsLoggedIn }) {
       alert(error);
     }
   };
+
+  // 🔹 NUEVA FUNCIÓN: Acceso como invitado
+  const handleGuestAccess = () => {
+    navigate('/pantallas-publicas')
+  }
+
   return (
     <div className="login-container">
       <div className="login-form-container">
@@ -84,6 +92,18 @@ function Login({ setIsLoggedIn }) {
           <button type="submit" className="login-button">
             Iniciar sesión
           </button>
+          
+          {/* 🔹 MODIFICADO: Botón de invitado */}
+          <div className="guest-access">
+            <span>¿Solo querés ver las pantallas?</span>
+            <button
+              type="button"
+              className="guest-button"
+              onClick={handleGuestAccess}
+            >
+              Acceder como invitado
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -95,4 +115,3 @@ Login.propTypes = {
 };
 
 export default Login;
-

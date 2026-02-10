@@ -116,7 +116,7 @@ export default function Dashboard({ sucCod = 1 }) {
           <div className="kpi-card ticket">
             <div className="kpi-icon">🎫</div>
             <div className="kpi-content">
-              <p className="kpi-label">Ticket Promedio</p>
+              <p className="kpi-label">Transferencia Promedio</p>
               <h2 className="kpi-value">${resumenHoy?.ticketPromedio.toFixed(2) || '0.00'}</h2>
               <p className="kpi-subtitle">Por transacción</p>
             </div>

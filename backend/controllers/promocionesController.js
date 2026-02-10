@@ -3,25 +3,35 @@ import Productos from '../models/productos.js'
 import { Op } from 'sequelize'
 import Page from '../utils/getPagingData.js'
 
-// --- FUNCIÓN PÚBLICA (Ya la teníamos) ---
+// --- FUNCIÓN PÚBLICA
 const ListPublica = async (req, res) => {
-  const hoy = new Date(); 
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+
   try {
     const data = await Promociones.findAndCountAll({
       where: {
-        prom_fechaini: { [Op.lte]: hoy },
-        prom_fechafin: { [Op.gte]: hoy }
+        // 1. Debe haber empezado ya
+        prom_fechaini: { [Op.lte]: endOfDay },
+        
+        // 2. No debe haber terminado (o ser NULL)
+        [Op.or]: [
+          { prom_fechafin: { [Op.gte]: startOfDay } },
+          { prom_fechafin: null } // 🔹 Esto permite que aparezca tu promo de la imagen
+        ]
       },
       order: [["prom_nom", "ASC"]], 
       limit: 50
     });
+    
     const response = new Page(data, 0, 50);
     res.send(response);
   } catch (err) {
     console.error("Error en Promociones ListPublica:", err);
-    res.status(500).send({
-      message: err.message || "Ocurrió un error al listar las promociones.",
-    });
+    res.status(500).send({ message: "Error al listar promociones." });
   }
 }
 

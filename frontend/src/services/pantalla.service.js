@@ -30,7 +30,10 @@ class PantallasService {
   //
   // ----------------------------------------
   //
-
+getPantallasPublicasActivas() {
+    return axios.get(`${API_URL}/pantallas/public/activas`)
+    // IMPORTANTE: Sin authHeader()
+  }
   // Crear una nueva pantalla (ADMIN)
   createPantalla(data) {
     return axios.post(`${API_URL}/pantallas`, data, {
