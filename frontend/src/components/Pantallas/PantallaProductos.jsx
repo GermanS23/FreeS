@@ -82,7 +82,7 @@ const MenuProductos = ({ plantilla = null, categoria = null, refreshInterval = 3
     }
   }, [categoria, refreshInterval])
 
-  // Lógica de mapeo para el layout (basado en tu imagen)
+  // Lógica de mapeo para el layout 
   const categorias = useMemo(() => {
     const findCat = (name) => {
       if (!categoriasProd) return null;

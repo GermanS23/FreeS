@@ -104,10 +104,10 @@ app.listen(PORT, () => {
 async function initial() {
   
   try {
-    /*await Rol.create({
+    await Rol.create({
       rol_cod: 4,
       rol_desc: "ADMIN",
-    })*/
+    })
     await Rol.create({
       rol_cod: 2,
       rol_desc: "ENCARGADO",
@@ -116,7 +116,7 @@ async function initial() {
       rol_cod: 1,
       rol_desc: "DUEÑO",
     })
-   /* await Usuarios.create({
+   await Usuarios.create({
       us_cod: 1,
       us_user: "admin",
       us_pass: bcryp.hashSync("123456", 10),
@@ -125,7 +125,7 @@ async function initial() {
       us_tel: "3482297539",
       roles_rol_cod: 4,
     })
-    console.log("Usuario creado correctamente") */
+    console.log("Usuario creado correctamente") 
   } catch (error) {
     console.error("Error al crear el usuario admin", error)
  

@@ -1,34 +1,44 @@
-// components/Promociones/Promociones.jsx
 import React, { useRef, useState } from 'react';
 import {
-  CButton, CCard, CCardBody, CCol, CRow,
-  CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow,
+  CButton,
+  CCard,
+  CCardBody,
+  CCol,
+  CRow,
+  CTable,
+  CTableBody,
+  CTableDataCell,
+  CTableHead,
+  CTableHeaderCell,
+  CTableRow,
 } from '@coreui/react';
-import { BsFillPencilFill, BsPlus, BsFillTrashFill } from 'react-icons/bs';
+import {
+  BsFillPencilFill,
+  BsPlus,
+  BsFillTrashFill,
+} from 'react-icons/bs';
 import ReactPaginate from 'react-paginate';
+import RegisterPromo from './RegisterPromo.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import RegisterPromo from './RegisterPromo.jsx'; // 🔹 Importa el nuevo modal
-import PromocionesService from '../../services/promociones.service.js'; // 🔹 Importa el servicio de promos
+import PromocionesService from '../../services/promociones.service.js';
 
 const Promociones = () => {
-  const [promoId, setPromoId] = useState(null); // Usamos un ID en lugar de 'cliente'
+  const [promoId, setPromoId] = useState('');
+  const [loadingList, setLoading] = useState(false);
   const [promociones, setPromociones] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const handleShowModal = () => setShowModal(true);
-  
-  const [editing, setEditing] = useState(0); // 1 para crear, 2 para editar
+  const [showUsersAdd, setShowUsersAdd] = useState(false);
+  const handleShowUsersAdd = () => setShowUsersAdd(true);
+  const [editing, setEditing] = useState(0);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(20);
   const [pageCount, setPageCount] = useState(0);
   const [totalSize, setTotalSize] = useState(0);
-  const [loadingList, setLoading] = useState(false);
 
-  // Carga la lista de promociones
   const loadList = async (dataPage, dataPageSize) => {
+    setPromociones([]);
     setLoading(true);
-    PromocionesService.listPromosAdmin(dataPage, dataPageSize, "") // Búsqueda por título no implementada aún
+    PromocionesService.listPromosAdmin(dataPage, dataPageSize, "")
       .then((response) => {
         if (response.data && response.data.items) {
           setPromociones(response.data.items);
@@ -54,34 +64,46 @@ const Promociones = () => {
     loadList(page, size);
   }, [page, size]);
 
-  // --- Notificaciones Toast ---
   const notifySuccess = (mensaje) => {
-    toast.success(mensaje || 'Registro con éxito!', { /* ...config... */ });
+    toast.success(mensaje || 'Registro con éxito!', {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
+
   const notifyError = (data) => {
-    toast.error(data || 'Ocurrió un error.', { /* ...config... */ });
+    toast.error(data || 'Ocurrió un error', {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
-  // --- Manejo del Modal ---
   const handleCloseModal = () => {
-    setPromoId(null);
-    setShowModal(false);
-    loadList(page, size);
+    setPromoId('');
+    setShowUsersAdd(false);
+    loadList(0, 20);
   };
 
-  const abrirNuevo = () => {
-    setPromoId(null);
-    setEditing(1);
-    handleShowModal();
-  };
-  
-  const abrirEditar = (id) => {
-    setPromoId(id);
-    setEditing(2);
-    handleShowModal();
+  async function abrirNuevaPromo() {
+    try {
+      setPromoId('');
+      handleShowUsersAdd();
+      setEditing(1);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  // Formatear fecha
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -97,7 +119,7 @@ const Promociones = () => {
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
-          <CButton color="dark" onClick={abrirNuevo} title={'Crear nueva promoción'}>
+          <CButton color="dark" onClick={abrirNuevaPromo} title={'Crear nueva promoción'}>
             <BsPlus />
             Nueva Promoción
           </CButton>
@@ -105,80 +127,109 @@ const Promociones = () => {
         <CCol xs={12}>
           <CCard className="mb-4">
             <CCardBody className="text-medium-emphasis small">
-              <CTable align="middle" responsive>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell scope="col" align="center">Nombre</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" align="center">Importe</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" align="center">Fecha Inicio</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" align="center">Fecha Fin</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" align="center">Acción</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {promociones.length > 0 ? (
-                    promociones.map((item) => (
-                      <CTableRow key={item.prom_cod}>
-                        <CTableDataCell align="center">{item.prom_nom}</CTableDataCell>
-                        <CTableDataCell align="center">${Number(item.prom_importe).toLocaleString()}</CTableDataCell>
-                        <CTableDataCell align="center">{formatDate(item.prom_fechaini)}</CTableDataCell>
-                        <CTableDataCell align="center">{formatDate(item.prom_fechafin)}</CTableDataCell>
-                        <CTableDataCell align="center">
-                          <BsFillPencilFill
-                            size={15}
-                            className="btn-dell"
-                            title={'Editar registro'}
-                            onClick={() => abrirEditar(item.prom_cod)}
-                          />
-                          <BsFillTrashFill
-                            style={{ marginLeft: 30 }}
-                            size={15}
-                            className="btn-dell"
-                            title={'Eliminar Registro'}
-                            onClick={async () => {
-                              if (window.confirm("¿Seguro que quieres eliminar esta promoción?")) {
-                                try {
-                                  await PromocionesService.deletePromo(item.prom_cod);
-                                  notifySuccess('Eliminado con éxito');
-                                  loadList(page, size);
-                                } catch (error) {
-                                  notifyError('Error al eliminar');
+              <CCol xs={12} md={12}>
+                <CTable align="middle" responsive>
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell scope="col" align="center">Nombre</CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">Importe</CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">Fecha Inicio</CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">Fecha Fin</CTableHeaderCell>
+                      <CTableHeaderCell scope="col" align="center">Acción</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {promociones.length > 0 ? (
+                      promociones.map((item) => (
+                        <CTableRow key={item.prom_cod}>
+                          <CTableDataCell align="center">{item.prom_nom}</CTableDataCell>
+                          <CTableDataCell align="center">${Number(item.prom_importe).toLocaleString()}</CTableDataCell>
+                          <CTableDataCell align="center">{formatDate(item.prom_fechaini)}</CTableDataCell>
+                          <CTableDataCell align="center">{formatDate(item.prom_fechafin)}</CTableDataCell>
+                          <CTableDataCell align="center">
+                            <BsFillPencilFill
+                              size={15}
+                              className="btn-dell"
+                              style={{ cursor: 'pointer' }}
+                              title={'Editar registro'}
+                              onClick={() => {
+                                setPromoId(item.prom_cod);
+                                handleShowUsersAdd();
+                                setEditing(2);
+                              }}
+                            />
+                            <BsFillTrashFill
+                              style={{ marginLeft: 30, cursor: 'pointer' }}
+                              size={15}
+                              className="btn-dell"
+                              title={'Eliminar Registro'}
+                              onClick={async () => {
+                                if (window.confirm("¿Seguro que quieres eliminar esta promoción?")) {
+                                  try {
+                                    await PromocionesService.deletePromo(item.prom_cod);
+                                    notifySuccess('Eliminado con éxito');
+                                    loadList(0, 20);
+                                  } catch (error) {
+                                    notifyError('Error al eliminar');
+                                  }
                                 }
-                              }
-                            }}
-                          />
+                              }}
+                            />
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))
+                    ) : (
+                      <tr>
+                        <CTableDataCell colSpan={5} align="center">
+                          No hay registros para mostrar.
                         </CTableDataCell>
-                      </CTableRow>
-                    ))
-                  ) : (
-                    <tr>
-                      <CTableDataCell colSpan={5} align="center">
-                        No hay registros para mostrar.
-                      </CTableDataCell>
-                    </tr>
-                  )}
-                </CTableBody>
-              </CTable>
-              <ReactPaginate
-                // ... (tu config de ReactPaginate)
-                pageCount={pageCount}
-                onPageChange={handlePageClick}
-                // ... (todas las demás props)
-              />
-              <span># Registros: {totalSize}</span>
+                      </tr>
+                    )}
+                  </CTableBody>
+                </CTable>
+                
+                <ReactPaginate
+                  nextLabel="Sig. >"
+                  onPageChange={handlePageClick}
+                  pageRangeDisplayed={3}
+                  marginPagesDisplayed={2}
+                  pageCount={pageCount}
+                  previousLabel="< Ant."
+                  pageClassName="page-item"
+                  pageLinkClassName="page-link"
+                  previousClassName="page-item"
+                  previousLinkClassName="page-link"
+                  nextClassName="page-item"
+                  nextLinkClassName="page-link"
+                  breakLabel="..."
+                  breakClassName="page-item"
+                  breakLinkClassName="page-link"
+                  containerClassName="pagination"
+                  activeClassName="active"
+                  renderOnZeroPageCount={null}
+                />
+                <span># Registros: {totalSize}</span>
+              </CCol>
             </CCardBody>
           </CCard>
         </CCol>
         <CCol>
-          {showModal && ( // Renderiza el modal solo si 'showModal' es true
+          {editing === 1 ? (
             <RegisterPromo
-              prom_cod={promoId} // Pasa el ID de la promo a editar
-              showUsersAdd={showModal} // Controla la visibilidad del modal
+              showUsersAdd={showUsersAdd}
               handleCloseModal={handleCloseModal}
               notifySuccess={notifySuccess}
               notifyError={notifyError}
             />
-          )}
+          ) : editing === 2 ? (
+            <RegisterPromo
+              prom_cod={promoId}
+              showUsersAdd={showUsersAdd}
+              handleCloseModal={handleCloseModal}
+              notifySuccess={notifySuccess}
+              notifyError={notifyError}
+            />
+          ) : null}
         </CCol>
       </CRow>
       <ToastContainer />

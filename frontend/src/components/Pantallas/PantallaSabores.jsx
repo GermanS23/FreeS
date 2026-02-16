@@ -148,7 +148,18 @@ const MenuSabores = ({ plantilla = null, categoria = null, refreshInterval = 300
                       {catIzquierda.cat_name.toUpperCase()}
                     </h2>
                     <ul className="sabores-list">
-                      {catIzquierda.sabores.map(s => (<li key={s.sab_cod} style={{ color: configFinal.colorTexto }}>• {s.sab_nom}</li>))}
+                     {catIzquierda.sabores.map(s => (
+                            <li 
+                              key={s.sab_cod} 
+                              style={{ 
+                                color: configFinal.colorTexto,
+                                // Si el nombre incluye "Free Shop", aplicamos bold, sino normal
+                                fontWeight: s.sab_nom.includes("Free Shop") ? 'bold' : 'normal' 
+                              }}
+                            >
+                              • {s.sab_nom}
+                            </li>
+                        ))}
                     </ul>
                   </>
                 )}
@@ -173,7 +184,18 @@ const MenuSabores = ({ plantilla = null, categoria = null, refreshInterval = 300
                       {catDerecha.cat_name.toUpperCase()}
                     </h2>
                     <ul className="sabores-list">
-                      {catDerecha.sabores.map(s => (<li key={s.sab_cod} style={{ color: configFinal.colorTexto }}>• {s.sab_nom}</li>))}
+                      {catDerecha.sabores.map(s => (
+                            <li 
+                              key={s.sab_cod} 
+                              style={{ 
+                                color: configFinal.colorTexto,
+                                // Si el nombre incluye "Free Shop", aplicamos bold, sino normal
+                                fontWeight: s.sab_nom.includes("Free Shop") ? 'bold' : 'normal' 
+                              }}
+                            >
+                              • {s.sab_nom}
+                            </li>
+                        ))}
                     </ul>
                   </>
                 )}
@@ -185,7 +207,7 @@ const MenuSabores = ({ plantilla = null, categoria = null, refreshInterval = 300
                 className="footer-note" 
                 style={{ color: configFinal.colorTexto }}
               >
-                Los sabores <b>FREE SHOP</b> ...
+                Los sabores <b>FREE SHOP</b> tienen bombones Marroc, chips de chocolate y DDL repostero | WWW.FREESHOPHELADOS.COM.AR
               </div>
             )}
           </CCardBody>
