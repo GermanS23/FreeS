@@ -152,7 +152,7 @@ productosRouter.post("/prod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUE�
 productosRouter.put(
   "/prod/:prod_cod",
   authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
+  authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"),
   productosController.updateProd,
 )
 productosRouter.delete(
@@ -161,7 +161,7 @@ productosRouter.delete(
   authJwt.permit("ADMIN", "DUEÑO"),
   productosController.deleteProd,
 )
-productosRouter.get("/prods/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), productosController.List)
+productosRouter.get("/prods/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), productosController.List)
 productosRouter.get("/prods/public/list", productosController.List)
 // ==================== RUTAS PARA CATEGORÍAS DE SABORES ====================
 catsabRouter.get("/catsab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catsabController.getCatSab)
@@ -190,7 +190,7 @@ catsabRouter.get("/catsabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "
 
 
 
-// --- RUTAS DE ADMIN (Existentes) ---
+// --- RUTAS DE ADMIN  ---
 sabheladosRouter.get("/sab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), sabheladosController.getSabor)
 sabheladosRouter.get(
   "/sab/:sab_cod",
@@ -202,7 +202,7 @@ sabheladosRouter.post("/sab", authJwt.verifyToken, authJwt.permit("ADMIN", "DUE�
 sabheladosRouter.put(
   "/sab/:sab_cod",
   authJwt.verifyToken,
-  authJwt.permit("ADMIN", "DUEÑO"),
+  authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"),
   sabheladosController.updateSab,
 )
 sabheladosRouter.delete(
@@ -211,7 +211,7 @@ sabheladosRouter.delete(
   authJwt.permit("ADMIN", "DUEÑO"),
   sabheladosController.deleteSab,
 )
-sabheladosRouter.get("/sabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), sabheladosController.List)
+sabheladosRouter.get("/sabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), sabheladosController.List)
 sabheladosRouter.get("/sabs/public/list", sabheladosController.List)
 // ==================== RUTAS PARA TIPO DE DESCUENTO ====================
 tdRouter.get("/td", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), tdController.getTD)
@@ -319,13 +319,13 @@ pantallaRouter.get("/pantallas/public/activas", pantallaController.getPantallasA
 pantallaRouter.get("/pantallas/public/:pan_cod", pantallaController.getPantallaById)
 
 // 3. RUTAS DE ADMIN
-pantallaRouter.get("/pantallas/activas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallasActivas)
-pantallaRouter.get("/pantallas/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.listPantallas)
-pantallaRouter.get("/pantallas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallas)
+pantallaRouter.get("/pantallas/activas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.getPantallasActivas)
+pantallaRouter.get("/pantallas/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.listPantallas)
+pantallaRouter.get("/pantallas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.getPantallas)
 pantallaRouter.post("/pantallas", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.createPantalla)
-pantallaRouter.get("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.getPantallaById)
-pantallaRouter.put("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.updatePantalla)
-pantallaRouter.delete("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), pantallaController.deletePantalla)
+pantallaRouter.get("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.getPantallaById)
+pantallaRouter.put("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.updatePantalla)
+pantallaRouter.delete("/pantallas/:pan_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), pantallaController.deletePantalla)
 // ==================== RUTAS PARA PROMOCIONES ====================
 // --- Ruta Pública ---
 promocionesRouter.get(
@@ -335,7 +335,7 @@ promocionesRouter.get(
 // --- 🔹 Rutas de Admin (NUEVAS) 🔹 ---
 promocionesRouter.get(
   "/promociones/list",
-  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
+  authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"),
   promocionesController.List
 )
 promocionesRouter.get(

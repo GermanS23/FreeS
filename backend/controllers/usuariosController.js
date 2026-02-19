@@ -43,11 +43,11 @@ const createUsuario = async (req, res) => {
   try {
     const { us_user, us_pass, us_nomape, us_email, us_tel, roles_rol_cod, sucursales } = req.body;
 
-    if (!req.user || !req.user.cod) {
+    if (!req.user || !req.user.us_cod) {
       return res.status(401).json({ message: 'No autorizado' });
     }
 
-    const usuarioCreando = await Usuarios.findByPk(req.user.cod);
+    const usuarioCreando = await Usuarios.findByPk(req.user.us_cod);
 
     if (!usuarioCreando) {
       return res.status(404).json({ message: 'Usuario creador no encontrado' });

@@ -34,6 +34,8 @@ const Promociones = () => {
   const [size, setSize] = useState(20);
   const [pageCount, setPageCount] = useState(0);
   const [totalSize, setTotalSize] = useState(0);
+ const user = JSON.parse(localStorage.getItem('user'));
+  const isEncargado = user?.rol === 2;  
 
   const loadList = async (dataPage, dataPageSize) => {
     setPromociones([]);
@@ -119,10 +121,12 @@ const Promociones = () => {
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
+           {!isEncargado && (
           <CButton color="dark" onClick={abrirNuevaPromo} title={'Crear nueva promoción'}>
             <BsPlus />
             Nueva Promoción
           </CButton>
+          )}
         </div>
         <CCol xs={12}>
           <CCard className="mb-4">
@@ -135,7 +139,9 @@ const Promociones = () => {
                       <CTableHeaderCell scope="col" align="center">Importe</CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">Fecha Inicio</CTableHeaderCell>
                       <CTableHeaderCell scope="col" align="center">Fecha Fin</CTableHeaderCell>
+                       {!isEncargado && (
                       <CTableHeaderCell scope="col" align="center">Acción</CTableHeaderCell>
+                        )}
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -146,6 +152,7 @@ const Promociones = () => {
                           <CTableDataCell align="center">${Number(item.prom_importe).toLocaleString()}</CTableDataCell>
                           <CTableDataCell align="center">{formatDate(item.prom_fechaini)}</CTableDataCell>
                           <CTableDataCell align="center">{formatDate(item.prom_fechafin)}</CTableDataCell>
+                          {!isEncargado && (
                           <CTableDataCell align="center">
                             <BsFillPencilFill
                               size={15}
@@ -176,6 +183,7 @@ const Promociones = () => {
                               }}
                             />
                           </CTableDataCell>
+                            )}
                         </CTableRow>
                       ))
                     ) : (

@@ -79,6 +79,7 @@ const _nav = [
         name: "Categorías de Sabores",
         to: "/categorias/sabores",
         icon: <ListTree className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
       },
     ],
   },
@@ -89,13 +90,16 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: "Lista de Productos",
+        name: "Gestionar Productos",
         to: "/productos",
+        icon: <ReceiptText className="nav-icon" />,
       },
       {
         component: CNavItem,
         name: "Categorías Prod.",
         to: "/categorias/productos",
+        icon: <ReceiptText className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
       },
       {
         component: CNavItem,

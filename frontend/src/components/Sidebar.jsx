@@ -1,10 +1,11 @@
 import React from "react";
-import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarHeader } from "@coreui/react";
+import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarHeader} from "@coreui/react";
 import { AppSidebarNav } from "./AppSidebarNav";
 import SimpleBar from "simplebar-react";
 import Logo from "../assets/Logo.svg";
 import navigation from "../nav";
 import { LogOut } from "lucide-react";
+import { NavLink } from 'react-router-dom'
 
 const Sidebar = ({ visible, unfoldable, onVisibleChange, onLogout }) => {
     return (
@@ -17,11 +18,29 @@ const Sidebar = ({ visible, unfoldable, onVisibleChange, onLogout }) => {
             colorScheme="dark"
             style={{ backgroundColor: "#1a1c23" }}
         >
-            <CSidebarHeader className="border-bottom border-secondary p-3">
-                <CSidebarBrand className="d-flex justify-content-center">
-                    <img src={Logo} alt="FreeShop" style={{ height: "50px"} } />
-                </CSidebarBrand>
-            </CSidebarHeader>
+        <CSidebarHeader className="border-bottom border-secondary p-3 d-flex justify-content-center align-items-center">
+            <NavLink 
+                to="/dashboard" 
+                style={{ 
+                    textDecoration: 'none',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%' 
+                }}
+            >
+                <img 
+                    src={Logo} 
+                    alt="FreeShop" 
+                    style={{ 
+                        height: "50px", 
+                        width: "auto",
+                        margin: "0 auto", // Fuerza el centrado horizontal
+                        display: "block" 
+                    }} 
+                />
+            </NavLink>
+        </CSidebarHeader>
 
             <CSidebarNav>
                 <SimpleBar>

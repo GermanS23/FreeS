@@ -1,4 +1,3 @@
-// frontend/src/components/Pantallas/AdminPantallas.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -28,6 +27,7 @@ import {
   CFormCheck,
   CBadge,
   CFormLabel,
+  CFormSwitch
 } from "@coreui/react"
 import CIcon from "@coreui/icons-react"
 import { cilPlus, cilPencil, cilTrash, cilScreenDesktop } from "@coreui/icons"
@@ -52,7 +52,7 @@ const AdminPantallas = () => {
     pan_activa: true,
     plan_cod: "",
     pan_config: {},
-    pan_catsab_cod: [], // array de ids de categorias seleccionadas
+    pan_catsab_cod: [],
   })
 
   useEffect(() => {
@@ -71,8 +71,7 @@ const AdminPantallas = () => {
       setPlantillas(plantillasRes.data)
       setLoading(false)
     } catch (err) {
-      console.error("[v0] Error al cargar datos:", err)
-      setError("Error al cargar los datos. Por favor, intente nuevamente.")
+      setError("Error al cargar los datos.")
       setLoading(false)
     }
   }
@@ -80,15 +79,11 @@ const AdminPantallas = () => {
   const loadCategorias = async () => {
     try {
       setCatsabLoading(true)
-      setError(null)
       const res = await CategoriaSabService.getCategoriasSab()
-      // adaptamos respuesta (puede venir como array simple o como paginación)
       const list = Array.isArray(res.data) ? res.data : (res.data?.items || [])
       setCatsabList(list)
     } catch (err) {
-      console.error("[v0] Error al cargar categorias de sabores:", err)
       setCatsabList([])
-      setError("No se pudieron cargar las categorías. Usar valores por defecto.")
     } finally {
       setCatsabLoading(false)
     }
@@ -104,7 +99,6 @@ const AdminPantallas = () => {
 
   const openModal = (pantalla = null) => {
     if (pantalla) {
-      // soportar distintos aliases devueltos por el backend
       const catsFromResponse =
         (pantalla.Categorias && pantalla.Categorias.map((c) => c.catsab_cod)) ||
         (pantalla.CategoriaSabs && pantalla.CategoriaSabs.map((c) => c.catsab_cod)) ||
@@ -139,49 +133,28 @@ const AdminPantallas = () => {
   const savePantalla = async () => {
     try {
       if (!formData.pan_nomb || !formData.pan_componente) {
-        setError("Por favor complete todos los campos requeridos")
+        setError("Complete los campos obligatorios")
         return
       }
-
-      const dataToSave = {
-        pan_nomb: formData.pan_nomb,
-        pan_desc: formData.pan_desc,
-        pan_componente: formData.pan_componente,
-        pan_activa: formData.pan_activa,
-        plan_cod: formData.plan_cod || null,
-        pan_config: formData.pan_config || {},
-        pan_catsab_cod: Array.isArray(formData.pan_catsab_cod)
-          ? formData.pan_catsab_cod
-          : formData.pan_catsab_cod
-          ? [formData.pan_catsab_cod]
-          : [],
-      }
-
-      console.log("[v0] Guardando pantalla - payload:", dataToSave)
-
       if (currentPantalla) {
-        await PantallasService.updatePantalla(currentPantalla.pan_cod, dataToSave)
+        await PantallasService.updatePantalla(currentPantalla.pan_cod, formData)
       } else {
-        await PantallasService.createPantalla(dataToSave)
+        await PantallasService.createPantalla(formData)
       }
-
       await fetchData()
       setShowModal(false)
-      setError(null)
     } catch (err) {
-      console.error("[v0] Error al guardar pantalla:", err)
-      setError(err.response?.data?.message || "Error al guardar la pantalla. Por favor, intente nuevamente.")
+      setError("Error al guardar la pantalla.")
     }
   }
 
   const deletePantalla = async (pan_cod) => {
-    if (window.confirm("¿Está seguro de eliminar esta pantalla? Esta acción no se puede deshacer.")) {
+    if (window.confirm("¿Está seguro de eliminar esta pantalla?")) {
       try {
         await PantallasService.deletePantalla(pan_cod)
         fetchData()
       } catch (err) {
-        console.error("[v0] Error al eliminar pantalla:", err)
-        setError("Error al eliminar la pantalla. Por favor, intente nuevamente.")
+        setError("Error al eliminar.")
       }
     }
   }
@@ -194,12 +167,9 @@ const AdminPantallas = () => {
       })
       fetchData()
     } catch (err) {
-      console.error("[v0] Error al actualizar estado:", err)
-      setError("Error al actualizar el estado de la pantalla.")
+      setError("Error al actualizar estado.")
     }
   }
-
-  const availableComponents = getAvailableComponents()
 
   if (loading) {
     return (
@@ -211,207 +181,161 @@ const AdminPantallas = () => {
 
   return (
     <div className="admin-pantallas-container">
-      <CCard className="mb-4">
-        <CCardHeader>
-          <CCardTitle>
-            <CIcon icon={cilScreenDesktop} className="me-2" />
+      {/* TRUCO CSS PARA FORZAR EL CENTRADO */}
+      <style>
+        {`
+          .modal.fade.show {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+          }
+          .modal-dialog {
+            margin: auto !important;
+          }
+        `}
+      </style>
+
+      <CCard className="mb-4 shadow-sm">
+        <CCardHeader className="bg-white py-3">
+          <CCardTitle className="mb-0">
+            <CIcon icon={cilScreenDesktop} className="me-2 text-primary" />
             Administración de Pantallas
           </CCardTitle>
         </CCardHeader>
         <CCardBody>
-          {error && (
-            <CAlert color="danger" dismissible onClose={() => setError(null)}>
-              {error}
-            </CAlert>
-          )}
+          {error && <CAlert color="danger" dismissible onClose={() => setError(null)}>{error}</CAlert>}
 
-          <CButton color="primary" className="mb-3" onClick={() => openModal()}>
+          <CButton color="primary" className="mb-4 shadow-sm" onClick={() => openModal()}>
             <CIcon icon={cilPlus} className="me-2" />
             Nueva Pantalla
           </CButton>
 
-          <CTable hover responsive>
-            <CTableHead>
+          <CTable hover responsive align="middle" className="border-top">
+            <CTableHead color="light">
               <CTableRow>
-                <CTableHeaderCell>Código</CTableHeaderCell>
                 <CTableHeaderCell>Nombre</CTableHeaderCell>
                 <CTableHeaderCell>Componente</CTableHeaderCell>
                 <CTableHeaderCell>Plantilla</CTableHeaderCell>
                 <CTableHeaderCell>Categorías</CTableHeaderCell>
-                <CTableHeaderCell>Estado</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
+                <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
+                <CTableHeaderCell className="text-center">Acciones</CTableHeaderCell>
               </CTableRow>
             </CTableHead>
             <CTableBody>
-              {pantallas.length === 0 ? (
-                <CTableRow>
-                  <CTableDataCell colSpan="7" className="text-center">
-                    No hay pantallas disponibles
-                  </CTableDataCell>
-                </CTableRow>
-              ) : (
-                pantallas.map((pantalla) => {
-                  const plantilla = pantalla.Plantilla || pantalla.Plantillum || null
-                  const categorias =
-                    pantalla.Categorias || pantalla.CategoriaSabs || pantalla.Categoria ? (pantalla.Categorias || pantalla.CategoriaSabs || (pantalla.Categoria ? [pantalla.Categoria] : [])) : []
-                  return (
-                    <CTableRow key={pantalla.pan_cod}>
-                      <CTableDataCell>{pantalla.pan_cod}</CTableDataCell>
-                      <CTableDataCell>
-                        <strong>{pantalla.pan_nomb}</strong>
-                        {pantalla.pan_desc && <div className="text-muted small">{pantalla.pan_desc}</div>}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color="info">
-                          {availableComponents.find((c) => c.id === pantalla.pan_componente)?.name ||
-                            pantalla.pan_componente}
-                        </CBadge>
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {plantilla ? <CBadge color="secondary">{plantilla.plan_nomb}</CBadge> : <span className="text-muted">Sin plantilla</span>}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {categorias.length === 0 ? (
-                          <span className="text-muted">—</span>
-                        ) : (
-                          categorias.map((c) => (
-                            <CBadge color="light" key={c.catsab_cod} className="me-1">
-                              {c.catsab_name || c.name || c.cat_name}
-                            </CBadge>
-                          ))
-                        )}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CFormCheck
-                          type="switch"
-                          id={`switch-${pantalla.pan_cod}`}
-                          checked={pantalla.pan_activa}
-                          onChange={() => toggleActiva(pantalla)}
-                          label={pantalla.pan_activa ? "Activa" : "Inactiva"}
-                        />
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CButton color="info" size="sm" className="me-2" onClick={() => openModal(pantalla)}>
-                          <CIcon icon={cilPencil} />
-                        </CButton>
-                        <CButton color="danger" size="sm" onClick={() => deletePantalla(pantalla.pan_cod)}>
-                          <CIcon icon={cilTrash} />
-                        </CButton>
-                      </CTableDataCell>
-                    </CTableRow>
-                  )
-                })
-              )}
+              {pantallas.map((pantalla) => {
+                const plantilla = pantalla.Plantilla || pantalla.Plantillum || null
+                const categorias = pantalla.Categorias || pantalla.CategoriaSabs || []
+                return (
+                  <CTableRow key={pantalla.pan_cod}>
+                    <CTableDataCell>
+                      <div className="fw-bold">{pantalla.pan_nomb}</div>
+                      <div className="text-muted small">{pantalla.pan_desc}</div>
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <CBadge color="info" shape="rounded-pill">
+                        {getAvailableComponents().find((c) => c.id === pantalla.pan_componente)?.name || pantalla.pan_componente}
+                      </CBadge>
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {plantilla ? <CBadge color="secondary" variant="outline">{plantilla.plan_nomb}</CBadge> : <span className="text-muted small">Sin plantilla</span>}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <div className="d-flex flex-wrap gap-1">
+                        {categorias.map((c) => (
+                          <CBadge color="dark" key={c.catsab_cod} style={{fontSize: '10px'}}>{c.catsab_name || c.name}</CBadge>
+                        ))}
+                      </div>
+                    </CTableDataCell>
+                    <CTableDataCell className="text-center">
+                      <CFormSwitch
+                        checked={pantalla.pan_activa}
+                        onChange={() => toggleActiva(pantalla)}
+                        size="lg"
+                      />
+                    </CTableDataCell>
+                    <CTableDataCell className="text-center">
+                      <CButton color="link" onClick={() => openModal(pantalla)}><CIcon icon={cilPencil} className="text-info" size="lg"/></CButton>
+                      <CButton color="link" onClick={() => deletePantalla(pantalla.pan_cod)}><CIcon icon={cilTrash} className="text-danger" size="lg"/></CButton>
+                    </CTableDataCell>
+                  </CTableRow>
+                )
+              })}
             </CTableBody>
           </CTable>
         </CCardBody>
       </CCard>
 
-      <CModal visible={showModal} onClose={() => setShowModal(false)} size="lg">
-        <CModalHeader>
-          <CModalTitle>{currentPantalla ? "Editar Pantalla" : "Nueva Pantalla"}</CModalTitle>
+      {/* MODAL CON PORTAL DESACTIVADO Y ALIGNMENT CENTER */}
+      <CModal 
+        visible={showModal} 
+        onClose={() => setShowModal(false)} 
+        size="lg" 
+        alignment="center" 
+        backdrop="static"
+        portal={false} // Importante: renderiza dentro del DOM del componente
+      >
+        <CModalHeader className="bg-light">
+          <CModalTitle className="fw-bold">{currentPantalla ? "Editar Pantalla" : "Nueva Pantalla"}</CModalTitle>
         </CModalHeader>
-        <CModalBody>
+        <CModalBody className="p-4">
           <CForm>
             <div className="mb-3">
-              <CFormLabel>Nombre *</CFormLabel>
-              <CFormInput
-                type="text"
-                name="pan_nomb"
-                value={formData.pan_nomb}
-                onChange={handleInputChange}
-                placeholder="Nombre de la pantalla"
-                required
-              />
+              <CFormLabel className="fw-bold">Nombre *</CFormLabel>
+              <CFormInput name="pan_nomb" value={formData.pan_nomb} onChange={handleInputChange} required />
             </div>
-
             <div className="mb-3">
-              <CFormLabel>Descripción</CFormLabel>
-              <CFormTextarea
-                name="pan_desc"
-                value={formData.pan_desc}
-                onChange={handleInputChange}
-                placeholder="Descripción de la pantalla"
-                rows={3}
-              />
+              <CFormLabel className="fw-bold">Descripción</CFormLabel>
+              <CFormTextarea name="pan_desc" value={formData.pan_desc} onChange={handleInputChange} rows={2} />
             </div>
-
-            <div className="mb-3">
-              <CFormLabel>Componente *</CFormLabel>
-              <CFormSelect name="pan_componente" value={formData.pan_componente} onChange={handleInputChange} required>
-                <option value="">Seleccione un componente</option>
-                {getAvailableComponents().map((comp) => (
-                  <option key={comp.id} value={comp.id}>
-                    {comp.name} - {comp.description}
-                  </option>
-                ))}
-              </CFormSelect>
-              <small className="text-muted">El componente determina cómo se mostrará el contenido en la pantalla</small>
-            </div>
-
-            <div className="mb-3">
-              <CFormLabel>Plantilla (Fondo)</CFormLabel>
-              <CFormSelect name="plan_cod" value={formData.plan_cod} onChange={handleInputChange}>
-                <option value="">Sin plantilla</option>
-                {plantillas.map((plantilla) => (
-                  <option key={plantilla.plan_cod} value={plantilla.plan_cod}>
-                    {plantilla.plan_nomb} {plantilla.plan_tipo && `(${plantilla.plan_tipo})`}
-                  </option>
-                ))}
-              </CFormSelect>
-              <small className="text-muted">La plantilla define el fondo y estilos visuales de la pantalla</small>
-            </div>
-
-            <div className="mb-3">
-              <CFormLabel>Categorías de Sabores</CFormLabel>
-              {catsabLoading ? (
-                <div>Cargando categorías...</div>
-              ) : (
-                <CFormSelect
-                  name="pan_catsab_cod"
-                  multiple
-                  value={formData.pan_catsab_cod || []}
-                  onChange={(e) => {
-                    const opts = Array.from(e.target.selectedOptions).map((o) => Number(o.value)).filter(Boolean)
-                    setFormData((prev) => ({ ...prev, pan_catsab_cod: opts }))
-                  }}
-                >
-                  {catsabList.length === 0 ? (
-                    <>
-                      <option value="CREMAS">CREMAS</option>
-                      <option value="FRUTALES">FRUTALES</option>
-                      <option value="CAFETERIA">CAFETERIA</option>
-                    </>
-                  ) : (
-                    catsabList.map((c) => (
-                      <option key={c.catsab_cod} value={c.catsab_cod}>
-                        {c.catsab_name}
-                      </option>
-                    ))
-                  )}
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <CFormLabel className="fw-bold">Componente *</CFormLabel>
+                <CFormSelect name="pan_componente" value={formData.pan_componente} onChange={handleInputChange} required>
+                  {getAvailableComponents().map((comp) => (<option key={comp.id} value={comp.id}>{comp.name}</option>))}
                 </CFormSelect>
-              )}
-              <small className="text-muted">Selecciona una o más categorías (Ctrl/Cmd+click).</small>
+              </div>
+              <div className="col-md-6 mb-3">
+                <CFormLabel className="fw-bold">Plantilla</CFormLabel>
+                <CFormSelect name="plan_cod" value={formData.plan_cod} onChange={handleInputChange}>
+                  <option value="">Sin plantilla</option>
+                  {plantillas.map((p) => (<option key={p.plan_cod} value={p.plan_cod}>{p.plan_nomb}</option>))}
+                </CFormSelect>
+              </div>
             </div>
 
-            <div className="mb-3">
-              <CFormCheck
-                id="pan_activa"
-                name="pan_activa"
-                checked={formData.pan_activa}
-                onChange={handleInputChange}
-                label="Pantalla activa (visible en el display)"
-              />
+            <div className="mb-4">
+              <CFormLabel className="fw-bold d-block mb-2">Categorías de Sabores</CFormLabel>
+              <div className="border rounded p-3 bg-light d-flex flex-wrap gap-2">
+                {catsabLoading ? <CSpinner size="sm" /> : catsabList.map((c) => {
+                  const isSelected = formData.pan_catsab_cod.includes(c.catsab_cod);
+                  return (
+                    <CBadge
+                      key={c.catsab_cod}
+                      color={isSelected ? "dark" : "secondary"}
+                      shape="rounded-pill"
+                      style={{ cursor: 'pointer', padding: '8px 12px', opacity: isSelected ? 1 : 0.6 }}
+                      onClick={() => {
+                        const current = [...formData.pan_catsab_cod];
+                        const idx = current.indexOf(c.catsab_cod);
+                        idx > -1 ? current.splice(idx, 1) : current.push(c.catsab_cod);
+                        setFormData({ ...formData, pan_catsab_cod: current });
+                      }}
+                    >
+                      {c.catsab_name} {isSelected ? '✕' : '+'}
+                    </CBadge>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border-top pt-3">
+              <CFormCheck type="switch" label="Pantalla activa" checked={formData.pan_activa} onChange={handleInputChange} name="pan_activa" />
             </div>
           </CForm>
         </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
-            Cancelar
-          </CButton>
-          <CButton color="primary" onClick={savePantalla}>
-            Guardar
-          </CButton>
+        <CModalFooter className="border-0">
+          <CButton color="secondary" variant="ghost" onClick={() => setShowModal(false)}>Cancelar</CButton>
+          <CButton color="primary" className="px-4 shadow-sm" onClick={savePantalla}>Guardar Cambios</CButton>
         </CModalFooter>
       </CModal>
     </div>

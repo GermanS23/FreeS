@@ -39,7 +39,8 @@ const Sabores = () => {
   const [pageCount, setPageCount] = React.useState(0);
   const [totalSize, setTotalSize] = React.useState(0);
   const [totalItemsPage, setTotalItemsPage] = useState(0);
-
+ const user = JSON.parse(localStorage.getItem('user'));
+  const isEncargado = user?.rol === 2;  
   const loadList = async (dataPage, dataPageSize) => {
     setSabores([]);
     setLoading(true);
@@ -136,10 +137,12 @@ const Sabores = () => {
           </h4>
         </CCol>
         <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
+          {!isEncargado && (
           <CButton  color="dark" onClick={abrirNuevoUsuario} title={'Crear nuevo registro'}>
             <BsPlus />
             Nuevo Sabor
           </CButton>
+          )}
         </div>
         <CCol xs={12}>
           <CCard className="mb-4"  >
@@ -157,9 +160,11 @@ const Sabores = () => {
                       <CTableHeaderCell scope="col" align="center">
                         Disponibilidad
                       </CTableHeaderCell>
+                       {!isEncargado && (
                       <CTableHeaderCell scope="col" align="center">
                         Acción
                       </CTableHeaderCell>
+                        )}
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -206,6 +211,7 @@ const Sabores = () => {
                               }}
                             />
                           </CTableDataCell>
+                           {!isEncargado && (
                           <CTableDataCell>
                             <BsFillPencilFill
                               size={15}
@@ -237,7 +243,9 @@ const Sabores = () => {
                               }}
                             />
                           </CTableDataCell>
+                            )}
                         </CTableRow>
+
                       ))
                     ) : (
                       <tr>

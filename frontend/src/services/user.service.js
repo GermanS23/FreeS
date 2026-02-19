@@ -20,7 +20,7 @@ export class UserService {
     return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/${us_cod}`, data, { headers: authHeader() });
   }
   removeUser(us_cod) {
-    return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/${us_cod}`, { headers: authHeader() });
+    return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/usuarios/${us_cod}`, { headers: authHeader() });
   }
   //   getAdminBoard() {
   //     return axios.get(API_URL + 'admin', { headers: authHeader() });

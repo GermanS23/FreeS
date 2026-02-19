@@ -1,160 +1,77 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CButton,
-  CCardBody,
   CCol,
   CForm,
-  CFormFeedback,
   CFormInput,
   CFormLabel,
   CFormSelect,
   CInputGroup,
   CInputGroupText,
   CRow,
-  CSpinner
+  CSpinner,
+  CFormSwitch,
+  CBadge
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
-
-import { cilLockLocked, cilUser, cilAperture, cilPhone } from '@coreui/icons';
-import { Modal, Card } from 'react-bootstrap';
+import { cilLockLocked, cilUser, cilAperture, cilEnvelopeClosed, cilBuilding, cilCheckCircle } from '@coreui/icons';
+import { Modal } from 'react-bootstrap';
 import userService from '../../services/user.service';
-import sucursalService from '../../services/sucursales.service'; 
-import { useForm } from 'react-hook-form';
-import 'react-toastify/dist/ReactToastify.css';
+import sucursalService from '../../services/sucursales.service';
+import { useForm, Controller } from 'react-hook-form';
 
 const Register = (props) => {
-  const [validated, setValidated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [roles, setRoles] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [sucursales, setSucursales] = useState([]);
   const [loadingSucursales, setLoadingSucursales] = useState(true);
+  const [selectedSucursales, setSelectedSucursales] = useState([]);
 
-  // Cargar roles desde el backend
+  const { register, handleSubmit, formState: { errors }, reset, watch, control, setValue } = useForm();
+  const password = watch("us_pass", "");
+
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchData = async () => {
       try {
         setLoadingRoles(true);
-        const response = await userService.getRoles();
-        setRoles(response.data);
-        setLoadingRoles(false);
+        const [resRoles, resSucs] = await Promise.all([
+          userService.getRoles(),
+          sucursalService.getSucursalAll()
+        ]);
+        setRoles(resRoles.data || []);
+        setSucursales(Array.isArray(resSucs.data) ? resSucs.data : []);
       } catch (error) {
-        console.error("Error al cargar roles:", error);
+        console.error("Error:", error);
+      } finally {
         setLoadingRoles(false);
+        setLoadingSucursales(false);
       }
     };
+    if (props.showUsersAdd) fetchData();
+  }, [props.showUsersAdd]);
 
-    fetchRoles();
-  }, []);
-
-  // Cargar sucursales desde el backend
-  useEffect(() => {
-    const fetchSucursales = async () => {
-      try {
-        setLoadingSucursales(true);
-        // Aquí llamas a tu nuevo método en el servicio que usa getAllSucursales()
-        const response = await sucursalService.getSucursalAll(); 
-        
-        // *** EL CAMBIO CLAVE ESTÁ AQUÍ ***
-        // Ahora, asume que 'response.data' es DIRECTAMENTE el array de sucursales
-        if (Array.isArray(response.data)) { // Verifica si response.data es un array
-          setSucursales(response.data); // Actualiza el estado directamente con response.data
-        } else {
-          console.error("La respuesta de sucursalService no es un array como se esperaba:", response.data);
-          setSucursales([]); // Establece sucursales como un array vacío para evitar el error
-        }
-        // *** FIN DEL CAMBIO CLAVE ***
-
-        setLoadingSucursales(false);
-      } catch (error) {
-        console.error("Error al cargar sucursales:", error);
-        setLoadingSucursales(false);
-        setSucursales([]); // Establece sucursales como un array vacío en caso de error
-      }
-    };
-
-    fetchSucursales();
-  }, []);
-
-  // Para validar el formulario con react-hook-form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
-
-  // validate password
-  const pass = useRef();
-  const cPassword = useRef();
-  const [showErrorMessage, setShowErrorMessage] = useState(false);
-  const [cPasswordClass, setCPasswordClass] = useState('form-control');
-  const [isCPasswordDirty, setIsCPasswordDirty] = useState(false);
-  const [passValidated, setPassValidated] = useState(false);
-
-  const checkPasswords = () => {
-    setIsCPasswordDirty(true);
-    if (pass.current && cPassword.current) {
-      if (pass.current.value === cPassword.current.value) {
-        setShowErrorMessage(false);
-        setCPasswordClass('form-control is-valid');
-        setPassValidated(true);
-        setValidated(true);
-      } else {
-        setShowErrorMessage(true);
-        setCPasswordClass('form-control is-invalid');
-        setPassValidated(false);
-        setValidated(false);
-      }
-    }
+  const toggleSucursal = (cod) => {
+    const updated = selectedSucursales.includes(cod)
+      ? selectedSucursales.filter(s => s !== cod)
+      : [...selectedSucursales, cod];
+    setSelectedSucursales(updated);
+    setValue('sucursales', updated, { shouldValidate: true });
   };
 
   const onSubmit = async (data) => {
-    if (!passValidated) {
-      props.notifyError("Las contraseñas no coinciden o están vacías.");
-      return;
-    }
-
     setLoading(true);
-
     try {
       const formValue = {
-        us_nomape: data.us_nomape,
-        us_user: data.us_user,
-        us_email: data.us_email,
-        us_tel: data.us_tel || "",
+        ...data,
         roles_rol_cod: parseInt(data.roles_rol_cod),
-        us_pass: pass.current.value,
-        // Mapear las sucursales seleccionadas a un array de números (suc_cod)
-        sucursales: data.sucursales ? data.sucursales.map(s => parseInt(s)) : []
+        sucursales: selectedSucursales.map(s => parseInt(s))
       };
-
-      console.log("Enviando datos:", formValue);
-
       await userService.createUser(formValue);
-      
-      reset();
-      setValidated(false);
-      setPassValidated(false);
-      setCPasswordClass('form-control');
-      setShowErrorMessage(false);
-
-      props.handleCloseModal();
       props.notifySuccess();
+      cierraModal();
     } catch (error) {
-      console.error("Error completo:", error);
-
-      if (error.response && error.response.data) {
-        if (typeof error.response.data === 'string') {
-          props.notifyError(error.response.data);
-        } else if (error.response.data.message) {
-          props.notifyError(error.response.data.message);
-        } else {
-          props.notifyError("Error al crear usuario. Verifica los datos ingresados.");
-        }
-      } else {
-        props.notifyError("Ocurrió un error inesperado. Por favor, inténtalo de nuevo.");
-      }
+      props.notifyError("Error al crear usuario");
     } finally {
       setLoading(false);
     }
@@ -162,256 +79,289 @@ const Register = (props) => {
 
   const cierraModal = () => {
     reset();
-    setValidated(false);
-    setPassValidated(false);
-    setCPasswordClass('form-control');
-    setShowErrorMessage(false);
+    setSelectedSucursales([]);
     props.handleCloseModal();
   };
 
   return (
-    <Modal show={props.showUsersAdd} onHide={cierraModal} backdrop="static" size="xl" id="modal">
-      <Modal.Header closeButton>
-        <Modal.Title className="text-center text-primary" id="titulo">
-          Nuevo registro
+    <Modal
+      show={props.showUsersAdd}
+      onHide={cierraModal}
+      backdrop="static"
+      size="xl"
+      centered
+      style={{ zIndex: 1060 }}
+      contentClassName="shadow-lg"
+      dialogClassName="modal-fullwidth-fix"
+    >
+      <style>{`
+        .modal-fullwidth-fix {
+          max-width: min(900px, 92vw) !important;
+          margin: auto !important;
+          position: fixed !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+        }
+        .modal-fullwidth-fix .modal-content {
+          border-radius: 14px !important;
+          border: none !important;
+          overflow: hidden;
+        }
+        .modal-backdrop {
+          z-index: 1055 !important;
+        }
+      `}</style>
+      <Modal.Header
+        closeButton
+        className="border-0"
+        style={{
+          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+          borderRadius: '12px 12px 0 0',
+          padding: '20px 28px'
+        }}
+      >
+        <Modal.Title className="fw-bold text-white fs-5">
+          ✦ Nuevo registro de usuario
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <CRow className="justify-content-center">
-          <CCol>
-            <Card className="mx-1">
-              <CCardBody className="p-1">
-                {loadingRoles || loadingSucursales ? (
-                  <div className="text-center p-3">
-                    <CSpinner color="primary" />
-                    <p className="mt-2">Cargando datos...</p>
-                  </div>
-                ) : (
-                  <CForm
-                    className="row g-3 needs-validation"
-                    noValidate
-                    validated={validated}
-                    onSubmit={handleSubmit(onSubmit)}
+
+      <Modal.Body className="p-4" style={{ background: '#fafbff' }}>
+        {loadingRoles || loadingSucursales ? (
+          <div className="text-center my-5"><CSpinner color="primary" /></div>
+        ) : (
+          <CForm onSubmit={handleSubmit(onSubmit)}>
+
+            {/* FILA 1: Nombre | Usuario | Teléfono | Email */}
+            <CRow className="mb-3 g-3">
+              <CCol md={5}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Nombre completo</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilUser} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormInput
+                    placeholder="Ej: Juan Pérez"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('us_nomape', { required: true })}
+                  />
+                </CInputGroup>
+                {errors.us_nomape && <small className="text-danger">Campo requerido</small>}
+              </CCol>
+              <CCol md={3}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Nombre de usuario</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilUser} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormInput
+                    placeholder="Ej: jperez"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('us_user', { required: true })}
+                  />
+                </CInputGroup>
+                {errors.us_user && <small className="text-danger">Campo requerido</small>}
+              </CCol>
+              <CCol md={4}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Teléfono</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none', fontSize: '0.9rem' }}>
+                    📞
+                  </CInputGroupText>
+                  <CFormInput
+                    type="tel"
+                    placeholder="Ej: 3482123456"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('us_tel')}
+                  />
+                </CInputGroup>
+              </CCol>
+            </CRow>
+
+            {/* FILA 1b: Email */}
+            <CRow className="mb-3 g-3">
+              <CCol md={12}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Email</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilEnvelopeClosed} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormInput
+                    type="email"
+                    placeholder="usuario@email.com"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('us_email', { required: true })}
+                  />
+                </CInputGroup>
+                {errors.us_email && <small className="text-danger">Campo requerido</small>}
+              </CCol>
+            </CRow>
+
+            {/* FILA 2: Rol | Sucursales como chips */}
+            <CRow className="mb-3 g-3">
+              <CCol md={5}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Rol asignado</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilAperture} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormSelect
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('roles_rol_cod', { required: true })}
                   >
-                    {/* Nombre y Apellido */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="us_nomape">Nombre y Apellido</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="text"
-                          id="us_nomape"
-                          required
-                          placeholder="Nombre y Apellido"
-                          {...register('us_nomape', {
-                            required: { value: true, message: 'Se requiere un nombre y apellido' },
-                            minLength: { value: 3, message: 'El nombre no puede tener menos de 3 caracteres' },
-                          })}
-                        />
-                        <CFormFeedback invalid>
-                          {errors.us_nomape && <span>{errors.us_nomape.message}</span>}
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
+                    <option value="">Seleccione un rol...</option>
+                    {roles.map(r => <option key={r.rol_cod} value={r.rol_cod}>{r.rol_desc}</option>)}
+                  </CFormSelect>
+                </CInputGroup>
+                {errors.roles_rol_cod && <small className="text-danger">Seleccione un rol</small>}
+              </CCol>
 
-                    {/* Usuario */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="us_user">Usuario</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilUser} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="text"
-                          id="us_user"
-                          aria-describedby="inputGroupPrepend"
-                          required
-                          maxLength={20}
-                          minLength={1}
-                          placeholder="Usuario"
-                          {...register('us_user', {
-                            required: { value: true, message: 'Se requiere un nombre de usuario' },
-                            minLength: {
-                              value: 3,
-                              message: 'El nombre de usuario no puede tener menos de 3 caracteres',
-                            },
-                          })}
-                        />
-                        <CFormFeedback invalid>
-                          {errors.us_user && <span>{errors.us_user.message}</span>}
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
-
-                    {/* Teléfono */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="us_tel">Teléfono</CFormLabel>
-                      <CInputGroup>
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilPhone} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="text"
-                          placeholder="Teléfono"
-                          id="us_tel"
-                          {...register('us_tel')}
-                        />
-                      </CInputGroup>
-                    </CCol>
-
-                    {/* Email */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="us_email">Email</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">@</CInputGroupText>
-                        <CFormInput
-                          type="email"
-                          placeholder="Email"
-                          id="us_email"
-                          required
-                          {...register('us_email', {
-                            required: { value: true, message: 'Se requiere una dirección de email' },
-                            pattern: {
-                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: "Ingrese un email válido"
-                            }
-                          })}
-                        />
-                        <CFormFeedback invalid>
-                          {errors.us_email && <span>{errors.us_email.message}</span>}
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
-
-                    {/* Sucursales (selección múltiple) */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="sucursales">Sucursales</CFormLabel>
-                      {loadingSucursales ? (
-                        <p>Cargando sucursales...</p>
-                      ) : (
-                        <CFormSelect
-                          id="sucursales"
-                          multiple
-                          aria-label="Seleccione sucursales"
-                          {...register('sucursales')}
+              <CCol md={6}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">
+                  Sucursales asignadas
+                  {selectedSucursales.length > 0 && (
+                    <CBadge color="primary" className="ms-2" style={{ background: '#7c3aed' }}>
+                      {selectedSucursales.length} seleccionada{selectedSucursales.length > 1 ? 's' : ''}
+                    </CBadge>
+                  )}
+                </CFormLabel>
+                <input type="hidden" {...register('sucursales', { validate: v => (v && v.length > 0) || 'Seleccione al menos una sucursal' })} />
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    padding: '10px 12px',
+                    border: '1px solid',
+                    borderColor: errors.sucursales ? '#dc3545' : '#d1d5db',
+                    borderRadius: '6px',
+                    background: '#fff',
+                    minHeight: '46px',
+                    alignItems: 'center'
+                  }}
+                >
+                  {sucursales.length === 0 ? (
+                    <small className="text-muted">No hay sucursales disponibles</small>
+                  ) : (
+                    sucursales.map(s => {
+                      const isSelected = selectedSucursales.includes(s.suc_cod);
+                      return (
+                        <button
+                          key={s.suc_cod}
+                          type="button"
+                          onClick={() => toggleSucursal(s.suc_cod)}
+                          style={{
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            border: '1.5px solid',
+                            borderColor: isSelected ? '#7c3aed' : '#d1d5db',
+                            background: isSelected ? '#ede9fe' : '#f9fafb',
+                            color: isSelected ? '#5b21b6' : '#6b7280',
+                            fontWeight: isSelected ? '600' : '400',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            outline: 'none'
+                          }}
                         >
-                          {sucursales.length > 0 ? (
-                            sucursales.map((sucursal) => (
-                              <option key={sucursal.suc_cod} value={sucursal.suc_cod}>
-                                {sucursal.suc_name}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="" disabled>No hay sucursales disponibles</option>
-                          )}
-                        </CFormSelect>
-                      )}
-                    </CCol>
+                          {isSelected && <CIcon icon={cilCheckCircle} style={{ width: '12px', height: '12px' }} />}
+                          {s.suc_name}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+                {errors.sucursales && <small className="text-danger">{errors.sucursales.message}</small>}
+              </CCol>
+            </CRow>
 
-                    {/* Rol */}
-                    <CCol md={4}>
-                      <CFormLabel htmlFor="roles_rol_cod">Rol</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilAperture} />
-                        </CInputGroupText>
-                        <CFormSelect
-                          id="roles_rol_cod"
-                          required
-                          {...register('roles_rol_cod', {
-                            required: { value: true, message: 'Se requiere seleccionar un rol' }
-                          })}
-                        >
-                          <option value="">Seleccione un rol</option>
-                          {roles.length > 0 ? (
-                            roles.map((rol) => (
-                              <option key={rol.rol_cod} value={rol.rol_cod}>
-                                {rol.rol_desc}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="" disabled>No hay roles disponibles</option>
-                          )}
-                        </CFormSelect>
-                        <CFormFeedback invalid>
-                          {errors.roles_rol_cod && <span>{errors.roles_rol_cod.message}</span>}
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
+            {/* FILA 3: Passwords */}
+            <CRow className="mb-3 g-3">
+              <CCol md={6}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Contraseña</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilLockLocked} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormInput
+                    type="password"
+                    placeholder="••••••••"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('us_pass', { required: true, minLength: { value: 6, message: 'Mínimo 6 caracteres' } })}
+                  />
+                </CInputGroup>
+                {errors.us_pass && <small className="text-danger">{errors.us_pass.message || 'Campo requerido'}</small>}
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="fw-semibold text-secondary small mb-1">Confirmar contraseña</CFormLabel>
+                <CInputGroup>
+                  <CInputGroupText className="bg-white" style={{ borderColor: '#d1d5db', borderRight: 'none' }}>
+                    <CIcon icon={cilLockLocked} className="text-secondary" />
+                  </CInputGroupText>
+                  <CFormInput
+                    type="password"
+                    placeholder="••••••••"
+                    style={{ borderColor: '#d1d5db', borderLeft: 'none', background: '#fff' }}
+                    className="shadow-none"
+                    {...register('confirmPass', {
+                      required: true,
+                      validate: value => value === password || 'Las contraseñas no coinciden'
+                    })}
+                  />
+                </CInputGroup>
+                {errors.confirmPass && <small className="text-danger">{errors.confirmPass.message || 'Campo requerido'}</small>}
+              </CCol>
+            </CRow>
 
-                    {/* Contraseña */}
-                    <CCol md={6}>
-                      <CFormLabel htmlFor="pass">Contraseña</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilLockLocked} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="password"
-                          placeholder="Contraseña"
-                          id="pass"
-                          required
-                          ref={pass}
-                          className="form-control"
-                          onChange={checkPasswords}
-                        />
-                        <CFormFeedback invalid>
-                            Se requiere una contraseña.
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
+            {/* Switch y Botones */}
+            <hr style={{ borderColor: '#e5e7eb', margin: '20px 0' }} />
+            <CRow className="align-items-center">
+              <CCol md={6}>
+                <CFormSwitch
+                  label="Usuario habilitado"
+                  id="habilitado"
+                  defaultChecked
+                  style={{ '--cui-form-switch-checked-bg': '#7c3aed' }}
+                  className="fw-semibold"
+                />
+              </CCol>
+              <CCol md={6} className="d-flex justify-content-end gap-2">
+                <CButton
+                  color="light"
+                  onClick={cierraModal}
+                  className="px-4"
+                  style={{ border: '1px solid #d1d5db', color: '#374151', borderRadius: '8px' }}
+                >
+                  Cancelar
+                </CButton>
+                <CButton
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 fw-semibold"
+                  style={{
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    minWidth: '140px'
+                  }}
+                >
+                  {loading ? <CSpinner size="sm" /> : '✦ Crear usuario'}
+                </CButton>
+              </CCol>
+            </CRow>
 
-                    {/* Repetir Contraseña */}
-                    <CCol md={6}>
-                      <CFormLabel htmlFor="confirmPassword">Repita Contraseña</CFormLabel>
-                      <CInputGroup className="has-validation">
-                        <CInputGroupText id="inputGroupPrepend">
-                          <CIcon icon={cilLockLocked} />
-                        </CInputGroupText>
-                        <CFormInput
-                          type="password"
-                          placeholder="Repita Contraseña"
-                          id="confirmPassword"
-                          ref={cPassword}
-                          required
-                          className={cPasswordClass}
-                          onChange={checkPasswords}
-                        />
-                        <CFormFeedback invalid>
-                          {showErrorMessage && isCPasswordDirty ? (
-                            <div>Las contraseñas no coinciden.</div>
-                          ) : (
-                            ''
-                          )}
-                        </CFormFeedback>
-                      </CInputGroup>
-                    </CCol>
-
-                    {/* Botón de envío */}
-                    <div className="d-grid gap-2 col-2 mx-auto mb-2">
-                      <CButton
-                        type="submit"
-                        color="primary"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <>
-                            <CSpinner size="sm" className="me-2" />
-                            Creando...
-                          </>
-                        ) : (
-                          'Crear usuario'
-                        )}
-                      </CButton>
-                    </div>
-                  </CForm>
-                )}
-              </CCardBody>
-            </Card>
-          </CCol>
-        </CRow>
+          </CForm>
+        )}
       </Modal.Body>
     </Modal>
   );

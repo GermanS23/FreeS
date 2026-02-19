@@ -4,8 +4,6 @@ import { useState, useEffect } from "react"
 import {
   CCard,
   CCardBody,
-  CCardHeader,
-  CCardTitle,
   CRow,
   CCol,
   CButton,
@@ -58,16 +56,10 @@ const AdminPlantillas = () => {
     plan_config: {},
   })
 
-  // 🔽 --- AQUÍ ESTÁ EL CAMBIO --- 🔽
   const [configFields, setConfigFields] = useState([
     { key: "colorFondo", label: "Color de Fondo", type: "color", value: "#ffffff" },
-    
-    // 🔹 NUEVO CAMPO para el color del título
     { key: "colorTitulo", label: "Color del Título", type: "color", value: "#000000" },
-    
-    // 🔹 ETIQUETA MEJORADA para el color del texto
     { key: "colorTexto", label: "Color de Sabores (Texto)", type: "color", value: "#000000" },
-
     {
       key: "fuenteTitulo",
       label: "Fuente del Título",
@@ -82,12 +74,11 @@ const AdminPlantillas = () => {
       value: "Arial",
       options: ["Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana"],
     },
-    { key: "tamanoFuenteTitulo", label: "Tamaño de Fuente del Título", type: "text", value: "24px" },
-    { key: "tamanoFuenteTexto", label: "Tamaño de Fuente del Texto", type: "text", value: "16px" },
+    { key: "tamanoFuenteTitulo", label: "Tamaño Fuente Título", type: "text", value: "24px" },
+    { key: "tamanoFuenteTexto", label: "Tamaño Fuente Texto", type: "text", value: "16px" },
     { key: "mostrarLogo", label: "Mostrar Logo", type: "checkbox", value: true },
     { key: "mostrarFooter", label: "Mostrar Pie de Página", type: "checkbox", value: true },
   ])
-  // 🔼 --- FIN DEL CAMBIO --- 🔼
 
   useEffect(() => {
     fetchPlantillas()
@@ -101,43 +92,26 @@ const AdminPlantillas = () => {
       setLoading(false)
     } catch (err) {
       console.error("Error al cargar plantillas:", err)
-      setError("Error al cargar las plantillas. Por favor, intente nuevamente.")
+      setError("Error al cargar las plantillas.")
       setLoading(false)
     }
   }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
+    setFormData({ ...formData, [name]: value })
   }
 
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        setError("Por favor seleccione un archivo de imagen válido")
-        return
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setError("La imagen no debe superar los 5MB")
-        return
-      }
-
       setImagenFile(file)
-      console.log("[v0] Archivo seleccionado:", file.name, file.size, "bytes")
       const previewUrl = URL.createObjectURL(file)
       setImagenPreview(previewUrl)
     }
   }
 
   const removeImage = () => {
-    if (imagenPreview && imagenPreview.startsWith("blob:")) {
-      URL.revokeObjectURL(imagenPreview)
-    }
     setImagenPreview(null)
     setImagenFile(null)
   }
@@ -146,45 +120,8 @@ const AdminPlantillas = () => {
     setConfigFields((prevFields) => prevFields.map((field) => (field.key === key ? { ...field, value } : field)))
   }
 
-  // Esta función ahora encontrará 'colorTitulo' en los configFields base
-  // y cargará el valor desde 'plantillaDefault.config.colorTitulo'
-  const cargarPlantillaDefault = (tipo) => {
-    const plantillaDefault = getPlantillaDefault(tipo)
-
-    if (plantillaDefault) {
-      setFormData({
-        ...formData,
-        plan_nomb: plantillaDefault.nombre,
-        plan_tipo: tipo,
-      })
-
-      // Esta lógica busca en 'configFields' (que ahora sí tiene 'colorTitulo')
-      // y si lo encuentra, usa su 'label' y 'type'
-      const newConfigFields = configFields.map(baseField => {
-        const defaultValue = plantillaDefault.config[baseField.key];
-        return {
-          ...baseField,
-          value: defaultValue !== undefined ? defaultValue : baseField.value
-        }
-      });
-      
-      // Añadir campos que estén en el default pero no en nuestro 'configFields' base
-      Object.entries(plantillaDefault.config).forEach(([key, value]) => {
-         if (!newConfigFields.some(f => f.key === key)) {
-            newConfigFields.push({
-              key,
-              label: key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase()),
-              type: typeof value === "boolean" ? "checkbox" : typeof value === "number" ? "number" : "text",
-              value,
-            });
-         }
-      });
-
-      setConfigFields(newConfigFields)
-    }
-  }
-
   const openModal = (plantilla = null) => {
+    setError(null);
     if (plantilla) {
       setCurrentPlantilla(plantilla)
       setFormData({
@@ -193,12 +130,8 @@ const AdminPlantillas = () => {
         plan_imagen: plantilla.plan_imagen || "",
         plan_config: plantilla.plan_config || {},
       })
-
-      if (plantilla.plan_imagen) {
-        setImagenPreview(plantilla.plan_imagen)
-      }
-
-      // Esta lógica ahora actualizará 'colorTitulo' si existe en la BBDD
+      setImagenPreview(plantilla.plan_imagen ? `http://localhost:3000${plantilla.plan_imagen}` : null)
+      
       if (plantilla.plan_config) {
         setConfigFields((prevFields) =>
           prevFields.map((field) => ({
@@ -211,57 +144,23 @@ const AdminPlantillas = () => {
       setCurrentPlantilla(null)
       setImagenPreview(null)
       setImagenFile(null)
-      setFormData({
-        plan_nomb: "",
-        plan_tipo: "",
-        plan_imagen: "",
-        plan_config: {},
-      })
-
-      // Resetea los campos a su valor por defecto (ahora incluye colorTitulo)
-      setConfigFields((prevFields) =>
-        prevFields.map((field) => ({
-          ...field,
-          value:
-            field.type === "checkbox"
-              ? true
-              : field.type === "color"
-                ? field.key === "colorFondo"
-                  ? "#ffffff" // Default fondo
-                  : "#000000" // Default texto y título
-                : field.type === "select"
-                  ? field.options[0]
-                  : field.key.includes("tamanoFuente")
-                    ? field.key.includes("Titulo")
-                      ? "24px"
-                      : "16px"
-                    : "",
-        })),
-      )
+      setFormData({ plan_nomb: "", plan_tipo: "", plan_imagen: "", plan_config: {} })
     }
     setShowModal(true)
   }
 
   const savePlantilla = async () => {
     try {
-      if (!currentPlantilla && !imagenFile) {
-        setError("Por favor, seleccione una imagen para la plantilla")
-        return
-      }
-
       const config = {}
-      configFields.forEach((field) => {
-        config[field.key] = field.value
-      })
+      configFields.forEach((field) => { config[field.key] = field.value })
 
       const formDataToSend = new FormData()
       formDataToSend.append("plan_nomb", formData.plan_nomb)
       formDataToSend.append("plan_tipo", formData.plan_tipo)
-      formDataToSend.append("plan_config", JSON.stringify(config)) // 'config' ahora incluye 'colorTitulo'
+      formDataToSend.append("plan_config", JSON.stringify(config))
 
       if (imagenFile) {
         formDataToSend.append("imagen", imagenFile)
-        console.log("[v0] Enviando archivo:", imagenFile.name)
       }
 
       if (currentPlantilla) {
@@ -271,59 +170,17 @@ const AdminPlantillas = () => {
       }
 
       setShowModal(false)
-      setError(null)
       fetchPlantillas()
     } catch (err) {
-      console.error("[v0] Error al guardar plantilla:", err)
-      setError(err.response?.data?.message || "Error al guardar la plantilla. Por favor, intente nuevamente.")
-    }
-  }
-
-  const deletePlantilla = async (plan_cod) => {
-    if (window.confirm("¿Está seguro de eliminar esta plantilla? Esta acción no se puede deshacer.")) {
-      try {
-        await PlantillasService.deletePlantilla(plan_cod)
-        fetchPlantillas()
-      } catch (err) {
-        console.error("Error al eliminar plantilla:", err)
-        if (err.response && err.response.status === 400) {
-          setError("No se puede eliminar la plantilla porque tiene pantallas asociadas.")
-        } else {
-          setError("Error al eliminar la plantilla. Por favor, intente nuevamente.")
-        }
-      }
+      setError("Error al guardar la plantilla.")
     }
   }
 
   const renderConfigField = (field) => {
-    switch (field.type) {
-      case "color":
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormInput
-              type="color"
-              value={field.value}
-              onChange={(e) => handleConfigChange(field.key, e.target.value)}
-            />
-          </CInputGroup>
-        )
-      case "select":
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormSelect value={field.value} onChange={(e) => handleConfigChange(field.key, e.target.value)}>
-              {field.options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </CFormSelect>
-          </CInputGroup>
-        )
-      case "checkbox":
-        return (
-          <div className="mb-3" key={field.key}>
+    return (
+      <CCol md={6} key={field.key} className="mb-3">
+        {field.type === "checkbox" ? (
+          <div className="p-2 border rounded bg-light mt-4">
             <CFormCheck
               id={`check-${field.key}`}
               label={field.label}
@@ -331,19 +188,26 @@ const AdminPlantillas = () => {
               onChange={(e) => handleConfigChange(field.key, e.target.checked)}
             />
           </div>
-        )
-      default:
-        return (
-          <CInputGroup className="mb-3" key={field.key}>
-            <CInputGroupText>{field.label}</CInputGroupText>
-            <CFormInput
-              type="text"
-              value={field.value}
-              onChange={(e) => handleConfigChange(field.key, e.target.value)}
-            />
-          </CInputGroup>
-        )
-    }
+        ) : (
+          <>
+            <CFormLabel className="small fw-bold">{field.label}</CFormLabel>
+            {field.type === "select" ? (
+              <CFormSelect value={field.value} onChange={(e) => handleConfigChange(field.key, e.target.value)}>
+                {field.options.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </CFormSelect>
+            ) : (
+              <CFormInput
+                type={field.type}
+                value={field.value}
+                onChange={(e) => handleConfigChange(field.key, e.target.value)}
+              />
+            )}
+          </>
+        )}
+      </CCol>
+    )
   }
 
   if (loading) {
@@ -355,182 +219,136 @@ const AdminPlantillas = () => {
   }
 
   return (
-    <div className="admin-plantillas-container">
-      <CCard className="mb-4">
-        <CCardHeader>
-          <CCardTitle>Administración de Plantillas</CCardTitle>
-        </CCardHeader>
-        <CCardBody>
-          {error && (
-            <CAlert color="danger" dismissible onClose={() => setError(null)}>
-              {error}
-            </CAlert>
-          )}
+    <CCard style={{ padding: 50, borderRadius: 10 }}>
+      <style>
+        {`
+          .custom-modal-centered .modal-dialog {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: auto !important;
+          }
+          .custom-modal-centered .modal-content {
+            border-radius: 12px !important;
+            overflow: hidden !important;
+          }
+        `}
+      </style>
 
-          <CButton color="primary" className="mb-3" onClick={() => openModal()}>
+      <CRow>
+        <CCol xs={12}>
+          <h4 className="card-title mb-0 text-dark">Administración de Plantillas</h4>
+        </CCol>
+        <div className="d-grid gap-2 d-md-flex justify-content-md-end" style={{ padding: 20 }}>
+          <CButton color="dark" onClick={() => openModal()}>
             <CIcon icon={cilPlus} className="me-2" />
             Nueva Plantilla
           </CButton>
+        </div>
 
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Código</CTableHeaderCell>
-                <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Tipo</CTableHeaderCell>
-                <CTableHeaderCell>Imagen</CTableHeaderCell>
-                <CTableHeaderCell>Pantallas Asociadas</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {plantillas.length === 0 ? (
-                <CTableRow>
-                  <CTableDataCell colSpan="6" className="text-center">
-                    No hay plantillas disponibles
-                  </CTableDataCell>
-                </CTableRow>
-              ) : (
-                plantillas.map((plantilla) => (
-                  <CTableRow key={plantilla.plan_cod}>
-                    <CTableDataCell>{plantilla.plan_cod}</CTableDataCell>
-                    <CTableDataCell>{plantilla.plan_nomb}</CTableDataCell>
-                    <CTableDataCell>
-                      {TIPOS_PLANTILLA.find((t) => t.value === plantilla.plan_tipo)?.label || plantilla.plan_tipo}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {plantilla.plan_imagen ? (
-                        <img
-                          src={`http://localhost:3000${plantilla.plan_imagen}`}
-                          alt={plantilla.plan_nomb}
-                          style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "4px" }}
-                          onError={(e) => {
-                            console.log("[v0] Error al cargar miniatura:", e.target.src)
-                            e.target.style.display = "none"
-                            e.target.nextSibling.style.display = "inline"
-                          }}
-                        />
-                      ) : null}
-                      <CIcon
-                        icon={cilImage}
-                        size="xl"
-                        className="text-muted"
-                        style={{ display: plantilla.plan_imagen ? "none" : "inline" }}
-                      />
-                    </CTableDataCell>
-                    <CTableDataCell>{plantilla.Pantallas ? plantilla.Pantallas.length : 0}</CTableDataCell>
-                    <CTableDataCell>
-                      <CButton color="info" size="sm" className="me-2" onClick={() => openModal(plantilla)}>
-                        <CIcon icon={cilPencil} />
-                      </CButton>
-                      <CButton color="danger" size="sm" onClick={() => deletePlantilla(plantilla.plan_cod)}>
-                        <CIcon icon={cilTrash} />
-                      </CButton>
-                    </CTableDataCell>
+        <CCol xs={12}>
+          {error && <CAlert color="danger">{error}</CAlert>}
+          <CCard className="mb-4">
+            <CCardBody className="text-medium-emphasis small">
+              <CTable align="middle" responsive hover>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell align="center">Nombre</CTableHeaderCell>
+                    <CTableHeaderCell align="center">Tipo</CTableHeaderCell>
+                    <CTableHeaderCell align="center">Imagen</CTableHeaderCell>
+                    <CTableHeaderCell align="center">Acciones</CTableHeaderCell>
                   </CTableRow>
-                ))
-              )}
-            </CTableBody>
-          </CTable>
-        </CCardBody>
-      </CCard>
+                </CTableHead>
+                <CTableBody>
+                  {plantillas.map((plantilla) => (
+                    <CTableRow key={plantilla.plan_cod}>
+                      <CTableDataCell align="center">{plantilla.plan_nomb}</CTableDataCell>
+                      <CTableDataCell align="center">
+                        {TIPOS_PLANTILLA.find((t) => t.value === plantilla.plan_tipo)?.label || plantilla.plan_tipo}
+                      </CTableDataCell>
+                      <CTableDataCell align="center">
+                        {plantilla.plan_imagen && (
+                          <img
+                            src={`http://localhost:3000${plantilla.plan_imagen}`}
+                            alt="thumb"
+                            style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
+                          />
+                        )}
+                      </CTableDataCell>
+                      <CTableDataCell align="center">
+                        <CButton color="link" onClick={() => openModal(plantilla)}>
+                          <CIcon icon={cilPencil} className="text-info" />
+                        </CButton>
+                        <CButton color="link" onClick={() => {/* logic delete */}}>
+                          <CIcon icon={cilTrash} className="text-danger" />
+                        </CButton>
+                      </CTableDataCell>
+                    </CTableRow>
+                  ))}
+                </CTableBody>
+              </CTable>
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
 
-      <CModal visible={showModal} onClose={() => setShowModal(false)} size="xl">
-        <CModalHeader>
-          <CModalTitle>{currentPlantilla ? "Editar Plantilla" : "Nueva Plantilla"}</CModalTitle>
+      <CModal 
+        visible={showModal} 
+        onClose={() => setShowModal(false)} 
+        size="xl" 
+        backdrop="static"
+        className="custom-modal-centered"
+      >
+        <CModalHeader style={{ backgroundColor: '#b191ff' }} className="border-0">
+          <CModalTitle className="text-center w-100 fw-bold text-dark">
+            {currentPlantilla ? "Editar Plantilla" : "Nueva Plantilla"}
+          </CModalTitle>
         </CModalHeader>
-        <CModalBody>
+        <CModalBody className="p-4 bg-white">
           <CForm>
             <CRow>
-              <CCol md={6}>
-                <h5>Información Básica</h5>
+              <CCol md={5} className="border-end">
+                <h6 className="fw-bold mb-3 text-primary">Información Básica</h6>
                 <div className="mb-3">
                   <CFormLabel>Nombre</CFormLabel>
-                  <CFormInput
-                    type="text"
-                    name="plan_nomb"
-                    value={formData.plan_nomb}
-                    onChange={handleInputChange}
-                    placeholder="Nombre de la plantilla"
-                    required
-                  />
+                  <CFormInput name="plan_nomb" value={formData.plan_nomb} onChange={handleInputChange} />
                 </div>
                 <div className="mb-3">
                   <CFormLabel>Tipo</CFormLabel>
-                  <CFormSelect
-                    name="plan_tipo"
-                    value={formData.plan_tipo}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      cargarPlantillaDefault(e.target.value)
-                    }}
-                  >
-                    <option value="">Seleccione un tipo</option>
-                    {TIPOS_PLANTILLA.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </option>
-                    ))}
+                  <CFormSelect name="plan_tipo" value={formData.plan_tipo} onChange={handleInputChange}>
+                    <option value="">Seleccione tipo</option>
+                    {TIPOS_PLANTILLA.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </CFormSelect>
-                  <small className="text-muted">
-                    Al seleccionar un tipo, se cargarán valores predeterminados que puedes personalizar
-                  </small>
                 </div>
-
                 <div className="mb-3">
                   <CFormLabel>Imagen de Fondo</CFormLabel>
-                  <div className="border rounded p-3">
+                  <div className="text-center border p-3 rounded bg-light">
                     {imagenPreview ? (
-                      <div className="text-center">
-                        <img
-                          src={imagenPreview || "/placeholder.svg"}
-                          alt="Preview"
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "200px",
-                            objectFit: "contain",
-                            marginBottom: "10px",
-                          }}
-                          onError={(e) => {
-                            console.log("[v0] Error al cargar preview:", e.target.src)
-                          }}
-                        />
-                        <div>
-                          <CButton color="danger" size="sm" onClick={removeImage}>
-                            <CIcon icon={cilTrash} className="me-1" />
-                            Eliminar Imagen
-                          </CButton>
-                        </div>
-                      </div>
+                      <>
+                        <img src={imagenPreview} alt="preview" className="img-fluid mb-2 rounded" style={{maxHeight: '150px'}} />
+                        <CButton size="sm" color="danger" variant="ghost" onClick={removeImage}>Cambiar</CButton>
+                      </>
                     ) : (
-                      <div className="text-center">
-                        <CIcon icon={cilCloudUpload} size="3xl" className="text-muted mb-2" />
-                        <CFormInput type="file" accept="image/*" onChange={handleImageChange} />
-                        <small className="text-muted">Formatos: JPG, PNG, GIF, WEBP. Máximo 5MB</small>
-                      </div>
+                      <CFormInput type="file" onChange={handleImageChange} />
                     )}
                   </div>
                 </div>
               </CCol>
-              <CCol md={6}>
-                <h5>Configuración de Estilo</h5>
-                <div style={{ maxHeight: "400px", overflowY: "auto" }}>
-                  {configFields.map((field) => renderConfigField(field))}
-                </div>
+              <CCol md={7}>
+                <h6 className="fw-bold mb-3 text-primary">Configuración de Estilo</h6>
+                <CRow>
+                  {configFields.map(field => renderConfigField(field))}
+                </CRow>
               </CCol>
             </CRow>
           </CForm>
         </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
-            Cancelar
-          </CButton>
-          <CButton color="primary" onClick={savePlantilla}>
-            Guardar
-          </CButton>
+        <CModalFooter className="border-0 justify-content-center pb-4">
+          <CButton color="secondary" className="px-4" onClick={() => setShowModal(false)}>Cancelar</CButton>
+          <CButton color="dark" className="px-4" onClick={savePlantilla}>Guardar Cambios</CButton>
         </CModalFooter>
       </CModal>
-    </div>
+    </CCard>
   )
 }
 
