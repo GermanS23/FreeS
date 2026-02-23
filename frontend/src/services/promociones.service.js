@@ -35,6 +35,10 @@ class PromocionesService {
   deletePromo(id) {
     return axios.delete(`${API_URL}/promociones/${id}`, { headers: authHeader() });
   }
+  // --- NUEVA FUNCIÓN SOFT DELETE ---
+  softDeletePromo(id) {
+    return axios.put(`${API_URL}/promociones/soft-delete/${id}`, {}, { headers: authHeader() });
+  }
 }
 
 export default new PromocionesService();

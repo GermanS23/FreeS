@@ -14,6 +14,11 @@ CategoriaSab.init({
   catsab_name: {
     type: DataTypes.STRING(45),
     allowNull: false
+  },
+  catsab_estado: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
   }
 },
 {

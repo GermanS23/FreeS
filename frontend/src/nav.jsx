@@ -18,20 +18,44 @@ const _nav = [
     component: CNavTitle,
     name: "OPERACIONES",
   },
-  {
-    component: CNavItem,
-    name: "Punto de Venta (POS)",
-    to: "/pos",
+   {
+    component: CNavGroup,
+    name: "POS & Stock",
+    to: "/admin",
     icon: <ShoppingCart className="nav-icon" />,
-    roles: [ROLES.ADMIN, ROLES.DUENO, ROLES.ENCARGADO]
+    items: [
+      {
+        component: CNavItem,
+        name: "Punto de Venta (POS)",
+        to: "/pos",
+        icon: <ShoppingCart className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO, ROLES.ENCARGADO]
+      },
+      {
+        component: CNavItem,
+        name: "Control de Stock",
+        to: "/insumos",
+        icon: <Package className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
+      },
+      {
+        component: CNavItem,
+        name: "Historial de Cajas",
+        to: "/cajas/historial",
+        icon: <History className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
+      },
+      {
+        component: CNavItem,
+        name: "Recetas",
+        to: "/recetas",
+        icon: <ReceiptText className="nav-icon" />,
+        roles: [ROLES.ADMIN, ROLES.DUENO]
+      },
+    ],
   },
-  {
-    component: CNavItem,
-    name: "Control de Stock",
-    to: "/insumos",
-    icon: <Package className="nav-icon" />,
-    roles: [ROLES.ADMIN, ROLES.DUENO]
-  },
+  
+ 
   
   {
     component: CNavTitle,

@@ -15,6 +15,7 @@ const ListPublica = async (req, res) => {
     const data = await Promociones.findAndCountAll({
       where: {
         // 1. Debe haber empezado ya
+        prom_estado: true, // 🔹 Solo promociones activas
         prom_fechaini: { [Op.lte]: endOfDay },
         
         // 2. No debe haber terminado (o ser NULL)
@@ -115,12 +116,27 @@ const deletePromo = async (req, res) => {
     res.status(500).send('Error al eliminar la promoción')
   }
 }
-
+// Soft Delete
+const softDeletePromo = async (req, res) => {
+  try {
+    const promo = await Promociones.findByPk(req.params.id)
+    if (promo) {
+      await promo.update({ prom_estado: false })
+      res.json({ message: 'Promoción desactivada' })
+    } else {
+      res.status(404).send('Promoción no encontrada')
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Error al desactivar la promoción')
+  }
+}
 export default {
   ListPublica,
   List,
   getPromoById,
   createPromo,
   updatePromo,
-  deletePromo
+  deletePromo,
+  softDeletePromo
 }

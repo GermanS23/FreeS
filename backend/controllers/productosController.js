@@ -87,14 +87,10 @@ const deleteProd = async (req, res) => {
 // 🔹 --- FUNCIÓN 'List' MODIFICADA --- 🔹
 //
 const List = async (req, res) => {
-  // 1. Leemos 'catprod' (para las pantallas) además de 'page', 'size', 'title' (para admin)
-  let { page, size, title, catprod } = req.query;
+  let { page, size, title, catprod, isAdmin } = req.query; // Agregamos isAdmin si es posible
 
-  // 2. Si 'size' no viene, usamos 1000 (para las pantallas públicas)
   const limit = size ? +size : 1000;
   const offset = page ? page * limit : 0;
-
-  // 3. Construimos el 'where'
   const where = {};
 
   if (title) {
@@ -104,43 +100,35 @@ const List = async (req, res) => {
     ];
   }
 
-  // 4. 🔹 AÑADIMOS EL FILTRO DE CATEGORÍA 🔹
-  // Si el parámetro 'catprod' (ej: "1,2,3") existe...
   if (catprod) {
-    // Convertimos el string "1,2,3" en un array de números: [1, 2, 3]
     const categoryIds = catprod.split(',').map(id => Number(id)).filter(Boolean);
-    
     if (categoryIds.length > 0) {
-      // Usamos 'catprod_cod' (de tu associations.js)
       where.catprod_cod = { [Op.in]: categoryIds };
     }
   }
 
-  // 5. Ejecutamos la consulta con los filtros
   Productos.findAndCountAll({
-    where, // Contiene filtro de 'title' y/o 'catprod'
+    where,
     include: [
       {
-        model: CategoriaProd // Incluimos la info de la categoría
+        model: CategoriaProd,
+        // 🔹 QUITAMOS EL 'where: { catprod_estado: true }' de aquí 🔹
+        // Para que el administrador pueda seguir viendo los productos 
+        // aunque la categoría esté desactivada.
       }
     ],
-    order: [["prod_nom", "ASC"]], // Ordenamos por nombre
+    order: [["prod_nom", "ASC"]],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = new Page(data, Number(req.query.page), limit);
-      res.send(response);
-    })
-    .catch((err) => {
-      console.error("Error en Productos List:", err); // Log de error
-      res.status(500).send({
-        message:
-          err.message || "Ocurrió un error al listar los productos.",
-      });
-    });
+  .then((data) => {
+    const response = new Page(data, Number(req.query.page), limit);
+    res.send(response);
+  })
+  .catch((err) => {
+    res.status(500).send({ message: err.message });
+  });
 }
-
 const getProductosDisponibles = async (req, res) => {
   try {
     const productos = await Productos.findAll({

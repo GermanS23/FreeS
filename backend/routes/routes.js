@@ -134,6 +134,7 @@ catprodRouter.delete(
   authJwt.permit("ADMIN", "DUEÑO"),
   catprodController.deleteCatProd,
 )
+catprodRouter.put("/soft-delete/:catprod_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), catprodController.softDeleteCatProd )
 catprodRouter.get("/catprods/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catprodController.List)
 
 // ==================== RUTAS PARA PRODUCTOS ====================
@@ -184,6 +185,7 @@ catsabRouter.delete(
   authJwt.permit("ADMIN", "DUEÑO"),
   catsabController.deleteCatSab,
 )
+catsabRouter.put("/catsab/soft-delete/:catsab_cod", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), catsabController.softDeleteCatSab )
 catsabRouter.get("/catsabs/list", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"), catsabController.List)
 
 // ==================== RUTAS PARA SABORES DE HELADOS ====================
@@ -358,6 +360,7 @@ promocionesRouter.delete(
   authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO"),
   promocionesController.deletePromo
 )
+promocionesRouter.put("/promociones/soft-delete/:id", authJwt.verifyToken, authJwt.permit("ADMIN", "DUEÑO", "ENCARGADO"), promocionesController.softDeletePromo )
 
 // ====================
 // POS – VENTA ACTUAL

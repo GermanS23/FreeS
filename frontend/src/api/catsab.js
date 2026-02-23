@@ -22,7 +22,10 @@ class CategoriaSabService {
   deleteCategoriaSab(catsab_cod) {
     return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/catsab/${catsab_cod}`, { headers: authHeader() });
   }
-
+// --- NUEVA FUNCIÓN SOFT DELETE ---
+ softDeleteCategoriaSab(catsab_cod) {
+  return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/catsab/soft-delete/${catsab_cod}`, {}, { headers: authHeader() });
+}
   listSabores(page = 0, size = 1000, title = "", cats = null) {
     const params = { page, size, title }
     if (cats) {

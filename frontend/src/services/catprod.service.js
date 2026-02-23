@@ -22,7 +22,10 @@ class CatProdService {
   deleteCatProd(catprod_cod) {
     return axios.delete(`${import.meta.env.VITE_REDIRECT_URI}/catprod/${catprod_cod}`, { headers: authHeader() });
   }
-
+// --- NUEVA FUNCIÓN SOFT DELETE ---
+  softDeleteCatProd(catprod_cod) {
+    return axios.put(`${import.meta.env.VITE_REDIRECT_URI}/soft-delete/${catprod_cod}`, {}, { headers: authHeader() });
+  }
   listCatProd(page, size, title) {
     return axios.get(`${import.meta.env.VITE_REDIRECT_URI}/catprods/list`, {
       params: { page, size, title },

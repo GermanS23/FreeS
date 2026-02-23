@@ -82,57 +82,46 @@ const deleteSab = async (req, res) => {
 // 🔹 FUNCIÓN 'List' CORREGIDA 🔹
 //
 const List = async (req, res) => {
-  let { page, size, title, catsab } = req.query
-  
-  const limit = size ? +size : 1000 
-  const offset = page ? page * limit : 0
+  let { page, size, title, catsab } = req.query;
 
-  const where = {}
+  const limit = size ? +size : 1000;
+  const offset = page ? page * limit : 0;
+  const where = {};
 
   if (title) {
     where[Op.or] = [
       { sab_nom: { [Op.like]: "%" + title + "%" } },
-      { sab_desc: { [Op.like]: "%" + title + "%" } },
-    ]
+    ];
   }
 
   if (catsab) {
-    const categoryIds = catsab.split(',').map(id => Number(id)).filter(Boolean)
-    
+    const categoryIds = catsab.split(',').map(id => Number(id)).filter(Boolean);
     if (categoryIds.length > 0) {
-      //
-      // 🔹 CAMBIO 3: Usamos 'catsab_cod' (de tu associations.js) en lugar de 'FK_CatSab_cod'
-      //
-      where.catsab_cod = { [Op.in]: categoryIds }
+      where.catsab_cod = { [Op.in]: categoryIds };
     }
   }
 
-  // 🔹 CAMBIO 2: Usamos el nombre de modelo 'SaboresHelados'
   SaboresHelados.findAndCountAll({
-    where, 
+    where,
     include: [
       {
-        model: CategoriaSab, // Incluimos la info de la categoría
-        // No se necesita 'as:' porque tu asociación no usa un alias
-      },
+        model: CategoriaSab, 
+        // 🔹 IMPORTANTE: No ponemos 'where: { catsab_estado: true }' aquí
+        // para que el ADMIN pueda ver sabores de categorías inactivas.
+      }
     ],
-    order: [["sab_nom", "ASC"]], 
+    order: [["sab_nom", "ASC"]],
     limit,
     offset,
   })
-    .then((data) => {
-      const response = new Page(data, Number(req.query.page), limit)
-      res.send(response)
-    })
-    .catch((err) => {
-      // Este catch es el que se activó y te dio el 500
-      console.error("Error en SabHelados List:", err) // Añadimos un log de error
-      res.status(500).send({
-        message: err.message || "Ocurrió un error al listar los sabores.",
-      })
-    })
+  .then((data) => {
+    const response = new Page(data, Number(req.query.page), limit);
+    res.send(response);
+  })
+  .catch((err) => {
+    res.status(500).send({ message: err.message });
+  });
 }
-
 export default {
   getSabor,
   getSaborById,

@@ -14,6 +14,11 @@ CategoriaProd.init({
   catprod_name: {
     type: DataTypes.STRING(45),
     allowNull: false
+  },
+  catprod_estado: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
   }
 },
 {

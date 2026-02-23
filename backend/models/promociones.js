@@ -24,6 +24,11 @@ Promociones.init({
     }, 
     prom_fechafin:{
         type: DataTypes.DATE(),
+    },
+    prom_estado:{
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     }
 },
 {

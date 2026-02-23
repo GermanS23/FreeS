@@ -67,7 +67,19 @@ export const posApi = {
       throw error
     }
   },
-
+// 🔹 NUEVO: Obtener detalle de una venta específica por ID
+  getVentaById: async (ventaId) => {
+    try {
+      const { data } = await axios.get(
+        `${API_URL}/ventas/${ventaId}`,
+        { headers: authHeader() }
+      )
+      return data
+    } catch (error) {
+      console.error("Error en getVentaById:", error)
+      throw error
+    }
+  },
   // 🔹 NUEVO: Modificar cantidad
   modificarCantidad: async (ventaItemsId, cantidad) => {
     try {
